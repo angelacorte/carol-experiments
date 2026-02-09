@@ -18,7 +18,7 @@ import it.unibo.collektive.qp.utils.getTarget
 import it.unibo.collektive.qp.utils.moveNodeToPosition
 import it.unibo.collektive.qp.utils.moveTargetTo
 import it.unibo.collektive.qp.utils.plus
-import it.unibo.collektive.qp.utils.setLicense
+import it.unibo.collektive.qp.dsl.setLicense
 
 // PROBLEM:
 // two "robots" have to go towards a goal point
