@@ -17,7 +17,6 @@ import it.unibo.collektive.qp.utils.Obstacle
 import it.unibo.collektive.qp.utils.Robot
 import it.unibo.collektive.qp.utils.SpeedControl2D
 import it.unibo.collektive.qp.utils.Target
-import it.unibo.collektive.qp.utils.setLicense
 import it.unibo.collektive.qp.utils.toDoubleArray
 
 fun <ID: Comparable<ID>> avoidObstacleGoToTarget(robot: Robot<ID>, target: Target, obstacle: Obstacle, parameters: Parameters<ID>): Pair<SpeedControl2D, Double> {
