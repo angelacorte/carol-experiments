@@ -5,10 +5,10 @@ import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.qp.utils.Robot
-import it.unibo.collektive.qp.utils.Target
 import it.unibo.collektive.qp.utils.minus
-import it.unibo.collektive.qp.utils.toDoubleArray
+import it.unibo.collektive.qp.utils.squaredNorm
+import it.unibo.collektive.qp.utils.times
+import it.unibo.collektive.qp.utils.zeroVec
 
 /**
  * Represents a vector of Gurobi decision variables.
@@ -43,33 +43,15 @@ fun GRBModel.addVecVar(
     name: String
 ): GRBVector = GRBVector(Array(dimension) { i -> addVar(lowerBound, upperBound, 0.0, GRB.CONTINUOUS, "$name[$i]") })
 
-/**
- * Performs component-wise subtraction between two constant vectors.
- *
- * This operator is used to compute relative positions or differences between vectors.
- *
- * @receiver the minuend constant vector
- * @param other the subtrahend constant vector
- * @return a new constant vector representing the component-wise difference
- */
-operator fun DoubleArray.minus(other: DoubleArray): DoubleArray = DoubleArray(size) { i -> this[i] - other[i] }
-
-operator fun DoubleArray.times(other: DoubleArray): Double {
-    require(this.size == other.size) { "Dimension mismatch: expected ${this.size}, got ${other.size}" }
-    return DoubleArray(size) { i -> this[i] * other[i] }.sum()
+// rho * || u - a ||^2
+fun GRBQuadExpr.addRhoNorm2Sq(u: GRBVector, a: DoubleArray, rho: Double = 1.0): Unit {
+    require(u.vars.size == a.size) { "u and a must have same length" }
+    for (i in u.vars.indices) {
+        addTerm(rho, u[i], u[i]) // rho * x_i^2
+        addTerm(-2.0 * rho * a[i], u[i]) // -2*rho*a_i * x_i
+        addConstant(rho * a[i] * a[i]) // + rho * a_i^2 (constant)
+    }
 }
-
-operator fun Double.times(other: DoubleArray): DoubleArray = DoubleArray(other.size) { i -> this * other[i] }
-
-/**
- * Computes the squared Euclidean norm of a constant vector.
- *
- * This function is typically used in Control Lyapunov Function (CLF) or Control Barrier Function (CBF) scalar terms.
- *
- * @receiver the constant vector
- * @return the squared norm value
- */
-fun DoubleArray.squaredNorm(): Double = sumOf { it * it } // v^Tv
 
 /**
  * Computes the dot product between a constant vector and a vector of decision variables.
@@ -123,7 +105,8 @@ fun GRBVector.toLinExpr(vector: DoubleArray, multiplier: Double = 1.0): GRBLinEx
  */
 fun GRBVector.toQuadExpr(coefficient: Double = 1.0): GRBQuadExpr {
     val expr = GRBQuadExpr()
-    for (i in 0 until dimensions) expr.addTerm(coefficient, this[i], this[i])
+    expr.addRhoNorm2Sq(this, zeroVec(this.dimensions), coefficient)
+//    for (i in 0 until dimensions) expr.addTerm(coefficient, this[i], this[i])
     return expr
 }
 
@@ -204,57 +187,37 @@ fun GRBModel.addCBF(
     addConstr(left, inequality, right, name)
 }
 
-/**
- * Sets a quadratic objective minimizing the deviation from a nominal control.
- *
- * The objective minimizes:
- *
- *   ||u - u_nominal||² + φ δ²
- *
- * using auxiliary variables to express the deviation in a quadratic form
- * compatible with Gurobi.
- *
- * @param u control decision variable
- * @param uNominal nominal (reference) control
- * @param delta slack variable
- * @param phi weight for the slack penalty
- */
-fun GRBModel.minimizeDeviation(
-    u: GRBVector,
-    uNominal: DoubleArray,
-    delta: GRBVar,
-    phi: Double
-) {
-    val deltaU = Array(u.dimensions) { i -> addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "du[$i]") }
-    for (i in deltaU.indices) {
-        val lin = GRBLinExpr()
-        lin.addTerm(1.0, u[i])
-        lin.addTerm(-1.0, deltaU[i])
-        addConstr(lin, GRB.EQUAL, uNominal[i], "u_delta_$i")
-    }
-    val obj = GRBQuadExpr()
-    deltaU.forEach { obj.addTerm(1.0, it, it) } // ||u - u^nom||^2
-    obj.addTerm(phi, delta, delta) // \phi \delta^2
-    setObjective(obj, GRB.MINIMIZE)
-}
-
-/**
- * Creates a constant zero vector of the given dimension.
- *
- * This utility is typically used to represent static entities
- * (e.g., obstacles with zero velocity).
- */
-fun zeroVec(dim: Int): DoubleArray = DoubleArray(dim) { 0.0 }
-
-/**
- * objective: min ||u - u_nom||^2 + phi * delta^2
- * objective is quadratic in (ux, uy), linear in delta (slack)
- * ||u - u^nom||^2 + \phi \delta^2
- * ||u - u^nom||^2 = (ux - ux^nom)^2 + (uy - uy^nom)^2
- */
-fun <ID: Comparable<ID>> GRBModel.minimizeNominal(
-    target: Target,
-    robot: Robot<ID>,
-    u: GRBVector,
-    delta: GRBVar,
-) = minimizeDeviation(u = u, uNominal = (target.position - robot.position).toDoubleArray(), delta = delta, phi = 2.0)
+//
+///**
+// * Sets a quadratic objective minimizing the deviation from a nominal control.
+// *
+// * The objective minimizes:
+// *
+// *   ||u - u_nominal||² + φ δ²
+// *
+// * using auxiliary variables to express the deviation in a quadratic form
+// * compatible with Gurobi.
+// *
+// * @param u control decision variable
+// * @param uNominal nominal (reference) control
+// * @param delta slack variable
+// * @param phi weight for the slack penalty
+// */
+//fun GRBModel.minimizeDeviation(
+//    u: GRBVector,
+//    uNominal: DoubleArray,
+//    delta: GRBVar,
+//    phi: Double
+//) {
+//    val deltaU = Array(u.dimensions) { i -> addVar(-GRB.INFINITY, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "du[$i]") }
+//    for (i in deltaU.indices) {
+//        val lin = GRBLinExpr()
+//        lin.addTerm(1.0, u[i])
+//        lin.addTerm(-1.0, deltaU[i])
+//        addConstr(lin, GRB.EQUAL, uNominal[i], "u_delta_$i")
+//    }
+//    val obj = GRBQuadExpr()
+//    deltaU.forEach { obj.addTerm(1.0, it, it) } // ||u - u^nom||^2
+//    obj.addTerm(phi, delta) // \phi \delta^2
+//    setObjective(obj, GRB.MINIMIZE)
+//}
