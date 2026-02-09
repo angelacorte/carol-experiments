@@ -8,7 +8,7 @@ import it.unibo.collektive.aggregate.api.share
 import it.unibo.collektive.aggregate.values
 import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
-import it.unibo.collektive.qp.dsl.robotToTargetWithAvoidanceAndDistance
+import it.unibo.collektive.qp.dsl.wrongRobotToTargetWithAvoidanceAndDistance
 import it.unibo.collektive.qp.utils.Robot
 import it.unibo.collektive.qp.utils.getObstacle
 import it.unibo.collektive.qp.utils.getRobot
@@ -28,7 +28,7 @@ fun Aggregate<Int>.entrypointSimpleCarol(
     val localInfos: Robot<Int> = with(env) { getRobot(localId) }
     share(localInfos) { robotInfo ->
         val neighboringRobots = robotInfo.neighbors.values.list
-        val myVelocity = robotToTargetWithAvoidanceAndDistance(robotInfo.local.value, targetPosition, obstaclePosition, neighboringRobots)
+        val (myVelocity, _) = wrongRobotToTargetWithAvoidanceAndDistance(robotInfo.local.value, targetPosition, obstaclePosition, neighboringRobots)
         val newPosition = robotInfo.local.value + myVelocity
         moveNodeToPosition(newPosition)
         robotInfo.local.value.copy(x = newPosition.x, y = newPosition.y, velocity = myVelocity)
@@ -51,7 +51,7 @@ fun Aggregate<Int>.entrypointCarol(
     val localInfos = with(env) { getRobot(localId) }
     val neighboringRobots = neighboring(localInfos).neighbors.values.list
     if(neighboringRobots.isNotEmpty()) env["distTo"] = localInfos.position - neighboringRobots.first().position
-    val myVelocity = robotToTargetWithAvoidanceAndDistance(localInfos, targetPosition, obstaclePosition, neighboringRobots, neighboringRobots, communicationDistance)
+    val (myVelocity, _) = wrongRobotToTargetWithAvoidanceAndDistance(localInfos, targetPosition, obstaclePosition, neighboringRobots, neighboringRobots, communicationDistance)
     val newPosition = localInfos + myVelocity
     moveNodeToPosition(newPosition)
     env["Velocity"] = myVelocity
