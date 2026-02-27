@@ -25,13 +25,13 @@ fun Aggregate<Int>.entrypointSimpleCarol(
 ) = context(device, env, position) {
     val obstaclePosition = getObstacle()
     val targetPosition = getTarget(env["TargetID"] as Number)
-    val localInfos: Robot<Int> = with(env) { getRobot(localId) }
+    val localInfos: Robot = with(env) { getRobot(localId) }
     share(localInfos) { robotInfo ->
         val neighboringRobots = robotInfo.neighbors.values.list
         val (myVelocity, _) = wrongRobotToTargetWithAvoidanceAndDistance(robotInfo.local.value, targetPosition, obstaclePosition, neighboringRobots)
         val newPosition = robotInfo.local.value + myVelocity
         moveNodeToPosition(newPosition)
-        robotInfo.local.value.copy(x = newPosition.x, y = newPosition.y, velocity = myVelocity)
+        robotInfo.local.value.copy(x = newPosition.x, y = newPosition.y, control = myVelocity)
     }
     val obs = device.environment.makePosition(obstaclePosition.x, obstaclePosition.y)
     env["distanceToObstacle"] = device.environment.getPosition(device.node).distanceTo(obs)

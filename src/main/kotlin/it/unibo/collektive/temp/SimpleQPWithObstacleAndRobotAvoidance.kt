@@ -124,8 +124,8 @@ fun <ID> robotToTargetWithObstacleAndRobotAvoidance(
         robotAvoidance.addTerm(2.0 * dyr, uy)
 
         // vel robot 2
-        val uxa = avoid.velocity.x
-        val uya = avoid.velocity.y
+        val uxa = avoid.control.x
+        val uya = avoid.control.y
         // right side
         // -2(p1-p2)^T u2 - \gamma [ (p1-p2)^T(p1-p2) - dmin^2 ]
         // (p1x - p2x) p1x = dxr * uxa
