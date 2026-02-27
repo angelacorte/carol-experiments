@@ -44,7 +44,7 @@ fun GRBModel.addObstacleAvoidanceCBF(
     )
 }
 
-fun <ID: Comparable<ID>> GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot<ID>, other: Robot<ID>) {
+fun GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot, other: Robot) {
     // COLLISION AVOIDANCE 2(p1 - p2)^T (u1 - u2) + \gamma [ ||p1-p2||^2 - dmin^2 ] >= 0
     // 2(p1 - p2)^T (u1 - u2) >= - \gamma [ ||p1-p2||^2 - dmin^2 ]
     val gamma = 0.5
@@ -56,10 +56,10 @@ fun <ID: Comparable<ID>> GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GR
         collision.addTerm(2.0 * distance[index], ui[index])
         collision.addTerm(-2.0 * distance[index], uj[index])
     }
-    addConstr(collision, GRB.GREATER_EQUAL, collRight, "collision_avoidance_${robot.id}VS${other.id}")
+    addConstr(collision, GRB.GREATER_EQUAL, collRight, "collision_avoidance_")
 }
 
-fun <ID: Comparable<ID>> GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot<ID>, other: Robot<ID>, range: Double) {
+fun GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot, other: Robot, range: Double) {
     // COMM DISTANCE -2(p1 - p2)^T (u1 -u2) + \gamma [ R^2 - ||p1 - p2||^2 ] >= 0
     // COMM DISTANCE -2(p1 - p2)^T (u1 -u2) >= - \gamma [ R^2 - ||p1 - p2||^2 ]
     val gamma = 0.5
@@ -70,7 +70,7 @@ fun <ID: Comparable<ID>> GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GR
         communication.addTerm(-2.0 * distance[index], ui[index])
         communication.addTerm(2.0 * distance[index], uj[index])
     }
-    addConstr(communication, GRB.GREATER_EQUAL, commRight, "communication_range_${robot.id}VS${other.id}")
+    addConstr(communication, GRB.GREATER_EQUAL, commRight, "communication_range")
 }
 
 
@@ -82,18 +82,18 @@ fun <ID: Comparable<ID>> GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GR
  * -2(p1 - p2)^T u1 >= -2(p1 - p2)^T u2 - \gamma [ R^2 - ||p1 - p2||^2 ]
  * ||p1 - p2||^2 = (p1 - p2)^T (p1 -p2)
  */
-fun <ID: Comparable<ID>> GRBModel.maybeWrongAddCommunicationRangeCBF(
+fun GRBModel.maybeWrongAddCommunicationRangeCBF(
     maxConnectionDistance: Double,
-    robotsToBeConnected: List<Robot<ID>>,
+    robotsToBeConnected: List<Robot>,
     position: DoubleArray,
     u: GRBVector,
-    robot: Robot<ID>,
+    robot: Robot,
 ) {
     val maxDistSq = maxConnectionDistance.pow(2) // R^2
     val gamma = 0.5
     robotsToBeConnected.forEach { connect ->
         val positionOther: DoubleArray = connect.toDoubleArray()
-        val velocityOther: DoubleArray = connect.velocity.toDoubleArray()
+        val velocityOther: DoubleArray = connect.control.toDoubleArray()
         // 2(p1-p2)^T u2 - \gamma [ R^2 - (p1-p2)^T(p1-p2)  ]
         // (p1-p2)^T(p1-p2) = (p1x - p2x) p1x + (p1y - p2y) p1y
         // (p1x - p2x) p1x = dxr * uxa
@@ -106,7 +106,7 @@ fun <ID: Comparable<ID>> GRBModel.maybeWrongAddCommunicationRangeCBF(
             u2 = velocityOther,
             gamma = gamma,
             h = h,
-            name = "communicationRange_${robot.id}_with_${connect.id}",
+            name = "communicationRange",
             coefU1 = -2.0,
             coefU2 = -2.0,
         )
@@ -120,14 +120,14 @@ fun <ID: Comparable<ID>> GRBModel.maybeWrongAddCommunicationRangeCBF(
  * 2(p1 - p2)^T u1 -2 (p1 - p2)^T u2 >= - \gamma [ (p1-p2)^T(p1-p2) - dmin^2 ]
  * 2(p1 - p2)^T u1 >= 2(p1 - p2)^T u2 - \gamma [ (p1-p2)^T(p1-p2) - dmin^2 ]
  */
-fun <ID: Comparable<ID>> GRBModel.maybeWrongAddRobotAvoidanceCBF(
-    robotsToAvoid: List<Robot<ID>>,
-    robot: Robot<ID>,
+fun GRBModel.maybeWrongAddRobotAvoidanceCBF(
+    robotsToAvoid: List<Robot>,
+    robot: Robot,
     position: DoubleArray,
     u: GRBVector,
 ) = robotsToAvoid.forEach { avoid ->
     val positionOther: DoubleArray = avoid.toDoubleArray()
-    val velocityOther: DoubleArray = avoid.velocity.toDoubleArray()
+    val velocityOther: DoubleArray = avoid.control.toDoubleArray()
     val minDistSq = max(robot.safeMargin, avoid.safeMargin).pow(2)
     val gamma = 0.5 // \gamma in {0.5 .. 5} = soft || in {5, 20} = hard || > infeasible QP
     // (p1 - p2)^T (p1 - p2) = (p1x - p2x)^2 + (p1y - p2y)^2
@@ -143,7 +143,7 @@ fun <ID: Comparable<ID>> GRBModel.maybeWrongAddRobotAvoidanceCBF(
         u2 = velocityOther,
         gamma = gamma,
         h = h, // -2(p1-p2)^T u2 - \gamma [ (p1-p2)^T(p1-p2) - dmin^2 ]
-        name = "robotAvoidance_${robot.id}_vs_${avoid.id}",
+        name = "robotAvoidance",
         coefU1 = 2.0,
         coefU2 = 2.0,
     )
@@ -152,9 +152,9 @@ fun <ID: Comparable<ID>> GRBModel.maybeWrongAddRobotAvoidanceCBF(
 /**
  * norm constraint on the control input ux^2 + uy^2 <= maxSpeed^2
  */
-fun <ID: Comparable<ID>> GRBModel.maxSpeedCBF(
+fun GRBModel.maxSpeedCBF(
     u: GRBVector,
-    robot: Robot<ID>,
+    robot: Robot,
 ) {
     addQConstr(
         u.toQuadExpr(),

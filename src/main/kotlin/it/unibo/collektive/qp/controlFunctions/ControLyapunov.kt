@@ -38,9 +38,9 @@ fun GRBModel.goToTargetCLF(
  * ||u - u^nom||^2 + \phi \delta^2
  * ||u - u^nom||^2 = (ux - ux^nom)^2 + (uy - uy^nom)^2
  */
-fun <ID: Comparable<ID>> GRBModel.minimizeNominal(
+fun GRBModel.minimizeNominal(
     target: Target,
-    robot: Robot<ID>,
+    robot: Robot,
     u: GRBVector,
     delta: GRBVar,
 ): Unit = TODO("minimizeDeviation(u = u, uNominal = (target.position - robot.position).toDoubleArray(), delta = delta, phi = 2.0)")
