@@ -24,6 +24,9 @@ import kotlin.math.nextUp
 class DrawObstacleRadius : Effect {
     override fun getColorSummary(): Color = Color.BLACK
 
+    /**
+     * Last time that the effect has been updated.
+     */
     @Transient
     var lastUpdated = Time.NEGATIVE_INFINITY
 
@@ -36,79 +39,128 @@ class DrawObstacleRadius : Effect {
         if (environment.simulation.time != lastUpdated) {
             lastUpdated = environment.simulation.time
         }
-        runCatching {
-            environment.getPosition(node)
-        }.onSuccess { nodePosition ->
-            val viewPoint = wormhole.getViewPoint(nodePosition)
-            val isRobot = node.contains(robot)
-            val margin = node.getConcentration(safeMargin).toDouble()
-            val isObstacle = node.contains(obstacle)
-            val radius: Double = (if (node.contains(safeRadius)) node.getConcentration(safeRadius) else 0.0) as Double
-            val size: Double =
-                when {
-                    isRobot -> margin
-                    isObstacle -> radius + margin
-                    else -> 0.0.nextUp()
-                }
-            val sizeAsPosition: P = environment.makePosition(size, size)
-            val sizeFromLocation = sizeAsPosition + nodePosition.coordinates
-            val sizeInScreenCoordinates =
-                (wormhole.getViewPoint(sizeFromLocation) - viewPoint)
-                    .let { Point(abs(it.x), abs(it.y)) }
-                    .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
-                    ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
-            val boundingBoxSize = sizeInScreenCoordinates / 2
-            val boundingBox =
-                listOf(
-                    viewPoint + boundingBoxSize,
-                    viewPoint + boundingBoxSize.mirrorX(),
-                    viewPoint + boundingBoxSize.mirrorY(),
-                    viewPoint - boundingBoxSize,
-                )
-            if (boundingBox.any { wormhole.isInsideView(it) }) {
-                if (isRobot) {
-                    graphics.color = Color.GRAY // hsbColor(60f, alpha = 0.3f)
-                    graphics.drawOval(
-                        viewPoint.x - sizeInScreenCoordinates.x / 2,
-                        viewPoint.y - sizeInScreenCoordinates.y / 2,
-                        sizeInScreenCoordinates.x,
-                        sizeInScreenCoordinates.y,
-                    )
-                }
-                if (isObstacle) {
-                    graphics.color = Color.ORANGE // hsbColor(30f, alpha = 0.4f)
-                    graphics.drawOval(
-                        viewPoint.x - sizeInScreenCoordinates.x,
-                        viewPoint.y - sizeInScreenCoordinates.y,
-                        2 * sizeInScreenCoordinates.x,
-                        2 * sizeInScreenCoordinates.y,
-                    )
-                    val innerSizeAsPosition: P = environment.makePosition(radius, radius)
-                    val innerSizeFromLocation = innerSizeAsPosition + nodePosition.coordinates
-                    val innerSizeScreen =
-                        (wormhole.getViewPoint(innerSizeFromLocation) - viewPoint)
-                            .let { Point(abs(it.x), abs(it.y)) }
-                            .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
-                            ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
+        runCatching { renderNode(graphics, node, environment, wormhole) }
+    }
 
-                    graphics.color = hsbColor(0f, alpha = 0.6f)
-//                    graphics.color = Color.RED//hsbColor(0f, alpha = 0.5f)
-                    graphics.fillOval(
-                        viewPoint.x - innerSizeScreen.x,
-                        viewPoint.y - innerSizeScreen.y,
-                        2 * innerSizeScreen.x,
-                        2 * innerSizeScreen.y,
-                    )
-                }
-            }
+    private fun <T : Any?, P : Position2D<P>> renderNode(
+        graphics: Graphics2D,
+        node: Node<T>,
+        environment: Environment<T, P>,
+        wormhole: Wormhole2D<P>,
+    ) {
+        val nodePosition = environment.getPosition(node)
+        val viewPoint = wormhole.getViewPoint(nodePosition)
+        val isRobot = node.contains(robot)
+        val isObstacle = node.contains(obstacle)
+        val margin = node.getConcentration(safeMargin).toDouble()
+        val radius = readRadius(node)
+        val drawSize = drawSize(isRobot, isObstacle, margin, radius)
+        val sizeAsPosition: P = environment.makePosition(drawSize, drawSize)
+        val sizeFromLocation = sizeAsPosition + nodePosition.coordinates
+        val sizeInScreenCoordinates =
+            (wormhole.getViewPoint(sizeFromLocation) - viewPoint)
+                .let { Point(abs(it.x), abs(it.y)) }
+                .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
+                ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
+        if (!isVisible(viewPoint, sizeInScreenCoordinates, wormhole)) return
+        if (isRobot) drawRobot(graphics, viewPoint, sizeInScreenCoordinates)
+        if (isObstacle) {
+            drawObstacle(
+                graphics,
+                environment,
+                wormhole,
+                viewPoint,
+                radius,
+                nodePosition,
+                sizeInScreenCoordinates,
+            )
         }
     }
 
+    private fun drawRobot(graphics: Graphics2D, viewPoint: Point, sizeInScreenCoordinates: Point) {
+        graphics.color = Color.GRAY // hsbColor(60f, alpha = 0.3f)
+        graphics.drawOval(
+            viewPoint.x - sizeInScreenCoordinates.x / 2,
+            viewPoint.y - sizeInScreenCoordinates.y / 2,
+            sizeInScreenCoordinates.x,
+            sizeInScreenCoordinates.y,
+        )
+    }
+
+    private fun <P : Position2D<P>> drawObstacle(
+        graphics: Graphics2D,
+        environment: Environment<*, P>,
+        wormhole: Wormhole2D<P>,
+        viewPoint: Point,
+        radius: Double,
+        nodePosition: P,
+        sizeInScreenCoordinates: Point,
+    ) {
+        graphics.color = Color.ORANGE // hsbColor(30f, alpha = 0.4f)
+        graphics.drawOval(
+            viewPoint.x - sizeInScreenCoordinates.x,
+            viewPoint.y - sizeInScreenCoordinates.y,
+            2 * sizeInScreenCoordinates.x,
+            2 * sizeInScreenCoordinates.y,
+        )
+        val innerSizeAsPosition: P = environment.makePosition(radius, radius)
+        val innerSizeFromLocation = innerSizeAsPosition + nodePosition.coordinates
+        val innerSizeScreen =
+            (wormhole.getViewPoint(innerSizeFromLocation) - viewPoint)
+                .let { Point(abs(it.x), abs(it.y)) }
+                .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
+                ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
+
+        graphics.color = hsbColor(0f, alpha = 0.6f)
+//                    graphics.color = Color.RED//hsbColor(0f, alpha = 0.5f)
+        graphics.fillOval(
+            viewPoint.x - innerSizeScreen.x,
+            viewPoint.y - innerSizeScreen.y,
+            2 * innerSizeScreen.x,
+            2 * innerSizeScreen.y,
+        )
+    }
+
+    private fun drawSize(isRobot: Boolean, isObstacle: Boolean, margin: Double, radius: Double): Double = when {
+        isRobot -> margin
+        isObstacle -> radius + margin
+        else -> 0.0.nextUp()
+    }
+
+    private fun isVisible(viewPoint: Point, sizeInScreenCoordinates: Point, wormhole: Wormhole2D<*>): Boolean {
+        val boundingBoxSize = sizeInScreenCoordinates / 2
+        val boundingBox =
+            listOf(
+                viewPoint + boundingBoxSize,
+                viewPoint + boundingBoxSize.mirrorX(),
+                viewPoint + boundingBoxSize.mirrorY(),
+                viewPoint - boundingBoxSize,
+            )
+        return boundingBox.any { wormhole.isInsideView(it) }
+    }
+
+    private fun readRadius(node: Node<*>): Double =
+        (if (node.contains(safeRadius)) node.getConcentration(safeRadius) else 0.0) as Double
+
+    /**
+     * Shared molecules and rendering constants for the effect.
+     */
     companion object {
+        /**
+         * Helper molecule flag identifying robot nodes.
+         */
         val robot = SimpleMolecule("Robot")
+
+        /** Safe margin molecule key used to size the footprint. */
         val safeMargin = SimpleMolecule("SafeMargin")
+
+        /** Obstacle molecule key. */
         val obstacle = SimpleMolecule("Obstacle")
+
+        /** Safety radius molecule key. */
         val safeRadius = SimpleMolecule("SafeRadius")
+
+        /** Minimum diameter (in pixels) used when drawing circles. */
         const val MIN_NODE_SIZE = 1
 
         private fun Any?.toInt(): Int? = when (this) {
@@ -140,6 +192,9 @@ class DrawObstacleRadius : Effect {
 
         private fun Point.mirrorY(): Point = Point(x, -y)
 
+        /**
+         * Utility to create an HSB color with an alpha channel.
+         */
         fun hsbColor(hueDeg: Float, alpha: Float, saturation: Float = 1f, brightness: Float = 1f): Color {
             val rgb = Color.HSBtoRGB(hueDeg / 360f, saturation, brightness)
             return Color(
