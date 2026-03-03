@@ -8,6 +8,7 @@ variables:
   primalTolerance: &primalTolerance 1e-3
   dualTolerance: &dualTolerance 1e-3
   maxIterations: &maxIter 50
+  moveTargetTIme: &moveTargetTime 50.0
 
 network-model:
   type: ConnectWithinDistance
@@ -19,6 +20,19 @@ _pool: &program
     actions:
       - type: RunCollektiveProgram
         parameters: [ it.unibo.collektive.qp.dsl.ADMMKt.entrypoint ]
+
+environment:
+  type: Continuous2DEnvironment
+  parameters: [ ]
+  global-programs:
+    - time-distribution:
+        type: Trigger
+        parameters: [ *moveTargetTime ]
+      type: MoveTarget
+      parameters:
+        - 0.0
+        - 0.0
+        - 1
 
 deployments:
   - type: Point
@@ -98,6 +112,7 @@ deployments:
     contents:
       - molecule: Target
         concentration: 1
+
   #  - type: Point
   #    parameters: [ 0, 15 ]
   #    contents:
