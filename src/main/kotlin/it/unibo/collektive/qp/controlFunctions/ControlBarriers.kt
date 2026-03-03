@@ -56,7 +56,11 @@ fun GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot
         collision.addTerm(2.0 * distance[index], ui[index])
         collision.addTerm(-2.0 * distance[index], uj[index])
     }
-    addConstr(collision, GRB.GREATER_EQUAL, collRight, "collision_avoidance_")
+    try {
+        addConstr(collision, GRB.GREATER_EQUAL, collRight, "collision_avoidance_")
+    } catch (e: Exception) {
+        println("Error for collision avoidance CBF: ${e.message}")
+    }
 }
 
 fun GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot, other: Robot, range: Double) {
@@ -70,7 +74,11 @@ fun GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot
         communication.addTerm(-2.0 * distance[index], ui[index])
         communication.addTerm(2.0 * distance[index], uj[index])
     }
-    addConstr(communication, GRB.GREATER_EQUAL, commRight, "communication_range")
+    try {
+        addConstr(communication, GRB.GREATER_EQUAL, commRight, "communication_range")
+    } catch (e: Exception) {
+        println("Error for collision avoidance CBF: ${e.message}")
+    }
 }
 
 
