@@ -6,8 +6,8 @@ import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.qp.dsl.GRBVector
-import it.unibo.collektive.qp.dsl.IncidentDuals
-import it.unibo.collektive.qp.dsl.SuggestedControl
+import it.unibo.collektive.qp.carol.IncidentDuals
+import it.unibo.collektive.qp.carol.SuggestedControl
 import it.unibo.collektive.qp.dsl.addRhoNorm2Sq
 import it.unibo.collektive.qp.utils.Robot
 import it.unibo.collektive.qp.utils.SpeedControl2D

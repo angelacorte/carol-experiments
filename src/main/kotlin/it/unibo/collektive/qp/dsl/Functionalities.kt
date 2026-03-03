@@ -3,6 +3,8 @@ package it.unibo.collektive.qp.dsl
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBModel
+import it.unibo.collektive.qp.carol.IncidentDuals
+import it.unibo.collektive.qp.carol.SuggestedControl
 import it.unibo.collektive.qp.controlFunctions.addCollisionAvoidanceCBF
 import it.unibo.collektive.qp.controlFunctions.addCommunicationRangeCBF
 import it.unibo.collektive.qp.controlFunctions.addObstacleAvoidanceCBF
@@ -25,7 +27,7 @@ import it.unibo.collektive.qp.utils.toDoubleArray
 fun avoidObstacleGoToTarget(
     robot: Robot,
     target: Target,
-    obstacle: Obstacle,
+    obstacle: Obstacle? = null,
     average: DoubleArray,
     cardinality: Int,
 ): Pair<SpeedControl2D, Double> {
@@ -42,7 +44,9 @@ fun avoidObstacleGoToTarget(
     val delta = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "delta")
     val position: DoubleArray = robot.toDoubleArray()
     // (OBSTACLE AVOIDANCE) linear CBF 2(p - p_o)^T u >= - \gamma [ ||p - p_o||^2 - (r_o + d_o)^2 ]
-    model.addObstacleAvoidanceCBF(position, obstacle, u)
+    if (obstacle != null) {
+        model.addObstacleAvoidanceCBF(position, obstacle, u)
+    }
     // norm constraint on the control input ux^2 + uy^2 <= maxSpeed^2
     model.maxSpeedCBF(u, robot)
     // GO-TO-TARGET CLF 2(p - p_g)^T u <= -c || p - p_g ||^2 + \delta
