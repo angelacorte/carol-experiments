@@ -64,7 +64,7 @@ fun robotAvoidanceAndCommunicationRangeCBF(
     incidentDuals: IncidentDuals,
 ): SuggestedControl {
     setLicense() // Tell Gurobi exactly where the license is
-    val env = GRBEnv(true).also { it.start() } // create environment in manual mode (because of license file specification)
+    val env = GRBEnv(true).also { it.start() }
     val model = GRBModel(env).also { it.setupLogger() } // create an optimization model inside the environment
     val zi: GRBVector = model.addVecVar(
         dimension = robot.position.dimension,
