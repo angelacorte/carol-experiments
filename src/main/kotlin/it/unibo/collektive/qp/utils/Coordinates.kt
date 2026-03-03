@@ -59,3 +59,5 @@ operator fun Vector2D.times(other: Vector2D): Double = x * other.x + y * other.y
 operator fun Double.times(other: Vector2D): Vector2D = Coordinate(this * other.x, this * other.y)
 
 fun initVector2D(): Coordinate = Coordinate(0.0, 0.0)
+
+fun zeroSpeed(): SpeedControl2D = SpeedControl2D(0.0, 0.0)
