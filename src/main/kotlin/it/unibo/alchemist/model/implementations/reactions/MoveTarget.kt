@@ -66,16 +66,6 @@ class MoveTarget<T>(
         }
     }
 
-    fun executeBeforeUpdateDistribution() {
-        if (!executed) {
-            executed = true
-            val leader = nodes
-                .first { it.getConcentration(SimpleMolecule("isLeader")) as Boolean }
-            leader.setConcentration(SimpleMolecule("isDown"), true as T)
-            leader.setConcentration(SimpleMolecule("isLeader"), false as T)
-        }
-    }
-
     override fun canExecute(): Boolean = true
 
     override fun initializationComplete(
