@@ -10,7 +10,7 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.aggregate.api.Aggregate
 import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
-import it.unibo.collektive.qp.dsl.wrongRobotToTargetWithAvoidanceAndDistance
+//import it.unibo.collektive.qp.dsl.wrongRobotToTargetWithAvoidanceAndDistance
 import it.unibo.collektive.qp.utils.Obstacle
 import it.unibo.collektive.qp.utils.Robot
 import it.unibo.collektive.qp.utils.SpeedControl2D
@@ -37,11 +37,11 @@ fun Aggregate<Int>.entrypointWithObstacleAndRobotAvoidance(
 ) = context(device, env, position) {
     val obstaclePosition = getObstacle()
     val target = getTarget(env["TargetID"] as Number)
-    val robot = with(env) { getRobot(localId) }
-    val robotsToAvoid = getRobotsToAvoid(robot.id).also { env["avoid"] = it } // todo should be aggregate
-    val (velocity, _) = wrongRobotToTargetWithAvoidanceAndDistance(robot, target, obstaclePosition, robotsToAvoid)
-    env["Velocity"] = velocity
-    moveNodeToPosition(robot + velocity)
+//    val robot = with(env) { getRobot() }
+//    val robotsToAvoid = getRobotsToAvoid(robot.id).also { env["avoid"] = it } // todo should be aggregate
+//    val (velocity, _) = wrongRobotToTargetWithAvoidanceAndDistance(robot, target, obstaclePosition, robotsToAvoid)
+//    env["Velocity"] = velocity
+//    moveNodeToPosition(robot + velocity)
     if (device.environment.simulation.time.toDouble() >= 50.0) {
         moveTargetTo(target.id, target.id, target.id)
     }
@@ -69,11 +69,11 @@ s.t.   2(p - p_o)^T u + \gamma [ ||p - p_o||^2 - (r_o ^ 2 -+ d_o^2) ] >= 0 (OBST
 Find the optimal control to go towards the defined target,
 without taking in account any obstacle.
  */
-fun <ID> robotToTargetWithObstacleAndRobotAvoidance(
-    robot: Robot<ID>,
+fun robotToTargetWithObstacleAndRobotAvoidance(
+    robot: Robot,
     target: Target,
     obstacle: Obstacle,
-    robotsToAvoid: List<Robot<ID>>,
+    robotsToAvoid: List<Robot>,
 ): SpeedControl2D {
     // Tell Gurobi exactly where the license is
     setLicense()
@@ -131,7 +131,7 @@ fun <ID> robotToTargetWithObstacleAndRobotAvoidance(
         // (p1x - p2x) p1x = dxr * uxa
         // (p1y - p2y) p1y = dyr * uya
         val f = -2 * (dxr * uxa + dyr * uya) - cbfGamma * (distSquared - minDist)
-        model.addConstr(robotAvoidance, GRB.GREATER_EQUAL, f, "robotAvoidance_${robot.id}against${avoid.id}")
+        model.addConstr(robotAvoidance, GRB.GREATER_EQUAL, f, "robotAvoidance_${robot}against${avoid}")
     }
 
     // norm constraint on the control input ux^2 + uy^2 <= maxSpeed^2
@@ -181,7 +181,7 @@ fun <ID> robotToTargetWithObstacleAndRobotAvoidance(
     // extract optimal control
     val uxOpt = ux.get(GRB.DoubleAttr.X)
     val uyOpt = uy.get(GRB.DoubleAttr.X)
-    println("Optimal control  for ${robot.id}: u = ($uxOpt, $uyOpt)")
+    println("Optimal control  for ${robot}: u = ($uxOpt, $uyOpt)")
     // free resources
     model.dispose()
     env.dispose()

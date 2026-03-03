@@ -31,7 +31,7 @@ fun Aggregate<Int>.entrypoint(
     position: LocationSensor,
 ) = context(device, env, position) {
     val targetPosition = getTarget(env["TargetID"] as Number)
-    val robotPosition = with(env) { getRobot(localId) }
+    val robotPosition = with(env) { getRobot() }
     val velocity = singleRobotToTarget(robotPosition, targetPosition)
     moveNodeToPosition(robotPosition + velocity)
     moveTargetTo(0, 20)
@@ -60,7 +60,7 @@ fun Aggregate<Int>.entrypoint(
  Find the optimal control to go towards the defined target,
  without taking in account any obstacle.
 */
-fun <ID> singleRobotToTarget(robot: Robot<ID>, target: Target): SpeedControl2D {
+fun singleRobotToTarget(robot: Robot, target: Target): SpeedControl2D {
     // Tell Gurobi exactly where the license is
     setLicense()
 
