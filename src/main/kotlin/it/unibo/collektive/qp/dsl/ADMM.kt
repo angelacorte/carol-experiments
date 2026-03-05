@@ -18,7 +18,6 @@ import it.unibo.collektive.qp.utils.Obstacle
 import it.unibo.collektive.qp.utils.Robot
 import it.unibo.collektive.qp.utils.SpeedControl2D
 import it.unibo.collektive.qp.utils.Target
-import it.unibo.collektive.qp.utils.avg
 import it.unibo.collektive.qp.utils.getObstacle
 import it.unibo.collektive.qp.utils.getRobot
 import it.unibo.collektive.qp.utils.getTarget
@@ -45,10 +44,7 @@ fun Aggregate<Int>.entrypoint(position: LocationSensor, device: CollektiveDevice
         val obstacle = getObstacle()
         val res = controlLoop(robot, target, obstacle, communicationDistance, maxIter, tolerance)
         // stop if residuals < threshold
-        if (res.first) {
-            device["Velocity"] = res.second
-            robot.applyControl(res.second)
-        }
+        if (res.first) robot.applyControl(res.second)
     }
 
 context(device: CollektiveDevice<*>)
@@ -70,9 +66,6 @@ fun Aggregate<Int>.controlLoop(
     }
     val (rt, st) = residualUpdateNoNbr(output, previousSuggested)
 //    val (primalResidual, dualResidual) = residualUpdate(output, previousSuggested)
-    device["rt"] = rt
-    device["st"] = st
-
     val nextIter = previousDuals.first + 1
     val (shouldApply, iter) = when {
         (rt <= tolerance.primal && st <= tolerance.dual) || nextIter >= maxIter -> true to 0
@@ -82,53 +75,6 @@ fun Aggregate<Int>.controlLoop(
 }
 
 context(device: CollektiveDevice<*>)
-private fun Aggregate<Int>.residualUpdate(
-    output: ControlAndDuals<Int>,
-    previousSuggested: Map<Int, SuggestedControl>,
-): Residuals {
-    // primal residual TODO("||ui - ziji||")
-    val neighborsExit = neighboring(output.duals)
-    val primalResidualLocal = neighborsExit.map<Double> { (id, value) ->
-        (output.control - (value[id]?.suggestedControl?.zi ?: zeroSpeed())).norm()
-    }.neighbors.values.max()
-    val primalResidual = gossipMax(primalResidualLocal)
-    // dual residual  TODO("||ziji current - ziji previous||")
-    val dualResidualLocal = neighborsExit.map<Double> { (id, value) ->
-        (value[id]?.suggestedControl?.zi?.minus(
-            previousSuggested[id]?.zi ?: zeroSpeed()
-        ))?.norm() ?: 0.0
-    }.neighbors.values.max()
-    val dualResidual = gossipMax(dualResidualLocal)
-    return Residuals(primalResidual, dualResidual)
-}
-
-context(device: CollektiveDevice<*>)
-private fun Aggregate<Int>.residualUpdateNoNbr(
-    output: ControlAndDuals<Int>,
-    previousSuggested: Map<Int, SuggestedControl>,
-): Residuals {
-    val currentSuggested = output.duals.filterNot { it.key == localId }.mapValues { it.value.suggestedControl }
-    // r_ij^t = max ||ui - zij,i||
-    val rijt: Double = currentSuggested.maxOfOrNull { (id, value) ->
-        device["outcontrol"] = output.control
-        val va = (output.control - value.zi).norm()
-        device["zi$id"] = value.zi
-        va
-    } ?: 0.0
-    device["rijt"] = rijt
-    // r^t = max ri^t
-    val rt = gossipMax(rijt)
-
-    // sit = \rhoa max ||zij^it - zij^it-1||
-    val sit = currentSuggested.maxOfOrNull { (id, value) ->
-        val prev = previousSuggested[id] ?: SuggestedControl(zeroSpeed(), zeroSpeed())
-        (value.zi - prev.zi).norm()
-    } ?: 0.0
-    device["sit"] = sit
-    val st = gossipMax(sit)
-    return Residuals(rt, st)
-}
-
 /**
  * Executes one ADMM round: local update plus dual refresh for all neighbors.
  */
@@ -139,22 +85,24 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     communicationDistance: Double?,
     duals: Map<ID, DualParams>,
 ): ControlAndDuals<ID> = sharing(robot) { controls ->
-    val nbrControls = controls.map { (_, value) ->
-        value.control
-    }.neighbors.values.list
-    val avg: SpeedControl2D = if (nbrControls.isEmpty()) zeroSpeed() else nbrControls.avg()
+//    val nbrControls = controls.map { (_, value) ->
+//        value.control
+//    }.neighbors.values.list
+//    val avg: SpeedControl2D = if (nbrControls.isEmpty()) zeroSpeed() else nbrControls.avg()
     val control: SpeedControl2D =
         executeLocalADMM(robot, target, obstacle, duals)
-//        executeLocalADMM(robot, target, obstacle, avg.toDoubleArray(), controls.neighbors.values.size)
+//        executeLocalADMM(robot, target, obstacle, avg.toDoubleArray(), nbrControls.size)
     val robotUpdated = robot.copy(control = control)
     val commons: Map<ID, DualParams> = controls.neighbors.toMap().mapValues { (id, neighbor) ->
         val incidentDuals = duals[id]?.incidentDuals ?: IncidentDuals(initVector2D(), initVector2D())
         val (zi, zj) = executeCommonADMM(robotUpdated, neighbor, communicationDistance, incidentDuals)
         // local dual update
-        // y_ij^i,t+1 = y_ij^i,t + (u_i^t+1 - z_ij^i,t+1) // y_ij^j,t+1 = y_ij^j,t + (u_j^t+1 - z_ij^j,t+1)
-        val newIncidentDuals = IncidentDuals(incidentDuals.yi + control - zi, incidentDuals.yj + neighbor.control - zj)
+        val newIncidentDuals = IncidentDuals(
+            incidentDuals.yi + control - zi, // y_ij^i,t+1 = y_ij^i,t + (u_i^t+1 - z_ij^i,t+1)
+            incidentDuals.yj + neighbor.control - zj, // y_ij^j,t+1 = y_ij^j,t + (u_j^t+1 - z_ij^j,t+1)
+        )
         DualParams(SuggestedControl(zi, zj), newIncidentDuals)
-    }
+    }.filterNot { it.key == localId }
     robotUpdated.yielding { ControlAndDuals(control, commons) }
 }
 
@@ -189,15 +137,62 @@ fun <ID: Comparable<ID>> executeLocalADMM(
     return uWanted
 }
 
+context(device: CollektiveDevice<*>)
+private fun Aggregate<Int>.residualUpdateNoNbr(
+    output: ControlAndDuals<Int>,
+    previousSuggested: Map<Int, SuggestedControl>,
+): Residuals {
+    val currentSuggested = output.duals.filterNot { it.key == localId }.mapValues { it.value.suggestedControl }
+    // r_ij^t = max ||ui - zij,i||
+    val rijt: Double = currentSuggested.maxOfOrNull { (id, value) ->
+        device["outcontrol"] = output.control
+        val va = (output.control - value.zi).norm()
+        device["zi$id"] = value.zi
+        va
+    } ?: 0.0
+    device["rijt"] = rijt
+    // r^t = max ri^t
+    val rt = gossipMax(rijt)
+    val rho = 0.5
+    // sit = \rhoa max ||zij^it - zij^it-1||
+    val sit = currentSuggested.maxOfOrNull { (id, value) ->
+        val prev = previousSuggested[id] ?: SuggestedControl(zeroSpeed(), zeroSpeed())
+        rho * (value.zi - prev.zi).norm()
+    } ?: 0.0
+    device["sit"] = sit
+    val st = gossipMax(sit)
+    return Residuals(rt, st)
+}
+
+context(device: CollektiveDevice<*>)
+private fun Aggregate<Int>.residualUpdate(
+    output: ControlAndDuals<Int>,
+    previousSuggested: Map<Int, SuggestedControl>,
+): Residuals {
+    // primal residual TODO("||ui - ziji||")
+    val neighborsExit = neighboring(output.duals)
+    val primalResidualLocal = neighborsExit.map<Double> { (id, value) ->
+        (output.control - (value[id]?.suggestedControl?.zi ?: zeroSpeed())).norm()
+    }.neighbors.values.max()
+    val primalResidual = gossipMax(primalResidualLocal)
+    // dual residual  TODO("||ziji current - ziji previous||")
+    val dualResidualLocal = neighborsExit.map<Double> { (id, value) ->
+        (value[id]?.suggestedControl?.zi?.minus(
+            previousSuggested[id]?.zi ?: zeroSpeed()
+        ))?.norm() ?: 0.0
+    }.neighbors.values.max()
+    val dualResidual = gossipMax(dualResidualLocal)
+    return Residuals(primalResidual, dualResidual)
+}
+
 context(device: CollektiveDevice<Euclidean2DPosition>)
 /**
  * Applies the computed control to the robot by moving its node inside the environment.
  */
 fun Robot.applyControl(
     control: SpeedControl2D,
-) {
-
-    moveNodeToPosition(this.position + control)
+) = moveNodeToPosition(this.position + control).also {
+    device["Velocity"] = control
 }
 
 /**
