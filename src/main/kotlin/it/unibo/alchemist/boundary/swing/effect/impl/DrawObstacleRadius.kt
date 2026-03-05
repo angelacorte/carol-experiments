@@ -13,6 +13,7 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Point
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.nextUp
 
 /**
@@ -54,16 +55,24 @@ class DrawObstacleRadius : Effect {
         val isObstacle = node.contains(obstacle)
         val margin = node.getConcentration(safeMargin).toDouble()
         val radius = readRadius(node)
-        val drawSize = drawSize(isRobot, isObstacle, margin, radius)
-        val sizeAsPosition: P = environment.makePosition(drawSize, drawSize)
-        val sizeFromLocation = sizeAsPosition + nodePosition.coordinates
-        val sizeInScreenCoordinates =
-            (wormhole.getViewPoint(sizeFromLocation) - viewPoint)
-                .let { Point(abs(it.x), abs(it.y)) }
-                .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
-                ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
-        if (!isVisible(viewPoint, sizeInScreenCoordinates, wormhole)) return
-        if (isRobot) drawRobot(graphics, viewPoint, sizeInScreenCoordinates)
+        val communicationDistance = readCommunicationDistance(node)
+        val baseDrawSize = drawSize(isRobot, isObstacle, margin, radius)
+        val visibilityDrawSize =
+            if (isRobot && communicationDistance > 0.0) max(baseDrawSize, communicationDistance) else baseDrawSize
+        val visibilitySizeInScreen = toScreenSize(visibilityDrawSize, nodePosition, viewPoint, environment, wormhole)
+        if (!isVisible(viewPoint, visibilitySizeInScreen, wormhole)) return
+        val baseSizeInScreen = toScreenSize(baseDrawSize, nodePosition, viewPoint, environment, wormhole)
+        if (isRobot && communicationDistance > 0.0) {
+            drawCommunicationArea(
+                graphics,
+                environment,
+                wormhole,
+                viewPoint,
+                nodePosition,
+                communicationDistance,
+            )
+        }
+        if (isRobot) drawRobot(graphics, viewPoint, baseSizeInScreen)
         if (isObstacle) {
             drawObstacle(
                 graphics,
@@ -72,7 +81,7 @@ class DrawObstacleRadius : Effect {
                 viewPoint,
                 radius,
                 nodePosition,
-                sizeInScreenCoordinates,
+                baseSizeInScreen,
             )
         }
     }
@@ -84,6 +93,30 @@ class DrawObstacleRadius : Effect {
             viewPoint.y - sizeInScreenCoordinates.y / 2,
             sizeInScreenCoordinates.x,
             sizeInScreenCoordinates.y,
+        )
+    }
+
+    private fun <P : Position2D<P>> drawCommunicationArea(
+        graphics: Graphics2D,
+        environment: Environment<*, P>,
+        wormhole: Wormhole2D<P>,
+        viewPoint: Point,
+        nodePosition: P,
+        communicationDistance: Double,
+    ) {
+        val commSizeAsPosition: P = environment.makePosition(communicationDistance, communicationDistance)
+        val commSizeFromLocation = commSizeAsPosition + nodePosition.coordinates
+        val commSizeInScreen =
+            (wormhole.getViewPoint(commSizeFromLocation) - viewPoint)
+                .let { Point(abs(it.x), abs(it.y)) }
+                .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
+                ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
+        graphics.color = hsbColor(hueDeg = 0f, saturation = 0f, brightness = 0.85f, alpha = 0.2f)
+        graphics.fillOval(
+            viewPoint.x - commSizeInScreen.x,
+            viewPoint.y - commSizeInScreen.y,
+            2 * commSizeInScreen.x,
+            2 * commSizeInScreen.y,
         )
     }
 
@@ -121,10 +154,31 @@ class DrawObstacleRadius : Effect {
         )
     }
 
-    private fun drawSize(isRobot: Boolean, isObstacle: Boolean, margin: Double, radius: Double): Double = when {
+    private fun drawSize(
+        isRobot: Boolean,
+        isObstacle: Boolean,
+        margin: Double,
+        radius: Double,
+    ): Double = when {
+        isRobot && isObstacle -> radius + margin
         isRobot -> margin
         isObstacle -> radius + margin
         else -> 0.0.nextUp()
+    }
+
+    private fun <P : Position2D<P>> toScreenSize(
+        drawSize: Double,
+        nodePosition: P,
+        viewPoint: Point,
+        environment: Environment<*, P>,
+        wormhole: Wormhole2D<P>,
+    ): Point {
+        val sizeAsPosition: P = environment.makePosition(drawSize, drawSize)
+        val sizeFromLocation = sizeAsPosition + nodePosition.coordinates
+        return (wormhole.getViewPoint(sizeFromLocation) - viewPoint)
+            .let { Point(abs(it.x), abs(it.y)) }
+            .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
+            ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
     }
 
     private fun isVisible(viewPoint: Point, sizeInScreenCoordinates: Point, wormhole: Wormhole2D<*>): Boolean {
@@ -141,6 +195,9 @@ class DrawObstacleRadius : Effect {
 
     private fun readRadius(node: Node<*>): Double =
         (if (node.contains(safeRadius)) node.getConcentration(safeRadius) else 0.0) as Double
+
+    private fun readCommunicationDistance(node: Node<*>): Double =
+        (if (node.contains(communicationDistance)) node.getConcentration(communicationDistance) else 0.0).toDouble()
 
     /**
      * Shared molecules and rendering constants for the effect.
@@ -159,6 +216,8 @@ class DrawObstacleRadius : Effect {
 
         /** Safety radius molecule key. */
         val safeRadius = SimpleMolecule("SafeRadius")
+
+        val communicationDistance = SimpleMolecule("CommunicationDistance")
 
         /** Minimum diameter (in pixels) used when drawing circles. */
         const val MIN_NODE_SIZE = 1
