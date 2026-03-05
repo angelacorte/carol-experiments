@@ -26,7 +26,6 @@ import it.unibo.collektive.qp.utils.minus
 import it.unibo.collektive.qp.utils.moveNodeToPosition
 import it.unibo.collektive.qp.utils.norm
 import it.unibo.collektive.qp.utils.plus
-import it.unibo.collektive.qp.utils.toDoubleArray
 import it.unibo.collektive.qp.utils.zeroSpeed
 import it.unibo.collektive.stdlib.collapse.max
 import it.unibo.collektive.stdlib.spreading.gossipMax
@@ -52,6 +51,9 @@ fun Aggregate<Int>.entrypoint(position: LocationSensor, device: CollektiveDevice
     }
 
 context(device: CollektiveDevice<*>)
+/**
+ * TODO.
+ */
 fun Aggregate<Int>.controlLoop(
     robot: Robot,
     target: Target,
@@ -69,6 +71,7 @@ fun Aggregate<Int>.controlLoop(
 //    val (primalResidual, dualResidual) = residualUpdate(output, previousSuggested)
     device["rt"] = rt
     device["st"] = st
+
     val nextIter = previousDuals.first + 1
     val (shouldApply, iter) = when {
         (rt <= tolerance.primal && st <= tolerance.dual) || nextIter >= maxIter -> true to 0
@@ -140,7 +143,8 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     }.neighbors.values.list
     val avg: SpeedControl2D = if (nbrControls.isEmpty()) zeroSpeed() else nbrControls.avg()
     val control: SpeedControl2D =
-        executeLocalADMM(robot, target, obstacle, avg.toDoubleArray(), controls.neighbors.values.size)
+        executeLocalADMM(robot, target, obstacle, duals)
+//        executeLocalADMM(robot, target, obstacle, avg.toDoubleArray(), controls.neighbors.values.size)
     val robotUpdated = robot.copy(control = control)
     val commons: Map<ID, DualParams> = controls.neighbors.toMap().mapValues { (id, neighbor) ->
         val incidentDuals = duals[id]?.incidentDuals ?: IncidentDuals(initVector2D(), initVector2D())
@@ -171,6 +175,16 @@ fun executeLocalADMM(
     cardinality: Int,
 ): SpeedControl2D {
     val (uWanted, deltaNom) = avoidObstacleGoToTarget(robot, target, obstacle, avg, cardinality)
+    return uWanted
+}
+
+fun <ID: Comparable<ID>> executeLocalADMM(
+    robot: Robot,
+    target: Target,
+    obstacle: Obstacle?,
+    duals: Map<ID, DualParams>,
+): SpeedControl2D {
+    val (uWanted, deltaNom) = avoidObstacleGoToTarget(robot, target, obstacle, duals)
     return uWanted
 }
 
