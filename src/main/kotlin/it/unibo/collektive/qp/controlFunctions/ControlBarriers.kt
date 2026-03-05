@@ -72,7 +72,7 @@ fun GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot
 fun GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot, other: Robot, range: Double) {
     // COMM DISTANCE -2(p1 - p2)^T (u1 -u2) + \gamma [ R^2 - ||p1 - p2||^2 ] >= 0
     // COMM DISTANCE -2(p1 - p2)^T (u1 -u2) >= - \gamma [ R^2 - ||p1 - p2||^2 ]
-    val gamma = 0.5
+    val gamma = 2
     val distance = (robot.position - other.position).toDoubleArray()
     val communication = GRBLinExpr()
     val commRight = -gamma * (range.pow(2) - distance.squaredNorm())
