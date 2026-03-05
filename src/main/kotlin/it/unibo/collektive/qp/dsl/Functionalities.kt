@@ -3,6 +3,7 @@ package it.unibo.collektive.qp.dsl
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBModel
+import it.unibo.collektive.qp.carol.DualParams
 import it.unibo.collektive.qp.carol.IncidentDuals
 import it.unibo.collektive.qp.carol.SuggestedControl
 import it.unibo.collektive.qp.controlFunctions.addCollisionAvoidanceCBF
@@ -53,6 +54,28 @@ fun avoidObstacleGoToTarget(
     model.goToTargetCLF(target, position, u, delta)
     // || u - u_nom||^2 + rho_s * delta^2 + rho_a / 2 * SUM ||i - z_ij,i + y_ij,i||^2
     val result = model.minimizeADMMLocalQP(u, delta, robot, target, average, cardinality)
+    model.dispose()
+    env.dispose()
+    return result
+}
+
+fun <ID: Comparable<ID>> avoidObstacleGoToTarget(robot: Robot, target: Target, obstacle: Obstacle?, duals: Map<ID, DualParams>): Pair<SpeedControl2D, Double> {
+    setLicense() // Tell Gurobi exactly where the license is
+    val env = GRBEnv(true).also { it.start() } // create environment in manual mode (because of license file specification)
+    val model = GRBModel(env).also { it.setupLogger() } // create an optimization model inside the environment
+    val u: GRBVector = model.addVecVar(dimension = robot.position.dimension, lowerBound = -robot.maxSpeed, upperBound = robot.maxSpeed, name = "u")
+    val delta = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "delta") // slack variable
+    val position: DoubleArray = robot.toDoubleArray()
+    // (OBSTACLE AVOIDANCE) linear CBF 2(p - p_o)^T u >= - \gamma [ ||p - p_o||^2 - (r_o + d_o)^2 ]
+    if (obstacle != null) {
+        model.addObstacleAvoidanceCBF(position, obstacle, u)
+    }
+    // norm constraint on the control input ux^2 + uy^2 <= maxSpeed^2
+    model.maxSpeedCBF(u, robot)
+    // GO-TO-TARGET CLF 2(p - p_g)^T u <= -c || p - p_g ||^2 + \delta
+    model.goToTargetCLF(target, position, u, delta)
+    // || u - u_nom||^2 + rho_s * delta^2 + rho_a / 2 * SUM ||i - z_ij,i + y_ij,i||^2
+    val result = model.minimizeADMMLocalQP(u, delta, robot, target, duals)
     model.dispose()
     env.dispose()
     return result

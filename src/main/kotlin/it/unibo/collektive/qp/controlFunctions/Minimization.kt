@@ -5,6 +5,7 @@ import com.gurobi.gurobi.GRBException
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
+import it.unibo.collektive.qp.carol.DualParams
 import it.unibo.collektive.qp.dsl.GRBVector
 import it.unibo.collektive.qp.carol.IncidentDuals
 import it.unibo.collektive.qp.carol.SuggestedControl
@@ -122,3 +123,30 @@ fun GRBModel.minimizeADMMCommonQP(
     }
     return result
 }
+
+ fun <ID: Comparable<ID>> GRBModel.minimizeADMMLocalQP(u: GRBVector, delta: GRBVar, robot: Robot, target: Target, duals: Map<ID, DualParams>): Pair<SpeedControl2D, Double> {
+    val rhoSlack = 2.0
+    val rhoADMM = 10.0
+    val uNominal = (robot.position - target.position).toDoubleArray()
+    val obj = GRBQuadExpr()
+    // ||u - u_nom||^2
+    // minimizeDeviation(u, uNo minal, delta, 1.0)
+    obj.addRhoNorm2Sq(u, uNominal)
+    // slack + rho_s * delta^2
+    obj.addTerm(rhoSlack, delta)
+    // rho_a / 2 * SUM ||ui - z_ij,i + y_ij,i||^2
+    duals.forEach { (id, value) ->
+        val suggested = value.suggestedControl.zi.toDoubleArray()
+        val residual = value.incidentDuals.yi.toDoubleArray()
+        obj.addRhoNorm2Sq(u, suggested - residual, rhoADMM / 2)
+    }
+    setObjective(obj, GRB.MINIMIZE)
+    // solve
+    optimize()
+    val uOptX = u[0].get(GRB.DoubleAttr.X)
+    val uOptY = u[1].get(GRB.DoubleAttr.X)
+    val deltaOpt = delta.get(GRB.DoubleAttr.X)
+
+    println("Optimal control: u = ($uOptX, $uOptY)")
+    return SpeedControl2D(uOptX, uOptY) to deltaOpt
+ }
