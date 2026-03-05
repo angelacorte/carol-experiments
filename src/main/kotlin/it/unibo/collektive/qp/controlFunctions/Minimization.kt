@@ -14,6 +14,7 @@ import it.unibo.collektive.qp.utils.Robot
 import it.unibo.collektive.qp.utils.SpeedControl2D
 import it.unibo.collektive.qp.utils.Target
 import it.unibo.collektive.qp.utils.minus
+import it.unibo.collektive.qp.utils.plus
 import it.unibo.collektive.qp.utils.toDoubleArray
 
 // || u - u_nom||^2 + rho_s * delta^2 + rho_a / 2 * SUM ||i - z_ij,i + y_ij,i||^2
@@ -49,6 +50,7 @@ fun GRBModel.minimizeADMMLocalQP(
         optimize()
         val status = get(GRB.IntAttr.Status)
         if (status == GRB.INFEASIBLE) {
+            println("==== eh INFEASIBLE")
             computeIIS()
             write("logging/localModel.ilp")
         }
@@ -84,14 +86,14 @@ fun GRBModel.minimizeADMMCommonQP(
 ): SuggestedControl {
     val rhoADMM = 10.0
     val obj = GRBQuadExpr()
-    val ui = robot.control.toDoubleArray()
-    val uj = other.control.toDoubleArray()
-    val yi = incidentDuals.yi.toDoubleArray()
-    val yj = incidentDuals.yj.toDoubleArray()
+    val ui = robot.control
+    val uj = other.control
+    val yi = incidentDuals.yi
+    val yj = incidentDuals.yj
     // ||zij,i - (ui + yij,i)||^2
-    obj.addRhoNorm2Sq(zi, ui - yi, rhoADMM / 2)
+    obj.addRhoNorm2Sq(zi, (ui + yi).toDoubleArray(), rhoADMM / 2)
     // + ||zij,j - (uj + yij,j)||^2
-    obj.addRhoNorm2Sq(zj, uj - yj, rhoADMM / 2)
+    obj.addRhoNorm2Sq(zj, (uj + yj).toDoubleArray(), rhoADMM / 2)
 
     var result = SuggestedControl(robot.control, other.control)
     try {
@@ -100,7 +102,7 @@ fun GRBModel.minimizeADMMCommonQP(
         optimize()
         val status = get(GRB.IntAttr.Status)
         if (status == GRB.INFEASIBLE) {
-            println("==== eh")
+            println("==== eh INFEASIBLE")
             computeIIS()
             write("logging/commonModel.ilp")
         }
