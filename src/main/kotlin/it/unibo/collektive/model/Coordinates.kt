@@ -1,4 +1,4 @@
-package it.unibo.collektive.qp.utils
+package it.unibo.collektive.model
 
 /**
  * 2D [dimension] point-like contract exposing coordinates and
