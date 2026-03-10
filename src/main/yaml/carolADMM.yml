@@ -23,7 +23,7 @@ _pool: &program
     type: Event
     actions:
       - type: RunCollektiveProgram
-        parameters: [ it.unibo.collektive.qp.dsl.ADMMKt.entrypoint ]
+        parameters: [ it.unibo.collektive.admm.ADMMKt.entrypoint ]
 
 #_movement: &movement
 #  - time-distribution: 1

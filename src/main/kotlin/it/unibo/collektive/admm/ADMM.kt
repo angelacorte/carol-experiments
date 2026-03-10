@@ -1,6 +1,6 @@
 @file:Suppress("UnusedPrivateMember", "UndocumentedPublicFunction")
 
-package it.unibo.collektive.qp.dsl
+package it.unibo.collektive.admm
 
 import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
@@ -10,12 +10,6 @@ import it.unibo.collektive.aggregate.api.sharing
 import it.unibo.collektive.aggregate.toMap
 import it.unibo.collektive.aggregate.values
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
-import it.unibo.collektive.qp.carol.ControlAndDuals
-import it.unibo.collektive.qp.carol.DualParams
-import it.unibo.collektive.qp.carol.IncidentDuals
-import it.unibo.collektive.qp.carol.Residuals
-import it.unibo.collektive.qp.carol.SuggestedControl
-import it.unibo.collektive.qp.carol.Tolerance
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D

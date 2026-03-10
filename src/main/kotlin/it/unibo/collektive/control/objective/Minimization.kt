@@ -11,9 +11,9 @@ import it.unibo.collektive.model.Target
 import it.unibo.collektive.model.minus
 import it.unibo.collektive.model.plus
 import it.unibo.collektive.model.toDoubleArray
-import it.unibo.collektive.qp.carol.DualParams
-import it.unibo.collektive.qp.carol.IncidentDuals
-import it.unibo.collektive.qp.carol.SuggestedControl
+import it.unibo.collektive.admm.DualParams
+import it.unibo.collektive.admm.IncidentDuals
+import it.unibo.collektive.admm.SuggestedControl
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.solver.gurobi.addRhoNorm2Sq
