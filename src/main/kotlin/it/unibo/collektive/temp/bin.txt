@@ -16,9 +16,9 @@ import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
-import it.unibo.collektive.qp.utils.getObstacle
-import it.unibo.collektive.qp.utils.getTarget
-import it.unibo.collektive.qp.utils.moveTargetTo
+import it.unibo.collektive.utils.getObstacle
+import it.unibo.collektive.utils.getTarget
+import it.unibo.collektive.utils.moveTargetTo
 import kotlin.math.max
 
 // PROBLEM:
@@ -202,10 +202,10 @@ import it.unibo.collektive.qp.dsl.setLicense
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
-import it.unibo.collektive.qp.utils.getRobot
-import it.unibo.collektive.qp.utils.getTarget
-import it.unibo.collektive.qp.utils.moveNodeToPosition
-import it.unibo.collektive.qp.utils.moveTargetTo
+import it.unibo.collektive.utils.getRobot
+import it.unibo.collektive.utils.getTarget
+import it.unibo.collektive.utils.moveNodeToPosition
+import it.unibo.collektive.utils.moveTargetTo
 import it.unibo.collektive.model.plus
 
 // PROBLEM:
@@ -318,12 +318,12 @@ fun singleRobotToTarget(robot: Robot, target: Target): SpeedControl2D {
 // import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
 // import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 // import it.unibo.collektive.qp.dsl.wrongRobotToTargetWithAvoidanceAndDistance
-// import it.unibo.collektive.qp.utils.getObstacle
-// import it.unibo.collektive.qp.utils.getRobot
-// import it.unibo.collektive.qp.utils.getRobotsToAvoid
-// import it.unibo.collektive.qp.utils.getTarget
-// import it.unibo.collektive.qp.utils.moveNodeToPosition
-// import it.unibo.collektive.qp.utils.moveTargetTo
+// import it.unibo.collektive.utils.getObstacle
+// import it.unibo.collektive.utils.getRobot
+// import it.unibo.collektive.utils.getRobotsToAvoid
+// import it.unibo.collektive.utils.getTarget
+// import it.unibo.collektive.utils.moveNodeToPosition
+// import it.unibo.collektive.utils.moveTargetTo
 // import it.unibo.collektive.model.plus
 //
 // // PROBLEM:
@@ -464,12 +464,12 @@ fun singleRobotToTarget(robot: Robot, target: Target): SpeedControl2D {
 // import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 // import it.unibo.collektive.qp.dsl.wrongRobotToTargetWithAvoidanceAndDistance
 // import it.unibo.collektive.model.Robot
-// import it.unibo.collektive.qp.utils.getObstacle
-// import it.unibo.collektive.qp.utils.getRobot
-// import it.unibo.collektive.qp.utils.getTarget
+// import it.unibo.collektive.utils.getObstacle
+// import it.unibo.collektive.utils.getRobot
+// import it.unibo.collektive.utils.getTarget
 // import it.unibo.collektive.model.minus
-// import it.unibo.collektive.qp.utils.moveNodeToPosition
-// import it.unibo.collektive.qp.utils.moveTargetTo
+// import it.unibo.collektive.utils.moveNodeToPosition
+// import it.unibo.collektive.utils.moveTargetTo
 // import it.unibo.collektive.model.plus
 //
 // fun Aggregate<Int>.entrypointSimpleCarol(
@@ -665,3 +665,23 @@ fun GRBModel.minimizeNominal(target: Target, robot: Robot, u: GRBVector, delta: 
 //    }
 
 
+
+// /**
+// * Solves the local QP that moves the robot toward the target while
+// * avoiding a single obstacle and enforcing ADMM consensus.
+// *
+// * @return optimal control and slack value for the local agent.
+// */
+// fun avoidObstacleGoToTarget(
+//    robot: Robot,
+//    target: Target,
+//    obstacle: Obstacle? = null,
+//    average: DoubleArray,
+//    cardinality: Int,
+//    settings: QpSettings = QpSettings(),
+// ): Pair<SpeedControl2D, Double> =
+//    withLocalADMMModel(robot, target, obstacle, settings) { model, u, delta, _, tgt, obs ->
+//        runLocalADMM(model, u, delta, robot, tgt, obs, settings) {
+//            model.minimizeADMMLocalQP(u, delta, robot, tgt, average, cardinality, settings)
+//        }
+//    }

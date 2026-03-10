@@ -9,8 +9,6 @@ import it.unibo.collektive.control.objective.applyLocalCbfs
 import it.unibo.collektive.control.objective.applyPairwiseCbfs
 import it.unibo.collektive.control.clf.goToTargetCLF
 import it.unibo.collektive.control.cbf.maxSpeedCBF
-import it.unibo.collektive.control.objective.minimizeADMMCommonQP
-import it.unibo.collektive.control.objective.minimizeADMMLocalQP
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
@@ -20,68 +18,6 @@ import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.addVecVar
 import it.unibo.collektive.solver.gurobi.withModel
-
-// Shared setup for local ADMM QPs; guarantees model lifecycle is handled consistently.
-private fun <T> withLocalADMMModel(
-    robot: Robot,
-    target: Target,
-    obstacle: Obstacle?,
-    settings: QpSettings = QpSettings(),
-    block: (
-        model: GRBModel,
-        u: GRBVector,
-        delta: GRBVar,
-        position: DoubleArray,
-        target: Target,
-        obstacle: Obstacle?,
-    ) -> T,
-): T = withModel(settings) { model ->
-    val u: GRBVector = model.addVecVar(
-        dimension = robot.position.dimension,
-        lowerBound = -robot.maxSpeed,
-        upperBound = robot.maxSpeed,
-        name = "u",
-    )
-    val delta = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack("local"))
-    val position: DoubleArray = robot.toDoubleArray()
-    block(model, u, delta, position, target, obstacle)
-}
-
-private fun runLocalADMM(
-    model: GRBModel,
-    u: GRBVector,
-    delta: GRBVar,
-    robot: Robot,
-    target: Target,
-    obstacle: Obstacle?,
-    settings: QpSettings,
-    objective: () -> Pair<SpeedControl2D, Double>,
-): Pair<SpeedControl2D, Double> {
-    applyLocalCbfs(model, u, CbfContext(self = robot, obstacle = obstacle, settings = settings))
-    model.maxSpeedCBF(u, robot)
-    model.goToTargetCLF(target, robot.toDoubleArray(), u, delta, settings)
-    return objective()
-}
-
-// /**
-// * Solves the local QP that moves the robot toward the target while
-// * avoiding a single obstacle and enforcing ADMM consensus.
-// *
-// * @return optimal control and slack value for the local agent.
-// */
-// fun avoidObstacleGoToTarget(
-//    robot: Robot,
-//    target: Target,
-//    obstacle: Obstacle? = null,
-//    average: DoubleArray,
-//    cardinality: Int,
-//    settings: QpSettings = QpSettings(),
-// ): Pair<SpeedControl2D, Double> =
-//    withLocalADMMModel(robot, target, obstacle, settings) { model, u, delta, _, tgt, obs ->
-//        runLocalADMM(model, u, delta, robot, tgt, obs, settings) {
-//            model.minimizeADMMLocalQP(u, delta, robot, tgt, average, cardinality, settings)
-//        }
-//    }
 
 /**
  * Solves the local QP that moves the robot toward the target while
@@ -131,4 +67,47 @@ fun robotAvoidanceAndCommunicationRangeCBF(
         CbfContext(self = robot, other = other, communicationRange = range, settings = settings),
     )
     model.minimizeADMMCommonQP(zi, zj, robot, other, incidentDuals, settings)
+}
+
+
+// Shared setup for local ADMM QPs; guarantees model lifecycle is handled consistently.
+private fun <T> withLocalADMMModel(
+    robot: Robot,
+    target: Target,
+    obstacle: Obstacle?,
+    settings: QpSettings = QpSettings(),
+    block: (
+        model: GRBModel,
+        u: GRBVector,
+        delta: GRBVar,
+        position: DoubleArray,
+        target: Target,
+        obstacle: Obstacle?,
+    ) -> T,
+): T = withModel(settings) { model ->
+    val u: GRBVector = model.addVecVar(
+        dimension = robot.position.dimension,
+        lowerBound = -robot.maxSpeed,
+        upperBound = robot.maxSpeed,
+        name = "u",
+    )
+    val delta = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack("local"))
+    val position: DoubleArray = robot.toDoubleArray()
+    block(model, u, delta, position, target, obstacle)
+}
+
+private fun runLocalADMM(
+    model: GRBModel,
+    u: GRBVector,
+    delta: GRBVar,
+    robot: Robot,
+    target: Target,
+    obstacle: Obstacle?,
+    settings: QpSettings,
+    objective: () -> Pair<SpeedControl2D, Double>,
+): Pair<SpeedControl2D, Double> {
+    applyLocalCbfs(model, u, CbfContext(self = robot, obstacle = obstacle, settings = settings))
+    model.maxSpeedCBF(u, robot)
+    model.goToTargetCLF(target, robot.toDoubleArray(), u, delta, settings)
+    return objective()
 }
