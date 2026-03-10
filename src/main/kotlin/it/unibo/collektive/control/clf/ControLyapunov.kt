@@ -1,4 +1,4 @@
-package it.unibo.collektive.qp.controlFunctions
+package it.unibo.collektive.control.clf
 
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel

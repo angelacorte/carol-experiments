@@ -1,22 +1,22 @@
-package it.unibo.collektive.qp.controlFunctions
+package it.unibo.collektive.control.objective
 
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBException
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.qp.carol.DualParams
-import it.unibo.collektive.qp.carol.IncidentDuals
-import it.unibo.collektive.qp.carol.SuggestedControl
-import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.solver.gurobi.GRBVector
-import it.unibo.collektive.solver.gurobi.addRhoNorm2Sq
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.model.minus
 import it.unibo.collektive.model.plus
 import it.unibo.collektive.model.toDoubleArray
+import it.unibo.collektive.qp.carol.DualParams
+import it.unibo.collektive.qp.carol.IncidentDuals
+import it.unibo.collektive.qp.carol.SuggestedControl
+import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.solver.gurobi.addRhoNorm2Sq
 
 // || u - u_nom||^2 + rho_s * delta^2 + rho_a / 2 * avg
 // /**

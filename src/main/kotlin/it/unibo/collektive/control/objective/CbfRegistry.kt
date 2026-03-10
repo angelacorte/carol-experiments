@@ -1,13 +1,13 @@
-package it.unibo.collektive.qp.controlFunctions
+package it.unibo.collektive.control.objective
 
 import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.control.cbf.CollisionCbf
 import it.unibo.collektive.control.cbf.CommunicationRangeCbf
 import it.unibo.collektive.control.cbf.ObstacleCbf
-import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
+import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.QpSettings
 
 /**
  * Context for CBF builders carrying [self], optional [other]/[obstacle],
