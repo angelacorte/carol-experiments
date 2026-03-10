@@ -4,7 +4,6 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBException
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
-import it.unibo.collektive.qp.config.QpSettings
 import it.unibo.collektive.qp.dsl.ConstraintNames
 import it.unibo.collektive.qp.dsl.GRBVector
 import it.unibo.collektive.qp.dsl.addCBF
@@ -99,7 +98,7 @@ fun GRBModel.addCommunicationRangeCBF(
     try {
         addConstr(communication, GRB.GREATER_EQUAL, commRight, name)
     } catch (e: GRBException) {
-        println("Error for communication range CBF: ${'$'}{e.message}")
+        println("Error for communication range CBF: ${e.message}")
     }
 }
 
@@ -115,6 +114,9 @@ fun GRBModel.maxSpeedCBF(u: GRBVector, robot: Robot) {
     )
 }
 
+/**
+ * Default obstacle-avoidance barrier registered in [CbfRegistry]; adds keep-out CBF against [CbfContext.obstacle].
+ */
 object ObstacleCbf : Cbf {
     override val name: String = "obstacle"
     override fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext) {
@@ -129,28 +131,38 @@ object ObstacleCbf : Cbf {
     }
 }
 
+/**
+ * Default robot–robot collision avoidance barrier registered in [CbfRegistry];
+ * enforces separation from [CbfContext.other].
+ */
 object CollisionCbf : Cbf {
     override val name: String = "collision"
     override fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext) {
-        val other = ctx.other ?: return
-        val uNbr = uOther ?: return
+        val other = ctx.other
+        val uNbr = uOther
+        if (other == null || uNbr == null) return
         model.addCollisionAvoidanceCBF(
             uSelf,
             uNbr,
             ctx.self,
             other,
             ctx.settings.gammaCollision,
-            ConstraintNames.collision("${'$'}{ctx.self.position}_${'$'}{other.position}"),
+            ConstraintNames.collision("${ctx.self.position}_${other.position}"),
         )
     }
 }
 
+/**
+ * Default communication-range barrier registered in [CbfRegistry];
+ * enforces max distance [CbfContext.communicationRange].
+ */
 object CommunicationRangeCbf : Cbf {
     override val name: String = "comm_range"
     override fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext) {
-        val other = ctx.other ?: return
-        val uNbr = uOther ?: return
-        val range = ctx.communicationRange ?: return
+        val other = ctx.other
+        val uNbr = uOther
+        val range = ctx.communicationRange
+        if (other == null || uNbr == null || range == null) return
         model.addCommunicationRangeCBF(
             uSelf,
             uNbr,
@@ -158,7 +170,7 @@ object CommunicationRangeCbf : Cbf {
             other,
             range,
             ctx.settings.gammaComm,
-            ConstraintNames.comm("${'$'}{ctx.self.position}_${'$'}{other.position}"),
+            ConstraintNames.comm("${ctx.self.position}_${other.position}"),
         )
     }
 }
