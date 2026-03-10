@@ -21,13 +21,20 @@ import it.unibo.collektive.qp.utils.Target
 import it.unibo.collektive.qp.utils.toDoubleArray
 
 // Shared setup for local ADMM QPs; guarantees model lifecycle is handled consistently.
-private fun <T> withLocalAdmmModel(
+private fun <T> withLocalADMMModel(
     robot: Robot,
     target: Target,
     obstacle: Obstacle?,
     settings: QpSettings = QpSettings(),
-    block: (model: GRBModel, u: GRBVector, delta: GRBVar, position: DoubleArray) -> T,
-): T = withModel(settings, "local") { model ->
+    block: (
+        model: GRBModel,
+        u: GRBVector,
+        delta: GRBVar,
+        position: DoubleArray,
+        target: Target,
+        obstacle: Obstacle?,
+    ) -> T,
+): T = withModel(settings) { model ->
     val u: GRBVector = model.addVecVar(
         dimension = robot.position.dimension,
         lowerBound = -robot.maxSpeed,
@@ -36,28 +43,44 @@ private fun <T> withLocalAdmmModel(
     )
     val delta = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack("local"))
     val position: DoubleArray = robot.toDoubleArray()
-    block(model, u, delta, position)
+    block(model, u, delta, position, target, obstacle)
 }
 
-/**
- * Solves the local QP that moves the robot toward the target while
- * avoiding a single obstacle and enforcing ADMM consensus.
- *
- * @return optimal control and slack value for the local agent.
- */
-fun avoidObstacleGoToTarget(
+private fun runLocalADMM(
+    model: GRBModel,
+    u: GRBVector,
+    delta: GRBVar,
     robot: Robot,
     target: Target,
-    obstacle: Obstacle? = null,
-    average: DoubleArray,
-    cardinality: Int,
-    settings: QpSettings = QpSettings(),
-): Pair<SpeedControl2D, Double> = withLocalAdmmModel(robot, target, obstacle, settings) { model, u, delta, _ ->
+    obstacle: Obstacle?,
+    settings: QpSettings,
+    objective: () -> Pair<SpeedControl2D, Double>,
+): Pair<SpeedControl2D, Double> {
     applyLocalCbfs(model, u, CbfContext(self = robot, obstacle = obstacle, settings = settings))
     model.maxSpeedCBF(u, robot)
     model.goToTargetCLF(target, robot.toDoubleArray(), u, delta, settings)
-    model.minimizeADMMLocalQP(u, delta, robot, target, average, cardinality, settings)
+    return objective()
 }
+
+// /**
+// * Solves the local QP that moves the robot toward the target while
+// * avoiding a single obstacle and enforcing ADMM consensus.
+// *
+// * @return optimal control and slack value for the local agent.
+// */
+// fun avoidObstacleGoToTarget(
+//    robot: Robot,
+//    target: Target,
+//    obstacle: Obstacle? = null,
+//    average: DoubleArray,
+//    cardinality: Int,
+//    settings: QpSettings = QpSettings(),
+// ): Pair<SpeedControl2D, Double> =
+//    withLocalADMMModel(robot, target, obstacle, settings) { model, u, delta, _, tgt, obs ->
+//        runLocalADMM(model, u, delta, robot, tgt, obs, settings) {
+//            model.minimizeADMMLocalQP(u, delta, robot, tgt, average, cardinality, settings)
+//        }
+//    }
 
 /**
  * Solves the local QP that moves the robot toward the target while
@@ -71,12 +94,12 @@ fun <ID : Comparable<ID>> avoidObstacleGoToTarget(
     obstacle: Obstacle?,
     duals: Map<ID, DualParams>,
     settings: QpSettings = QpSettings(),
-): Pair<SpeedControl2D, Double> = withLocalAdmmModel(robot, target, obstacle, settings) { model, u, delta, _ ->
-    applyLocalCbfs(model, u, CbfContext(self = robot, obstacle = obstacle, settings = settings))
-    model.maxSpeedCBF(u, robot)
-    model.goToTargetCLF(target, robot.toDoubleArray(), u, delta, settings)
-    model.minimizeADMMLocalQP(u, delta, robot, target, duals, settings)
-}
+): Pair<SpeedControl2D, Double> =
+    withLocalADMMModel(robot, target, obstacle, settings) { model, u, delta, _, tgt, obs ->
+        runLocalADMM(model, u, delta, robot, tgt, obs, settings) {
+            model.minimizeADMMLocalQP(u, delta, robot, tgt, duals, settings)
+        }
+    }
 
 /**
  * Solves the pairwise QP that enforces robot avoidance (and optionally communication range) for an edge.
@@ -87,7 +110,7 @@ fun robotAvoidanceAndCommunicationRangeCBF(
     range: Double? = null,
     incidentDuals: IncidentDuals,
     settings: QpSettings = QpSettings(),
-): SuggestedControl = withModel(settings, "pairwise") { model ->
+): SuggestedControl = withModel(settings) { model ->
     val zi: GRBVector = model.addVecVar(
         dimension = robot.position.dimension,
         lowerBound = -robot.maxSpeed,
