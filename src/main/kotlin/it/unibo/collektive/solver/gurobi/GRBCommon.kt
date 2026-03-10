@@ -1,13 +1,16 @@
 @file:Suppress("MatchingDeclarationName")
 
-package it.unibo.collektive.qp.dsl
+package it.unibo.collektive.solver.gurobi
 
 import com.gurobi.gurobi.GRB
+import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.qp.config.QpSettings
+import it.unibo.collektive.model.times
+import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.qp.dsl.setupLogger
 import it.unibo.collektive.qp.utils.minus
 import it.unibo.collektive.qp.utils.squaredNorm
 import it.unibo.collektive.qp.utils.times
@@ -280,7 +283,7 @@ fun setLicense() {
  */
 inline fun <T> withModel(settings: QpSettings = QpSettings(), block: (GRBModel) -> T): T {
     setLicense()
-    val env = com.gurobi.gurobi.GRBEnv(true).also { it.start() }
+    val env = GRBEnv(true).also { it.start() }
     val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
     return try {
         block(model)
