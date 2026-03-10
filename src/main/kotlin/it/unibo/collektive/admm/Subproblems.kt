@@ -111,10 +111,10 @@ private fun runLocalADMM(
     target: Target,
     obstacle: Obstacle?,
     settings: QpSettings,
-    CBFS: List<CBF>,
+    cbfs: List<CBF>,
     objective: () -> Pair<SpeedControl2D, Double>,
 ): Pair<SpeedControl2D, Double> {
-    applyLocalCBFs(model, u, CBFContext(self = robot, obstacle = obstacle, settings = settings), CBFS)
+    applyLocalCBFs(model, u, CBFContext(self = robot, obstacle = obstacle, settings = settings), cbfs)
     model.maxSpeedCBF(u, robot)
     model.goToTargetCLF(target, robot.toDoubleArray(), u, delta, settings)
     return objective()

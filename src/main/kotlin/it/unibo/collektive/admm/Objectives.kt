@@ -134,7 +134,7 @@ private fun GRBModel.solveCommon(
 } catch (ex: GRBException) {
     println(
         "${ex.message} " +
-            "Minimization problem is infeasible, returning controls from local QP: ${robot.control} & ${other.control}.",
+            "Minimization problem is infeasible, return controls from local QP: ${robot.control} & ${other.control}.",
     )
     SuggestedControl(robot.control, other.control)
 }

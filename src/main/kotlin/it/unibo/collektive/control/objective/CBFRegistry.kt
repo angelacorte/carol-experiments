@@ -12,7 +12,7 @@ import it.unibo.collektive.solver.gurobi.QpSettings
 
 /**
  * Context for CBF builders carrying [self], optional [other]/[obstacle],
- * optional [communicationRange], and solver [settings].
+ * optional [communicationRange] and relative slack [commSlack], and solver [settings].
  */
 data class CBFContext(
     val self: Robot,
