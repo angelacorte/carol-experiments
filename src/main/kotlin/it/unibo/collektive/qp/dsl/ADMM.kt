@@ -35,22 +35,22 @@ import it.unibo.collektive.stdlib.spreading.gossipMax
  * Main aggregate entrypoint: runs distributed ADMM to compute a safe control and applies it when converged.
  */
 fun Aggregate<Int>.entrypoint(position: LocationSensor, device: CollektiveDevice<Euclidean2DPosition>) =
-context(position, device) {
-    val maxIter: Int = device["MaxIterations"]
-    val tolerance = Tolerance(device["PrimalTolerance"], device["DualTolerance"])
-    val robot = getRobot()
-    val target: Target = getTarget(device["TargetID"] as Number)
-    val communicationDistance: Double? = device["CommunicationDistance"]
-    val obstacle = getObstacle()
-    val res = controlLoop(robot, target, obstacle, communicationDistance, maxIter, tolerance)
-    // stop if residuals < threshold
-    if (res.first) {
-        robot.applyControl(res.second)
-        device["Velocity"] = res.second
+    context(position, device) {
+        val maxIter: Int = device["MaxIterations"]
+        val tolerance = Tolerance(device["PrimalTolerance"], device["DualTolerance"])
+        val robot = getRobot()
+        val target: Target = getTarget(device["TargetID"] as Number)
+        val communicationDistance: Double? = device["CommunicationDistance"]
+        val obstacle = getObstacle()
+        val res = controlLoop(robot, target, obstacle, communicationDistance, maxIter, tolerance)
+        // stop if residuals < threshold
+        if (res.first) {
+            robot.applyControl(res.second)
+            device["Velocity"] = res.second
 //        device["VelX"] = res.second.x
 //        device["VelY"] = res.second.y
+        }
     }
-}
 
 /**
  * TODO.
@@ -181,11 +181,7 @@ private fun Aggregate<Int>.residualUpdate(
     val primalResidual = gossipMax(primalResidualLocal)
     // dual residual  TODO("||ziji current - ziji previous||")
     val dualResidualLocal = neighborsExit.map<Double> { (id, value) ->
-        (
-            value[id]?.suggestedControl?.zi?.minus(
-                previousSuggested[id]?.zi ?: zeroSpeed(),
-            )
-            )?.norm() ?: 0.0
+        (value[id]?.suggestedControl?.zi?.minus(previousSuggested[id]?.zi ?: zeroSpeed()))?.norm() ?: 0.0
     }.neighbors.values.max()
     val dualResidual = gossipMax(dualResidualLocal)
     return Residuals(primalResidual, dualResidual)
