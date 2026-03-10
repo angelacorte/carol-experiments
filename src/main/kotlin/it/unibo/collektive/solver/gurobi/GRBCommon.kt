@@ -1,16 +1,17 @@
 @file:Suppress("MatchingDeclarationName")
 
-package it.unibo.collektive.qp.dsl
+package it.unibo.collektive.solver.gurobi
 
 import com.gurobi.gurobi.GRB
+import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.qp.utils.minus
-import it.unibo.collektive.qp.utils.squaredNorm
-import it.unibo.collektive.qp.utils.times
-import it.unibo.collektive.qp.utils.zeroVec
+import it.unibo.collektive.model.minus
+import it.unibo.collektive.model.squaredNorm
+import it.unibo.collektive.model.times
+import it.unibo.collektive.model.zeroVec
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -271,4 +272,40 @@ fun setLicense() {
         "Gurobi license file not found. Set the GRB_LICENSE_FILE environment variable or JVM property " +
             "to the license file path, or place the license in '$defaultPath'",
     )
+}
+
+/**
+ * Helper to create a GRBModel with license setup, optional logging
+ * (via [QpSettings.logEnabled]) and automatic disposal.
+ */
+inline fun <T> withModel(settings: QpSettings = QpSettings(), block: (GRBModel) -> T): T {
+    setLicense()
+    val env = GRBEnv(true).also { it.start() }
+    val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
+    return try {
+        block(model)
+    } finally {
+        model.dispose()
+        env.dispose()
+    }
+}
+
+/** Constraint name generator using the prefix in [QpSettings.constraintPrefix]. */
+object ConstraintNames {
+    /** Collision-avoidance constraint name for a given [edgeId]. */
+    fun collision(edgeId: String) = "${settingsPrefix()}_collision_$edgeId"
+
+    /** Communication-range constraint name for a given [edgeId]. */
+    fun comm(edgeId: String) = "${settingsPrefix()}_comm_$edgeId"
+
+    /** Obstacle-avoidance constraint name for a given obstacle [id]. */
+    fun obstacle(id: String) = "${settingsPrefix()}_obstacle_$id"
+
+    /** Target-tracking CLF constraint name for a given [id]. */
+    fun clf(id: String) = "${settingsPrefix()}_clf_$id"
+
+    /** Slack constraint name for a given [id]. */
+    fun slack(id: String) = "${settingsPrefix()}_slack_$id"
+
+    private fun settingsPrefix(): String = QpSettings().constraintPrefix
 }

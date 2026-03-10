@@ -1,12 +1,13 @@
-package it.unibo.collektive.qp.controlFunctions
+package it.unibo.collektive.control.clf
 
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.qp.dsl.GRBVector
-import it.unibo.collektive.qp.dsl.toTargetCLF
-import it.unibo.collektive.qp.utils.Robot
-import it.unibo.collektive.qp.utils.Target
+import it.unibo.collektive.model.Target
+import it.unibo.collektive.solver.gurobi.ConstraintNames
+import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.solver.gurobi.toTargetCLF
 
 /**
  * GO-TO-TARGET CLF 2(p - p_g)^T u <= -c || p - p_g ||^2 + \delta
@@ -14,7 +15,13 @@ import it.unibo.collektive.qp.utils.Target
  * [u] is the decision variable for the optimization problem, and [delta] the slack variable.
  * [target] [position] [u] [delta]
  */
-fun GRBModel.goToTargetCLF(target: Target, position: DoubleArray, u: GRBVector, delta: GRBVar) {
+fun GRBModel.goToTargetCLF(
+    target: Target,
+    position: DoubleArray,
+    u: GRBVector,
+    delta: GRBVar,
+    settings: QpSettings = QpSettings(),
+) {
     val pg: DoubleArray = doubleArrayOf(target.x, target.y)
     // convergence rate should vary based on deltaTime, if small, c should be smaller,
     // if deltaTime ~ 1sec then in {0.5, 5}
@@ -24,9 +31,9 @@ fun GRBModel.goToTargetCLF(target: Target, position: DoubleArray, u: GRBVector, 
         currentPos = position,
         goalPos = pg,
         u = u,
-        convergenceRate = 1.0,
+        convergenceRate = settings.convergenceRate,
         delta = delta,
-        name = "goToTargetCLF",
+        name = ConstraintNames.clf(target.id.toString()),
     )
-    addConstr(delta, GRB.GREATER_EQUAL, 0.0, "slack") // bound delta >= 0
+    addConstr(delta, GRB.GREATER_EQUAL, 0.0, ConstraintNames.slack(target.id.toString())) // bound delta >= 0
 }

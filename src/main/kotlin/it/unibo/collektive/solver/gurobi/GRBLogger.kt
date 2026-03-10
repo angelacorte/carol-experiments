@@ -1,24 +1,25 @@
-package it.unibo.collektive.qp.dsl
+package it.unibo.collektive.solver.gurobi
 
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
+import java.io.File
 
 /**
  * Writes Gurobi model artifacts to the `logging` folder and enables solver logging.
  */
 fun GRBModel.setupLogger() {
-    val folder = java.io.File("logging")
+    val folder = File("logging")
     if (!folder.exists()) {
         val created = folder.mkdirs()
         if (!created) {
             println("Warning: could not create logging directory: ${folder.absolutePath}")
         }
     }
-    write(java.io.File(folder, "debug_model.lp").path)
-    write(java.io.File(folder, "debug_model.mps").path)
+    write(File(folder, "debug_model.lp").path)
+    write(File(folder, "debug_model.mps").path)
     env.set(GRB.IntParam.OutputFlag, 1)
-    env.set(GRB.StringParam.LogFile, java.io.File(folder, "gurobi.log").path)
+    env.set(GRB.StringParam.LogFile, File(folder, "gurobi.log").path)
 }
 
 /**
