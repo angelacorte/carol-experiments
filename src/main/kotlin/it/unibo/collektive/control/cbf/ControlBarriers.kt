@@ -9,8 +9,8 @@ import it.unibo.collektive.control.objective.CbfContext
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.minus
-import it.unibo.collektive.model.toDoubleArray
 import it.unibo.collektive.model.squaredNorm
+import it.unibo.collektive.model.toDoubleArray
 import it.unibo.collektive.model.zeroVec
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector

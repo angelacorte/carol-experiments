@@ -3,11 +3,11 @@ package it.unibo.collektive.control.clf
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.model.Target
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.solver.gurobi.toTargetCLF
-import it.unibo.collektive.model.Target
 
 /**
  * GO-TO-TARGET CLF 2(p - p_g)^T u <= -c || p - p_g ||^2 + \delta

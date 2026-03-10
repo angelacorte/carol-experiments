@@ -138,4 +138,3 @@ private fun GRBModel.solveCommon(
     )
     SuggestedControl(robot.control, other.control)
 }
-

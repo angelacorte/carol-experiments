@@ -1,15 +1,12 @@
-@file:Suppress("UnusedPrivateMember", "UndocumentedPublicFunction")
+@file:Suppress("UnusedPrivateMember")
 
 package it.unibo.collektive.admm
 
-import it.unibo.alchemist.collektive.device.CollektiveDevice
-import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.aggregate.api.Aggregate
 import it.unibo.collektive.aggregate.api.neighboring
 import it.unibo.collektive.aggregate.api.sharing
 import it.unibo.collektive.aggregate.toMap
 import it.unibo.collektive.aggregate.values
-import it.unibo.collektive.alchemist.device.moveNodeToPosition
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D

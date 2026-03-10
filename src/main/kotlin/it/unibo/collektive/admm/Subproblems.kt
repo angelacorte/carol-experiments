@@ -3,12 +3,11 @@ package it.unibo.collektive.admm
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.control.cbf.maxSpeedCBF
+import it.unibo.collektive.control.clf.goToTargetCLF
 import it.unibo.collektive.control.objective.CbfContext
 import it.unibo.collektive.control.objective.applyLocalCbfs
 import it.unibo.collektive.control.objective.applyPairwiseCbfs
-import it.unibo.collektive.control.clf.goToTargetCLF
-import it.unibo.collektive.control.cbf.maxSpeedCBF
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
@@ -16,6 +15,7 @@ import it.unibo.collektive.model.Target
 import it.unibo.collektive.model.toDoubleArray
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.solver.gurobi.addVecVar
 import it.unibo.collektive.solver.gurobi.withModel
 
@@ -68,7 +68,6 @@ fun robotAvoidanceAndCommunicationRangeCBF(
     )
     model.minimizeADMMCommonQP(zi, zj, robot, other, incidentDuals, settings)
 }
-
 
 // Shared setup for local ADMM QPs; guarantees model lifecycle is handled consistently.
 private fun <T> withLocalADMMModel(
