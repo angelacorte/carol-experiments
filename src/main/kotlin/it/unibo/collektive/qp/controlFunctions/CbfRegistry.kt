@@ -6,7 +6,10 @@ import it.unibo.collektive.qp.dsl.GRBVector
 import it.unibo.collektive.qp.utils.Obstacle
 import it.unibo.collektive.qp.utils.Robot
 
-/** Context passed to CBF builders. */
+/**
+ * Context for CBF builders carrying [self], optional [other]/[obstacle],
+ * optional [communicationRange], and solver [settings].
+ */
 data class CbfContext(
     val self: Robot,
     val other: Robot? = null,
@@ -15,9 +18,13 @@ data class CbfContext(
     val settings: QpSettings = QpSettings(),
 )
 
-/** Pluggable barrier builder. */
+/**
+ * Pluggable barrier builder identified by [name] and exposing [add] to inject constraints.
+ */
 interface Cbf {
     val name: String
+
+    /** Adds this CBF to [model] using local variables [uSelf], optional neighbor variables [uOther], and [ctx]. */
     fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext)
 }
 
@@ -26,10 +33,12 @@ object CbfRegistry {
     private val cbfs = mutableListOf<Cbf>()
     private var defaultsRegistered = false
 
+    /** Registers [cbf] if another with the same [Cbf.name] is not present. */
     fun register(cbf: Cbf) {
         if (cbfs.none { it.name == cbf.name }) cbfs += cbf
     }
 
+    /** Returns all registered barriers, auto-registering defaults once. */
     fun all(): List<Cbf> {
         if (!defaultsRegistered) {
             register(ObstacleCbf)
@@ -41,11 +50,14 @@ object CbfRegistry {
     }
 }
 
-/** Apply all registered CBFs for a single-agent (local) problem. */
+/**
+ * Apply all registered CBFs for a single-agent (local) problem.
+ */
 fun applyLocalCbfs(model: GRBModel, u: GRBVector, ctx: CbfContext) =
     CbfRegistry.all().forEach { it.add(model, u, null, ctx) }
 
-/** Apply all registered CBFs for a pairwise problem. */
+/**
+ * Apply all registered CBFs for a pairwise problem.
+ */
 fun applyPairwiseCbfs(model: GRBModel, ui: GRBVector, uj: GRBVector, ctx: CbfContext) =
     CbfRegistry.all().forEach { it.add(model, ui, uj, ctx) }
-
