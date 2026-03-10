@@ -4,6 +4,8 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBException
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
+import it.unibo.collektive.qp.config.QpSettings
+import it.unibo.collektive.qp.dsl.ConstraintNames
 import it.unibo.collektive.qp.dsl.GRBVector
 import it.unibo.collektive.qp.dsl.addCBF
 import it.unibo.collektive.qp.dsl.toQuadExpr
@@ -23,7 +25,8 @@ fun GRBModel.addObstacleAvoidanceCBF(
     currentPosition: DoubleArray,
     obstacle: Obstacle,
     u: GRBVector,
-    gamma: Double = 0.5, // \gamma in {0.5 .. 5} = soft || in {5, 20} = hard || > infeasible QP
+    gamma: Double = 0.5,
+    name: String = ConstraintNames.obstacle("global"),
 ) {
     // 2(p - p-g)^T u = 2(p_x - p_o,x) u_x + 2(p_y - p_o,y) u_y
     val obstaclePosition: DoubleArray = obstacle.toDoubleArray()
@@ -38,7 +41,7 @@ fun GRBModel.addObstacleAvoidanceCBF(
         u2 = zeroVec(u.dimensions),
         gamma = gamma,
         h = h, // ( (p_x - p_o,x)^2 + (p_y - p_o,y) ^2 - (r_o^2 + d_o^2)
-        name = "obstacleAvoidance",
+        name = name,
         coefU1 = 2.0,
         coefU2 = 0.0,
     )
@@ -47,10 +50,16 @@ fun GRBModel.addObstacleAvoidanceCBF(
 /**
  * Adds a pairwise CBF preventing robot-robot collisions by bounding the relative velocity.
  */
-fun GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot, other: Robot) {
+fun GRBModel.addCollisionAvoidanceCBF(
+    ui: GRBVector,
+    uj: GRBVector,
+    robot: Robot,
+    other: Robot,
+    gamma: Double = 0.5,
+    name: String = ConstraintNames.collision("global"),
+) {
     // COLLISION AVOIDANCE 2(p1 - p2)^T (u1 - u2) + \gamma [ ||p1-p2||^2 - dmin^2 ] >= 0
     // 2(p1 - p2)^T (u1 - u2) >= - \gamma [ ||p1-p2||^2 - dmin^2 ]
-    val gamma = 0.5
     val distance = (robot.position - other.position).toDoubleArray()
     val maxDist = max(robot.safeMargin, other.safeMargin)
     val collision = GRBLinExpr()
@@ -60,7 +69,7 @@ fun GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot
         collision.addTerm(-2.0 * distance[index], uj[index])
     }
     try {
-        addConstr(collision, GRB.GREATER_EQUAL, collRight, "collision_avoidance_")
+        addConstr(collision, GRB.GREATER_EQUAL, collRight, name)
     } catch (e: GRBException) {
         println("Error for collision avoidance CBF: ${e.message}")
     }
@@ -69,10 +78,17 @@ fun GRBModel.addCollisionAvoidanceCBF(ui: GRBVector, uj: GRBVector, robot: Robot
 /**
  * Adds a CBF that enforces a maximum communication distance between two robots.
  */
-fun GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot, other: Robot, range: Double) {
+fun GRBModel.addCommunicationRangeCBF(
+    ui: GRBVector,
+    uj: GRBVector,
+    robot: Robot,
+    other: Robot,
+    range: Double,
+    gamma: Double = 2.0,
+    name: String = ConstraintNames.comm("global"),
+) {
     // COMM DISTANCE -2(p1 - p2)^T (u1 -u2) + \gamma [ R^2 - ||p1 - p2||^2 ] >= 0
     // COMM DISTANCE -2(p1 - p2)^T (u1 -u2) >= - \gamma [ R^2 - ||p1 - p2||^2 ]
-    val gamma = 2
     val distance = (robot.position - other.position).toDoubleArray()
     val communication = GRBLinExpr()
     val commRight = -gamma * (range.pow(2) - distance.squaredNorm())
@@ -81,9 +97,9 @@ fun GRBModel.addCommunicationRangeCBF(ui: GRBVector, uj: GRBVector, robot: Robot
         communication.addTerm(2.0 * distance[index], uj[index])
     }
     try {
-        addConstr(communication, GRB.GREATER_EQUAL, commRight, "communication_range")
+        addConstr(communication, GRB.GREATER_EQUAL, commRight, name)
     } catch (e: GRBException) {
-        println("Error for collision avoidance CBF: ${e.message}")
+        println("Error for communication range CBF: ${'$'}{e.message}")
     }
 }
 
@@ -97,4 +113,52 @@ fun GRBModel.maxSpeedCBF(u: GRBVector, robot: Robot) {
         robot.maxSpeed.pow(2),
         "u_norm",
     )
+}
+
+object ObstacleCbf : Cbf {
+    override val name: String = "obstacle"
+    override fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext) {
+        val obstacle = ctx.obstacle ?: return
+        model.addObstacleAvoidanceCBF(
+            currentPosition = doubleArrayOf(ctx.self.x, ctx.self.y),
+            obstacle = obstacle,
+            u = uSelf,
+            gamma = ctx.settings.gammaObstacle,
+            name = ConstraintNames.obstacle("local"),
+        )
+    }
+}
+
+object CollisionCbf : Cbf {
+    override val name: String = "collision"
+    override fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext) {
+        val other = ctx.other ?: return
+        val uNbr = uOther ?: return
+        model.addCollisionAvoidanceCBF(
+            uSelf,
+            uNbr,
+            ctx.self,
+            other,
+            ctx.settings.gammaCollision,
+            ConstraintNames.collision("${'$'}{ctx.self.position}_${'$'}{other.position}"),
+        )
+    }
+}
+
+object CommunicationRangeCbf : Cbf {
+    override val name: String = "comm_range"
+    override fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, ctx: CbfContext) {
+        val other = ctx.other ?: return
+        val uNbr = uOther ?: return
+        val range = ctx.communicationRange ?: return
+        model.addCommunicationRangeCBF(
+            uSelf,
+            uNbr,
+            ctx.self,
+            other,
+            range,
+            ctx.settings.gammaComm,
+            ConstraintNames.comm("${'$'}{ctx.self.position}_${'$'}{other.position}"),
+        )
+    }
 }
