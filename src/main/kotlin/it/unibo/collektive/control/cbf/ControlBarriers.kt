@@ -4,15 +4,14 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBException
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
+import it.unibo.collektive.control.objective.Cbf
+import it.unibo.collektive.control.objective.CbfContext
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.minus
 import it.unibo.collektive.model.toDoubleArray
-import it.unibo.collektive.qp.controlFunctions.Cbf
-import it.unibo.collektive.qp.controlFunctions.CbfContext
-import it.unibo.collektive.qp.utils.minus
-import it.unibo.collektive.qp.utils.squaredNorm
-import it.unibo.collektive.qp.utils.zeroVec
+import it.unibo.collektive.model.squaredNorm
+import it.unibo.collektive.model.zeroVec
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.addCBF
@@ -118,7 +117,8 @@ fun GRBModel.maxSpeedCBF(u: GRBVector, robot: Robot) {
 }
 
 /**
- * Default obstacle-avoidance barrier registered in [it.unibo.collektive.qp.controlFunctions.CbfRegistry]; adds keep-out CBF against [it.unibo.collektive.qp.controlFunctions.CbfContext.obstacle].
+ * Default obstacle-avoidance barrier registered in [it.unibo.collektive.control.objective.CbfRegistry];
+ * adds keep-out CBF against [CbfContext.obstacle].
  */
 object ObstacleCbf : Cbf {
     override val name: String = "obstacle"
@@ -135,7 +135,7 @@ object ObstacleCbf : Cbf {
 }
 
 /**
- * Default robot–robot collision avoidance barrier registered in [it.unibo.collektive.qp.controlFunctions.CbfRegistry];
+ * Default robot–robot collision avoidance barrier registered in [it.unibo.collektive.control.objective.CbfRegistry];
  * enforces separation from [CbfContext.other].
  */
 object CollisionCbf : Cbf {
@@ -156,7 +156,7 @@ object CollisionCbf : Cbf {
 }
 
 /**
- * Default communication-range barrier registered in [it.unibo.collektive.qp.controlFunctions.CbfRegistry];
+ * Default communication-range barrier registered in [it.unibo.collektive.control.objective.CbfRegistry];
  * enforces max distance [CbfContext.communicationRange].
  */
 object CommunicationRangeCbf : Cbf {

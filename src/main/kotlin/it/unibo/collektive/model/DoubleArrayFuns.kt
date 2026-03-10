@@ -1,4 +1,4 @@
-package it.unibo.collektive.qp.utils
+package it.unibo.collektive.model
 
 /**
  * Performs component-wise subtraction between two constant vectors.

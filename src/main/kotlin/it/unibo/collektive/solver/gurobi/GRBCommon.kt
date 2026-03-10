@@ -8,13 +8,10 @@ import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
+import it.unibo.collektive.model.minus
+import it.unibo.collektive.model.squaredNorm
 import it.unibo.collektive.model.times
-import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.qp.dsl.setupLogger
-import it.unibo.collektive.qp.utils.minus
-import it.unibo.collektive.qp.utils.squaredNorm
-import it.unibo.collektive.qp.utils.times
-import it.unibo.collektive.qp.utils.zeroVec
+import it.unibo.collektive.model.zeroVec
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
