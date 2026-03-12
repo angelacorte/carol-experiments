@@ -75,6 +75,11 @@ operator fun SpeedControl2D.plus(other: SpeedControl2D): SpeedControl2D = SpeedC
 operator fun SpeedControl2D.div(div: Double) = SpeedControl2D(x / div, y / div)
 
 /**
+ * Operator to scale a [SpeedControl2D] by a scalar [factor].
+ */
+operator fun SpeedControl2D.times(factor: Double) = SpeedControl2D(x * factor, y * factor)
+
+/**
  * Average a list of control vectors component-wise.
  */
 fun List<SpeedControl2D>.avg(): SpeedControl2D =
