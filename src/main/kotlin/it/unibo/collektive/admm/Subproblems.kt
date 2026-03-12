@@ -77,6 +77,37 @@ fun robotAvoidanceAndCommunicationRangeCBF(
     model.minimizeADMMCommonQP(zi, zj, robot, other, incidentDuals, settings, commSlack)
 }
 
+/**
+ * Solves the pairwise QP that enforces robot avoidance (and optionally communication range) for an edge.
+ */
+fun robotAvoidanceCBF(
+    robot: Robot,
+    other: Robot,
+    incidentDuals: IncidentDuals,
+    settings: QpSettings = QpSettings(),
+): SuggestedControl = withModel(settings) { model ->
+    val zi: GRBVector = model.addVecVar(
+        dimension = robot.position.dimension,
+        lowerBound = -robot.maxSpeed,
+        upperBound = robot.maxSpeed,
+        name = "z_ij^i",
+    )
+    val zj: GRBVector = model.addVecVar(
+        dimension = other.position.dimension,
+        lowerBound = -other.maxSpeed,
+        upperBound = other.maxSpeed,
+        name = "z_ij^j",
+    )
+    applyPairwiseCBFs(
+        model,
+        zi,
+        zj,
+        CBFContext(self = robot, other = other, settings = settings),
+        listOf(CollisionAvoidanceCBF),
+    )
+    model.minimizeADMMCommonQP(zi, zj, robot, other, incidentDuals, settings)
+}
+
 // Shared setup for local ADMM QPs; guarantees model lifecycle is handled consistently.
 private fun <T> withLocalADMMModel(
     robot: Robot,
