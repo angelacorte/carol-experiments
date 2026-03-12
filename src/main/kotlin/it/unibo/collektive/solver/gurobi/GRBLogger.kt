@@ -116,3 +116,10 @@ fun GRBModel.debugLoggerCLFCBF() {
     }
     println("================= END DEBUG LOGGER =================\n")
 }
+
+fun GRBModel.writeIIS(fileName: String) {
+    val folder = File("logging")
+    folder.mkdirs()
+    computeIIS()
+    write(File(folder, fileName).path)
+}
