@@ -19,6 +19,7 @@ import it.unibo.collektive.control.cbf.ObstacleAvoidanceCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
+import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.stdlib.time.localDeltaTime
 import kotlin.time.DurationUnit
 
@@ -45,8 +46,7 @@ fun Aggregate<Int>.commonTargetEntrypoint(
         robot = robot,
         uNominal = uNominal,
         maxIter = maxIter,
-        tolerance = tolerance,
-        deltaTime = deltaTime,
+        settings = QpSettings(deltaTime = deltaTime, tolerance = tolerance),
         localCLF = listOf(GoToTargetCLF(target)),
         localCBFs = listOf(ObstacleAvoidanceCBF(obstacle), MaxSpeedCBF()),
         pairwiseCBFs = listOf(

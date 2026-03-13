@@ -23,7 +23,7 @@ _pool: &program
     type: Event
     actions:
       - type: RunCollektiveProgram
-        parameters: [ it.unibo.collektive.entrypoints.EntrypointKt.commonTargetEntrypoint ]
+        parameters: [ it.unibo.collektive.entrypoints.CommonTargetKt.commonTargetEntrypoint ]
 
 #_movement: &movement
 #  - time-distribution: 1

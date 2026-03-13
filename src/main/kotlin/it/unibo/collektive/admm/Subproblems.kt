@@ -29,12 +29,8 @@ fun <ID : Comparable<ID>> solveLocalQP(
     val u: GRBVector = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "u")
     val context = ControlFunctionContext(self = robot, settings = settings)
     val activeSlacks = mutableListOf<Pair<ControlFunction, GRBVar>>()
-    localCLFs.forEach { clf ->
-        clf.applyToModel(model, u, null, context)?.let { s -> activeSlacks.add(clf to s) }
-    }
-    localCBFs.forEach { cbf ->
-        cbf.applyToModel(model, u, null, context)?.let { s -> activeSlacks.add(cbf to s) }
-    }
+    localCLFs.forEach { clf -> clf.applyToModel(model, u, null, context)?.let { s -> activeSlacks.add(clf to s) } }
+    localCBFs.forEach { cbf -> cbf.applyToModel(model, u, null, context)?.let { s -> activeSlacks.add(cbf to s) } }
     model.minimizeADMMLocalQP(u, uNominal, robot, duals, activeSlacks, context)
 }
 
@@ -52,8 +48,6 @@ fun solvePairwiseQP(
     val zj: GRBVector = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")
     val context = ControlFunctionContext(self = robot, otherRobot = other, settings = settings)
     val activeSlacks = mutableListOf<Pair<ControlFunction, GRBVar>>()
-    pairwiseCBFs.forEach { cbf ->
-        cbf.applyToModel(model, zi, zj, context)?.let { s -> activeSlacks.add(cbf to s) }
-    }
+    pairwiseCBFs.forEach { cbf -> cbf.applyToModel(model, zi, zj, context)?.let { s -> activeSlacks.add(cbf to s) } }
     model.minimizeADMMCommonQP(zi, zj, robot, other, incidentDuals, activeSlacks, context)
 }
