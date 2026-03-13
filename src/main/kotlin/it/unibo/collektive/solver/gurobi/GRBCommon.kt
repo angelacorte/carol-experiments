@@ -4,13 +4,12 @@ package it.unibo.collektive.solver.gurobi
 
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
+import com.gurobi.gurobi.GRBExpr
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.model.minus
-import it.unibo.collektive.model.squaredNorm
-import it.unibo.collektive.model.times
+import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.model.zeroVec
 import java.nio.file.Files
 import java.nio.file.Path
@@ -66,6 +65,22 @@ fun GRBQuadExpr.addRhoNorm2Sq(u: GRBVector, a: DoubleArray, rho: Double = 1.0) {
         addTerm(-2.0 * rho * a[i], u[i]) // -2*rho*a_i * x_i
         addConstant(rho * a[i] * a[i]) // + rho * a_i^2 (constant)
     }
+}
+
+fun GRBModel.addSlackOrNull(
+    controlFunction: ControlFunction,
+    lhs: GRBExpr,
+): GRBVar? {
+    var slack: GRBVar? = null
+    if (controlFunction.slackWeight != null) {
+        slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(controlFunction.name))
+        when (lhs) {
+            is GRBQuadExpr -> lhs.addTerm(1.0, slack)
+            is GRBLinExpr -> lhs.addTerm(1.0, slack)
+            else -> return null
+        }
+    }
+    return slack
 }
 
 /**
