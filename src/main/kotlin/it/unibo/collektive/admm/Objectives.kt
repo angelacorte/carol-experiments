@@ -4,6 +4,7 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBException
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
+import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.ControlFunctionContext
 import it.unibo.collektive.model.Robot
@@ -25,7 +26,7 @@ fun GRBModel.minimizeADMMCommonQP(
     robot: Robot,
     other: Robot,
     incidentDuals: IncidentDuals,
-    cfs: List<ControlFunction> = emptyList(),
+    activeSlacks: List<Pair<ControlFunction, GRBVar>> = emptyList(),
     context: ControlFunctionContext,
 ): SuggestedControl {
     val obj = GRBQuadExpr()
@@ -35,7 +36,9 @@ fun GRBModel.minimizeADMMCommonQP(
     val yj = incidentDuals.yj
     obj.addRhoNorm2Sq(zi, (ui + yi).toDoubleArray(), context.settings.rhoADMM / 2.0)
     obj.addRhoNorm2Sq(zj, (uj + yj).toDoubleArray(), context.settings.rhoADMM / 2.0)
-    cfs.forEach { it.addSlackToObjective(obj, context) }
+    activeSlacks.forEach { (cf, slackVariable) ->
+        cf.addSlackToObjective(obj, slackVariable, context)
+    }
     return solveCommon(obj, zi, zj, robot, other)
 }
 
@@ -49,12 +52,14 @@ fun <ID : Comparable<ID>> GRBModel.minimizeADMMLocalQP(
     uNominal: DoubleArray,
     robot: Robot,
     duals: Map<ID, DualParams>,
-    cfs: List<ControlFunction> = emptyList(),
+    activeSlacks: List<Pair<ControlFunction, GRBVar>>,
     context: ControlFunctionContext,
 ): SpeedControl2D {
     val obj = GRBQuadExpr()
     obj.addRhoNorm2Sq(u, uNominal)
-    cfs.forEach { it.addSlackToObjective(obj, context) }
+    activeSlacks.forEach { (cf, slackVariable) ->
+        cf.addSlackToObjective(obj, slackVariable, context)
+    }
     duals.forEach { (_, value) ->
         val suggested = value.suggestedControl.zi.toDoubleArray()
         val residual = value.incidentDuals.yi.toDoubleArray()
