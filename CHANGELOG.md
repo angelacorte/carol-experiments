@@ -1,3 +1,43 @@
+## [2.0.0](https://github.com/angelacorte/carol-experiments/compare/1.1.2...2.0.0) (2026-03-13)
+
+### ⚠ BREAKING CHANGES
+
+* support CLF/CBF modularity
+
+### Features
+
+* add zero order hold implementation for CBFs and CLFs ([#28](https://github.com/angelacorte/carol-experiments/issues/28)) ([3be8b2b](https://github.com/angelacorte/carol-experiments/commit/3be8b2b6a54407052175457ccfcce8329d3090a6))
+
+### Dependency updates
+
+* **deps:** update alchemist to v42.4.2 ([#17](https://github.com/angelacorte/carol-experiments/issues/17)) ([a4e5808](https://github.com/angelacorte/carol-experiments/commit/a4e5808a27c1babadf5efc03287f03a543246e83))
+* **deps:** update alchemist to v43 ([6838f27](https://github.com/angelacorte/carol-experiments/commit/6838f2783c1bd5e70b92edc00d537e4987eeb831))
+* **deps:** update dependency xarray to v2026 ([5978bc9](https://github.com/angelacorte/carol-experiments/commit/5978bc90f0fd513994079c57da0ba575a3820fb3))
+* **deps:** update node.js to 24.14 ([#20](https://github.com/angelacorte/carol-experiments/issues/20)) ([98f1b02](https://github.com/angelacorte/carol-experiments/commit/98f1b02fcd0eb13f100e1d81f9ba9aad654fcd0d))
+* **deps:** update plugin kotlin-qa to v0.101.1 ([#12](https://github.com/angelacorte/carol-experiments/issues/12)) ([774916f](https://github.com/angelacorte/carol-experiments/commit/774916fa2799b5755d452c1d586cdc3289fadd0a))
+* **deps:** update plugin kotlin-qa to v1 ([4cae1d7](https://github.com/angelacorte/carol-experiments/commit/4cae1d7e7c27f035d7c437955d8a6de9c132c9ac))
+
+### Bug Fixes
+
+* **ci:** update dispatcher workflow ([8bf1d1f](https://github.com/angelacorte/carol-experiments/commit/8bf1d1f60c4e195d9e9095a165f28fd6c2d13186))
+* **ci:** update dispatcher workflow filters and permissions ([f0ca6fd](https://github.com/angelacorte/carol-experiments/commit/f0ca6fd2936b247a826634e3f5afe2e363f24681))
+* entrypoint reference ([6c6f921](https://github.com/angelacorte/carol-experiments/commit/6c6f921f45bff060edcfd30f5ffeb52caf304d32))
+
+### Build and continuous integration
+
+* **deps:** update actions/setup-node action to v6.3.0 ([1313383](https://github.com/angelacorte/carol-experiments/commit/1313383b4b38b5b76671da980a5d7f2d71331ee8))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 1.1.2 [skip ci] ([5c819f6](https://github.com/angelacorte/carol-experiments/commit/5c819f6f4107062202470817218ba29902f9e740))
+* remove old project structure ([b70d8df](https://github.com/angelacorte/carol-experiments/commit/b70d8df92bc4b66c973c3f7ea6259a785f115d1a))
+* update readme ([3153145](https://github.com/angelacorte/carol-experiments/commit/315314512e34df2175dd6c13a67badae4b041919))
+* update readme ([225e436](https://github.com/angelacorte/carol-experiments/commit/225e436582484dbd843479e17e01b330cbc3e20f))
+
+### Style improvements
+
+* adapt to kotlin qa ([210478a](https://github.com/angelacorte/carol-experiments/commit/210478a37335c7b520ff2c9398016c0291b78cb0))
+
 ## [1.1.2](https://github.com/angelacorte/simple-ac-qp-program/compare/1.1.1...1.1.2) (2026-03-11)
 
 ### Dependency updates
