@@ -27,7 +27,7 @@ src/main/
 │ └── kotlin/it/unibo/
 │     ├── alchemist/                          Native Alchemist classes (actions, reactions, UI effects)
 │     └── collektive/                         Framework core (Logic, Control, ADMM)
-│         ├── Entrypoint.kt                   Main aggregate program
+│         ├── entrypoints/                    Main aggregate program entrypoints
 │         ├── admm/                           ADMM Consensus algorithm in AC (QP costs, core loop, state)
 │         ├── alchemist/device/               Integration Layer: Bridge between Collektive and Alchemist (sensors, environment ops)
 │         ├── control/                        Control Theory interfaces and nominal controllers
