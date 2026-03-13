@@ -10,9 +10,9 @@ import it.unibo.collektive.model.squaredNorm
 import it.unibo.collektive.model.toDoubleArray
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.addSlackOrNull
 import kotlin.math.max
 import kotlin.math.pow
-import org.apache.commons.math3.special.Gamma
 
 /**
  * Robot–robot collision avoidance barrier;
@@ -20,9 +20,8 @@ import org.apache.commons.math3.special.Gamma
  */
 class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWeight: Double? = null) : CBF() {
     override val name: String = "collision_avoidance"
-    override var slack: GRBVar? = null
 
-    override fun GRBModel.applyCBF(uSelf: GRBVector, uOther: GRBVector?, context: ControlFunctionContext) {
+    override fun GRBModel.applyCBF(uSelf: GRBVector, uOther: GRBVector?, context: ControlFunctionContext): GRBVar? {
         check(context.otherRobot != null && uOther != null) {
             "Other robot must not be null to apply Collision Avoidance CBF"
         }
@@ -38,12 +37,8 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
             lhs.addTerm(2.0 * distance[index], uSelf[index])
             lhs.addTerm(-2.0 * distance[index], uOther[index])
         }
-        // Soften the constraint if a slack weight was specified
-        if (slackWeight != null) {
-            val s = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(name))
-            slack = s
-            lhs.addTerm(1.0, s)
-        }
+        val slack: GRBVar? = addSlackOrNull(this@CollisionAvoidanceCBF, lhs)
         addConstr(lhs, GRB.GREATER_EQUAL, rhs, ConstraintNames.collision("${context.self.position}_${context.otherRobot.position}"))
+        return slack
     }
 }

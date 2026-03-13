@@ -11,25 +11,22 @@ import it.unibo.collektive.solver.gurobi.QpSettings
 
 interface ControlFunction {
     val name: String
-    val slack: GRBVar?
     val slackWeight: Double?
 
-    fun add(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, context: ControlFunctionContext)
+    /** Applies the constraint to the model and returns the generated slack variable (if any). */
+    fun applyToModel(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?, context: ControlFunctionContext): GRBVar?
 
-    fun addSlackToObjective(obj: GRBExpr, context: ControlFunctionContext) {
-        val s = slack ?: return
+    /** Adds the linear penalty for the generated slack variable to the objective. */
+    fun addSlackToObjective(obj: GRBExpr, slack: GRBVar, context: ControlFunctionContext) {
         val weight = slackWeight ?: context.settings.rhoSlack
         when(obj) {
-            is GRBLinExpr -> obj.addTerm(weight, s)
-            is GRBQuadExpr -> obj.addTerm(weight, s)
+            is GRBLinExpr -> obj.addTerm(weight, slack)
+            is GRBQuadExpr -> obj.addTerm(weight, slack)
             else -> error("Cannot add slack to objective of type ${obj::class.simpleName}")
         }
     }
 }
 
-/**
- * Context for CF builders carrying [self], optional [otherRobot], and solver [settings].
- */
 data class ControlFunctionContext(
     val self: Robot,
     val otherRobot: Robot? = null,

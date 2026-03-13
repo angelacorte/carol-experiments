@@ -20,12 +20,11 @@ import kotlin.math.pow
 class GoToTargetCLF(
     val target: Target,
     override val convergenceRate: Double = 1.0,
-    override val slackWeight: Double? = null,
+    override val slackWeight: Double? = 1.0,
 ) : CLF() {
     override val name: String = "go_to_target"
-    override var slack: GRBVar? = null
 
-    override fun GRBModel.applyCLF(uSelf: GRBVector, context: ControlFunctionContext) {
+    override fun GRBModel.applyCLF(uSelf: GRBVector, context: ControlFunctionContext): GRBVar? {
         require(context.settings.deltaTime.isFinite() && context.settings.deltaTime > 0.0) {
             "deltaTime must be finite and greater than zero to build DCLF constraint"
         }
@@ -38,9 +37,9 @@ class GoToTargetCLF(
         val rhs = -convergenceRate * distanceVec.squaredNorm() - dt.pow(2) * context.self.maxSpeed.pow(2)
         // LHS: 2 * \Delta t * e^T * u
         val lhs = uSelf.toLinExpr(distanceVec, 2.0 * dt)
-        val s = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(name))
-        slack = s
-        lhs.addTerm(-1.0, s)
+        val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(name))
+        lhs.addTerm(-1.0, slack)
         addConstr(lhs, GRB.LESS_EQUAL, rhs, ConstraintNames.clf(target.id.toString()))
+        return slack
     }
 }
