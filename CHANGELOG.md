@@ -1,3 +1,13 @@
+## [2.0.2](https://github.com/angelacorte/carol-experiments/compare/2.0.1...2.0.2) (2026-03-13)
+
+### Bug Fixes
+
+* use latest local qp control also for neighboring controls ([#29](https://github.com/angelacorte/carol-experiments/issues/29)) ([5ee4d04](https://github.com/angelacorte/carol-experiments/commit/5ee4d04576bb96d29061cfa1f105c57982769f48))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.0.1 [skip ci] ([a34a953](https://github.com/angelacorte/carol-experiments/commit/a34a953c2442400839dd12e6d9747cf7ddf03ccd))
+
 ## [2.0.1](https://github.com/angelacorte/carol-experiments/compare/2.0.0...2.0.1) (2026-03-13)
 
 ### Bug Fixes
