@@ -42,8 +42,12 @@ class CommunicationRangeCBF(
             lhs.addTerm(2.0 * distance[index], uOther[index])
         }
         val slack: GRBVar? = addSlackOrNull(this@CommunicationRangeCBF, lhs)
-        addConstr(lhs, GRB.GREATER_EQUAL, rhs, ConstraintNames.comm("${context.self.position}_${context.otherRobot.position}"))
+        addConstr(
+            lhs,
+            GRB.GREATER_EQUAL,
+            rhs,
+            ConstraintNames.comm("${context.self.position}_${context.otherRobot.position}"),
+        )
         return slack
     }
 }
-

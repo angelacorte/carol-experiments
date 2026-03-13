@@ -67,10 +67,7 @@ fun GRBQuadExpr.addRhoNorm2Sq(u: GRBVector, a: DoubleArray, rho: Double = 1.0) {
     }
 }
 
-fun GRBModel.addSlackOrNull(
-    controlFunction: ControlFunction,
-    lhs: GRBExpr,
-): GRBVar? {
+fun GRBModel.addSlackOrNull(controlFunction: ControlFunction, lhs: GRBExpr): GRBVar? {
     var slack: GRBVar? = null
     if (controlFunction.slackWeight != null) {
         slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(controlFunction.name))

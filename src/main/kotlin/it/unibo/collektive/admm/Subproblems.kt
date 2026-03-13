@@ -18,9 +18,13 @@ import it.unibo.collektive.solver.gurobi.withModel
  *
  * @return optimal control for the local agent.
  */
-fun <ID: Comparable<ID>> solveLocalQP(
-    robot: Robot, uNominal: DoubleArray, duals: Map<ID, DualParams>,
-    settings: QpSettings = QpSettings(), localCLFs: List<CLF>, localCBFs: List<CBF> = emptyList(),
+fun <ID : Comparable<ID>> solveLocalQP(
+    robot: Robot,
+    uNominal: DoubleArray,
+    duals: Map<ID, DualParams>,
+    settings: QpSettings = QpSettings(),
+    localCLFs: List<CLF>,
+    localCBFs: List<CBF> = emptyList(),
 ): SpeedControl2D = withModel(settings) { model ->
     val u: GRBVector = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "u")
     val context = ControlFunctionContext(self = robot, settings = settings)
@@ -34,13 +38,15 @@ fun <ID: Comparable<ID>> solveLocalQP(
     model.minimizeADMMLocalQP(u, uNominal, robot, duals, activeSlacks, context)
 }
 
-
 /**
  * Solves the pairwise QP applying the given [pairwiseCBFs] between [robot] and [other].
  */
 fun solvePairwiseQP(
-    robot: Robot, other: Robot, incidentDuals: IncidentDuals,
-    settings: QpSettings = QpSettings(), pairwiseCBFs: List<CBF> = emptyList(),
+    robot: Robot,
+    other: Robot,
+    incidentDuals: IncidentDuals,
+    settings: QpSettings = QpSettings(),
+    pairwiseCBFs: List<CBF> = emptyList(),
 ): SuggestedControl = withModel(settings) { model ->
     val zi: GRBVector = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "z_ij^i")
     val zj: GRBVector = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")

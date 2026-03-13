@@ -19,7 +19,7 @@ interface ControlFunction {
     /** Adds the linear penalty for the generated slack variable to the objective. */
     fun addSlackToObjective(obj: GRBExpr, slack: GRBVar, context: ControlFunctionContext) {
         val weight = slackWeight ?: context.settings.rhoSlack
-        when(obj) {
+        when (obj) {
             is GRBLinExpr -> obj.addTerm(weight, slack)
             is GRBQuadExpr -> obj.addTerm(weight, slack)
             else -> error("Cannot add slack to objective of type ${obj::class.simpleName}")

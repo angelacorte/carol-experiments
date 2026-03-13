@@ -8,13 +8,13 @@ import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
+import it.unibo.collektive.mathutils.plus
+import it.unibo.collektive.mathutils.times
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.model.Vector2D
-import it.unibo.collektive.mathutils.plus
-import it.unibo.collektive.mathutils.times
 
 /**
  * Relocates the current node to [newPosition] within the environment.

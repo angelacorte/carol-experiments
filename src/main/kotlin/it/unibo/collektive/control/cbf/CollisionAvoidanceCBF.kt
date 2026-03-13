@@ -38,7 +38,12 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
             lhs.addTerm(-2.0 * distance[index], uOther[index])
         }
         val slack: GRBVar? = addSlackOrNull(this@CollisionAvoidanceCBF, lhs)
-        addConstr(lhs, GRB.GREATER_EQUAL, rhs, ConstraintNames.collision("${context.self.position}_${context.otherRobot.position}"))
+        addConstr(
+            lhs,
+            GRB.GREATER_EQUAL,
+            rhs,
+            ConstraintNames.collision("${context.self.position}_${context.otherRobot.position}"),
+        )
         return slack
     }
 }

@@ -4,10 +4,10 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.control.ControlFunctionContext
-import it.unibo.collektive.model.Target
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
+import it.unibo.collektive.model.Target
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.toLinExpr

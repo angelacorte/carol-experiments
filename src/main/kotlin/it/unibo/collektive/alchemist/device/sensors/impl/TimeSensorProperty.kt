@@ -10,10 +10,10 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 /**
- * Alchemist [it.unibo.alchemist.model.NodeProperty] implementing [it.unibo.collektive.alchemist.device.sensors.TimeSensor] by reading the current simulation clock.
+ * Alchemist [NodeProperty] implementing [TimeSensor] by reading the current simulation clock.
  *
- * The [kotlin.time.Instant] is built by offsetting from [kotlin.time.Instant.Companion.DISTANT_PAST] by the simulation time expressed in seconds.
- * This keeps the mapping deterministic and independent from wall-clock time.
+ * The [Instant] is built by offsetting from [Instant.DISTANT_PAST] by the simulation time expressed in seconds.
+ * This keeps the mapping deterministic and independent of wall-clock time.
  */
 class TimeSensorProperty<T : Any, P : Position<P>>(
     private val environment: Environment<T, P>,
@@ -27,6 +27,6 @@ class TimeSensorProperty<T : Any, P : Position<P>>(
     @OptIn(ExperimentalTime::class)
     override fun getTimeAsInstant(): Instant {
         val time: Double = environment.simulation.time.toDouble()
-        return Instant.Companion.DISTANT_PAST + time.seconds
+        return Instant.DISTANT_PAST + time.seconds
     }
 }
