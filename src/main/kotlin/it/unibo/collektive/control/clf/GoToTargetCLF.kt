@@ -40,11 +40,11 @@ class GoToTargetCLF(
             "maxSpeed must be finite and non-negative"
         }
         val distanceVec = (context.self.position - target.position).toDoubleArray()
-        val dt = context.settings.deltaTime
-        // RHS: -\eta * ||e||^2 - \Delta t^2 * u_{max}^2
-        val rhs = -convergenceRate * distanceVec.squaredNorm() - dt.pow(2) * context.self.maxSpeed.pow(2)
+        val delta = context.settings.deltaTime
+        // RHS: -\lambda * ||V_i,k||^2 - \Delta t^2 * u_{max}^2
+        val rhs = -convergenceRate * distanceVec.squaredNorm() - delta.pow(2) * context.self.maxSpeed.pow(2)
         // LHS: 2 * \Delta t * e^T * u
-        val lhs = uSelf.toLinExpr(distanceVec, 2.0 * dt)
+        val lhs = uSelf.toLinExpr(distanceVec, 2.0 * delta)
         val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(name))
         lhs.addTerm(-1.0, slack)
         addConstr(lhs, GRB.LESS_EQUAL, rhs, ConstraintNames.clf(target.id.toString()))
