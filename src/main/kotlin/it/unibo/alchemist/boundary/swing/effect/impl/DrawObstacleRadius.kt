@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "MagicNumber")
 
 package it.unibo.alchemist.boundary.swing.effect.impl
 
