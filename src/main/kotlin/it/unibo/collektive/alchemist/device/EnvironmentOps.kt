@@ -75,7 +75,8 @@ fun getObstacle(): Obstacle {
  * Under ZOH dynamics the displacement is ∆t · u:  p_{k+1} = p_k + ∆t · u_k.
  */
 context(device: CollektiveDevice<Euclidean2DPosition>)
-fun Robot.applyControl(control: SpeedControl2D, deltaTime: Double) =
-    moveNodeToPosition(this.position + control * deltaTime).also {
-        device["Velocity"] = control
-    }
+fun Robot.applyControl(control: SpeedControl2D, deltaTime: Double) {
+    device["Velocity"] = control
+}
+//    moveNodeToPosition(this.position + control * deltaTime).also {
+//    }
