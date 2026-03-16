@@ -129,8 +129,9 @@ class DrawObstacleRadius : Effect {
         nodePosition: P,
         sizeInScreenCoordinates: Point,
     ) {
-        graphics.color = Color.ORANGE // hsbColor(30f, alpha = 0.4f)
-        graphics.drawOval(
+//        graphics.color = Color.ORANGE // hsbColor(30f, alpha = 0.4f)
+        graphics.color = hsbColor(55f, alpha = 0.2f)
+        graphics.fillOval(
             viewPoint.x - sizeInScreenCoordinates.x,
             viewPoint.y - sizeInScreenCoordinates.y,
             2 * sizeInScreenCoordinates.x,
@@ -144,8 +145,8 @@ class DrawObstacleRadius : Effect {
                 .takeIf { it.x > MIN_NODE_SIZE && it.y > MIN_NODE_SIZE }
                 ?: Point(MIN_NODE_SIZE, MIN_NODE_SIZE)
 
-        graphics.color = hsbColor(0f, alpha = 0.6f)
-//                    graphics.color = Color.RED//hsbColor(0f, alpha = 0.5f)
+        graphics.color = hsbColor(0f, alpha = 0.7f)
+//        graphics.color = Color.RED//hsbColor(0f, alpha = 0.5f)
         graphics.fillOval(
             viewPoint.x - innerSizeScreen.x,
             viewPoint.y - innerSizeScreen.y,
