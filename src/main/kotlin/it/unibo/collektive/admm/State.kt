@@ -6,11 +6,18 @@ import it.unibo.collektive.model.initVector2D
 import it.unibo.collektive.model.zeroSpeed
 
 /**
- * Control paired with residuals.
- * @property [control] optimal control.
- * @property [residuals] residual values used for stopping criteria.
+ * Container for ADMM iteration information.
+ * @param iteration Current iteration number.
+ * @param admmOutput Control and duals for the current iteration.
  */
-data class ControlAndResiduals(val control: SpeedControl2D, val residuals: Residuals)
+data class Infos<ID: Comparable<ID>>(val iteration: Int, val admmOutput: ControlAndDuals<ID>)
+
+/**
+ * Output control decision for a node.
+ * @param shouldApply Whether the control should be applied.
+ * @param control The control to apply.
+ */
+data class OutputControl(val shouldApply: Boolean, val control: SpeedControl2D)
 
 /**
  * Control decision and dual map for the current node.
