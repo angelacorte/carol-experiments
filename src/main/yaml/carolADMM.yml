@@ -3,7 +3,7 @@ incarnation: collektive
 variables:
   maxCommDistance: &maxCommDistance 9.0
   connectWithinDistance: &connectWithinDistance 10.0
-  robotSafeMargin: &robotSafeMargin 0.5
+  robotSafeMargin: &robotSafeMargin 1.0
   robotMaxSpeed: &robotMaxSpeed 2.0
   primalTolerance: &primalTolerance 1e-2
   dualTolerance: &dualTolerance 1e-2
@@ -24,13 +24,8 @@ _pool: &program
     actions:
       - type: RunCollektiveProgram
         parameters: [ it.unibo.collektive.entrypoints.CommonTargetKt.commonTargetEntrypoint ]
-
-#_movement: &movement
-#  - time-distribution: 1
-#    type: Event
-#    actions:
-#      - type: MoveNode
-#        parameters: []
+      - type: MoveNode
+        parameters: []
 
 environment:
   type: Continuous2DEnvironment
@@ -77,7 +72,6 @@ deployments:
         concentration: *timeDistribution
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
@@ -105,11 +99,10 @@ deployments:
         concentration: *timeDistribution
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
-
+#
   - type: Point
     parameters: [ 13, 0 ]
     contents:
@@ -133,7 +126,6 @@ deployments:
         concentration: *timeDistribution
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
@@ -161,7 +153,6 @@ deployments:
         concentration: *timeDistribution
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
