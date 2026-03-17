@@ -3,6 +3,7 @@ package it.unibo.collektive.mathutils
 import it.unibo.collektive.model.Coordinate
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Vector2D
+import kotlin.math.sqrt
 
 /**
  * Operator to sum a given [it.unibo.collektive.model.SpeedControl2D] with an [other].
@@ -32,7 +33,7 @@ operator fun Vector2D.minus(other: Vector2D): Vector2D = Coordinate(x - other.x,
 /**
  * Squared Euclidean norm of the vector.
  */
-fun Vector2D.norm(): Double = x * x + y * y
+fun Vector2D.norm(): Double = sqrt(x * x + y * y)
 
 /**
  * Proportional controller driving the point toward [pGoal] with gain [controlGain].
