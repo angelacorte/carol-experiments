@@ -36,8 +36,8 @@ fun Aggregate<Int>.commonTargetEntrypoint(
         localCLF = listOf(GoToTargetCLF(target)),
         localCBF = listOf(ObstacleAvoidanceCBF(getObstacle()), MaxSpeedCBF()),
         pairwiseCBF = listOf(
-            CollisionAvoidanceCBF(),
-            CommunicationRangeCBF(communicationDistance, slackWeight = 0.5),
+            CollisionAvoidanceCBF(0.8),
+            CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),
         ),
         settings = QpSettings().base(device),
     )
