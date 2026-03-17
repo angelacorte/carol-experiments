@@ -52,7 +52,7 @@ fun getTarget(targetId: Number): Target =
 context(position: LocationSensor, env: EnvironmentVariables)
 fun getRobot(): Robot = position.coordinates().let {
     val velocity = env.getOrDefault("Velocity", SpeedControl2D(0.0, 0.0))
-    Robot(it.x, it.y, 3.0, velocity, env["MaxSpeed"])
+    Robot(it.x, it.y, env["SafeMargin"], velocity, env["MaxSpeed"])
 }
 
 /**
@@ -75,7 +75,8 @@ fun getObstacle(): Obstacle {
  * Under ZOH dynamics the displacement is ∆t · u:  p_{k+1} = p_k + ∆t · u_k.
  */
 context(device: CollektiveDevice<Euclidean2DPosition>)
-fun Robot.applyControl(control: SpeedControl2D, deltaTime: Double) =
-    moveNodeToPosition(this.position + control * deltaTime).also {
-        device["Velocity"] = control
-    }
+fun Robot.applyControl(control: SpeedControl2D, deltaTime: Double) {
+    device["DeltaTime"] = deltaTime
+    device["Velocity"] = control
+//    moveNodeToPosition(this.position + control * deltaTime)
+}

@@ -6,6 +6,8 @@ import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
+import it.unibo.collektive.model.SpeedControl2D
+import it.unibo.collektive.model.zeroSpeed
 
 /**
  * Represents a movement action that updates the position of a node within a Euclidean 2D environment.
@@ -14,25 +16,29 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
  * @param T the concentration type managed by the node
  * @param environment the simulation environment in which the node resides
  * @param node the node under movement
+ * @param reaction the reaction associated with this action
  */
-class MoveNode<T>(environment: Environment<T, Euclidean2DPosition>, node: Node<T>) :
+class MoveNode<T>(environment: Environment<T, Euclidean2DPosition>, node: Node<T>, private val reaction: Reaction<T>) :
     AbstractMoveNode<T, Euclidean2DPosition>(environment, node, false) {
 
     override fun getNextPosition(): Euclidean2DPosition {
-        val maxSpeed = getSpeed(node.id, "MaxSpeed")
-        val velX = getSpeed(node.id, "VelX").coerceIn(-maxSpeed, maxSpeed)
-        val velY = getSpeed(node.id, "VelY").coerceIn(-maxSpeed, maxSpeed)
-        return Euclidean2DPosition(velX, velY)
+        val speed = node.getConcentration(speedMolecule) as? SpeedControl2D
+            ?: zeroSpeed()
+        val dt = node.getConcentration(SimpleMolecule("DeltaTime")) as? Double
+            ?: (1.0 / reaction.timeDistribution.rate)
+//        node.setConcentration(speedMolecule, zeroSpeed() as T) // todo maybe it's wrong to do it here
+        return Euclidean2DPosition(speed.x * dt, speed.y * dt)
     }
 
-    private fun getSpeed(nodeID: Int, moleculeName: String): Double {
-        val node = environment.nodes.first { it.id == nodeID && it.contains(SimpleMolecule("Robot")) }
-        return if (node.contains(SimpleMolecule("Robot")) && node.contains(SimpleMolecule(moleculeName))) {
-            node.getConcentration(SimpleMolecule(moleculeName)) as Double
-        } else {
-            0.0
-        }
-    }
+    override fun cloneAction(p0: Node<T>, p1: Reaction<T>): Action<T> = MoveNode(environment, node, reaction)
 
-    override fun cloneAction(p0: Node<T>, p1: Reaction<T>): Action<T> = MoveNode(environment, node)
+    /**
+     * Companion object for Move Node Action.
+     */
+    companion object {
+        /**
+         * The molecule representing the velocity vector for the node.
+         */
+        val speedMolecule = SimpleMolecule("Velocity")
+    }
 }
