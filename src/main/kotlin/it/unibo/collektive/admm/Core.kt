@@ -53,7 +53,8 @@ fun Aggregate<Int>.setup(
         localCBFs = localCBF,
         pairwiseCBFs = pairwiseCBF,
     )
-    if (res.first) robot.applyControl(res.second, settings.deltaTime) // stop if residuals < threshold
+//    if (res.first)
+    robot.applyControl(res.second, settings.deltaTime) // stop if residuals < threshold
 }
 
 /**
