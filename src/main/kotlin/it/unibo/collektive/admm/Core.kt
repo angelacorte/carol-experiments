@@ -54,7 +54,8 @@ fun Aggregate<Int>.admmEntrypoint(
         localCBFs = localCBF,
         pairwiseCBFs = pairwiseCBF,
     )
-    if (result.shouldApply) robot.applyControl(result.control, deltaTime) // stop if residuals < threshold
+//    if (result.shouldApply)
+    robot.applyControl(result.control, deltaTime) // stop if residuals < threshold
 }
 
 /**
