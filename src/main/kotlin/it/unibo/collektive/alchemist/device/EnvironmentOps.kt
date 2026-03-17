@@ -76,7 +76,7 @@ fun getObstacle(): Obstacle {
  */
 context(device: CollektiveDevice<Euclidean2DPosition>)
 fun Robot.applyControl(control: SpeedControl2D, deltaTime: Double) {
+    device["DeltaTime"] = deltaTime
     device["Velocity"] = control
+//    moveNodeToPosition(this.position + control * deltaTime)
 }
-//    moveNodeToPosition(this.position + control * deltaTime).also {
-//    }
