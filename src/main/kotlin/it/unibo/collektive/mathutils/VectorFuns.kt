@@ -31,9 +31,12 @@ operator fun Vector2D.plus(other: Vector2D): Vector2D = Coordinate(x + other.x, 
 operator fun Vector2D.minus(other: Vector2D): Vector2D = Coordinate(x - other.x, y - other.y)
 
 /**
- * Squared Euclidean norm of the vector.
+ * Computes the squared Euclidean norm (magnitude) of the [Vector2D].
+ *
+ * @receiver the [Vector2D] whose norm is computed
+ * @return the squared norm (x^2 + y^2)
  */
-fun Vector2D.norm(): Double = sqrt(x * x + y * y)
+fun Vector2D.norm(): Double = x * x + y * y
 
 /**
  * Proportional controller driving the point toward [pGoal] with gain [controlGain].
