@@ -12,6 +12,7 @@ import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
+import it.unibo.collektive.model.zeroSpeed
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.addRhoNorm2Sq
 import it.unibo.collektive.solver.gurobi.writeIIS
@@ -81,8 +82,8 @@ private fun GRBModel.solveLocal(u: GRBVector, obj: GRBQuadExpr, robot: Robot): S
         robot.control
     }
 } catch (ex: GRBException) {
-    println("${ex.message} - Minimization problem is infeasible, returning control: ${robot.control}.")
-    robot.control
+    println("${ex.message} - Minimization problem is infeasible, returning control: ${zeroSpeed()}.")
+    zeroSpeed() // robot.control
 }
 
 private fun GRBModel.solveCommon(
@@ -112,7 +113,8 @@ private fun GRBModel.solveCommon(
 } catch (ex: GRBException) {
     println(
         "${ex.message} - " +
-            "Minimization problem is infeasible, return controls from local QP: ${robot.control} & ${other.control}.",
+            "Minimization problem is infeasible, staying still.",
+//            "Minimization problem is infeasible, return controls from local QP: ${robot.control} & ${other.control}.",
     )
-    SuggestedControl(robot.control, other.control)
+    SuggestedControl(zeroSpeed(), zeroSpeed()) //    SuggestedControl(robot.control, other.control)
 }
