@@ -2,7 +2,7 @@ package it.unibo.collektive.entrypoints
 
 import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
-import it.unibo.collektive.admm.setup
+import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
 import it.unibo.collektive.alchemist.device.getObstacle
 import it.unibo.collektive.alchemist.device.getRobot
@@ -17,6 +17,8 @@ import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.solver.gurobi.QpSettings
+import kotlin.Double
+import kotlin.Int
 
 /**
  * Multiple Targets simulation entrypoint.
@@ -26,16 +28,16 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
     timeSensor: TimeSensor,
     device: CollektiveDevice<Euclidean2DPosition>,
 ) = context(position, device, timeSensor) {
-    val robot = getRobot()
     val target: Target = getTarget(device["TargetID"] as Number)
-    setup(
+    val robot = getRobot()
+    admmEntrypoint(
         robot,
-        uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
+        device["TimeDistribution"] as Double? ?: 1.0,
+        device["MaxIterations"] as? Int ?: 100,
         localCLF = listOf(GoToTargetCLF(target)),
+        uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
         localCBF = listOf(ObstacleAvoidanceCBF(getObstacle()), MaxSpeedCBF()),
-        pairwiseCBF = listOf(
-            CollisionAvoidanceCBF(),
-        ),
+        pairwiseCBF = listOf(CollisionAvoidanceCBF()),
         settings = QpSettings().base(device),
     )
 }
