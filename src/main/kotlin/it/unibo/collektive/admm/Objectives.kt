@@ -70,8 +70,13 @@ private fun GRBModel.solveLocal(u: GRBVector, obj: GRBQuadExpr, robot: Robot): S
     optimize()
     val status = get(GRB.IntAttr.Status)
     if (status == GRB.INFEASIBLE) {
-        println(GRB.INFEASIBLE)
         writeIIS("localModel.ilp")
+        computeIIS()
+        for (constraint in constrs) {
+            if (constraint.get(GRB.IntAttr.IISConstr) == 1) {
+                println("IIS constraint: ${constraint.get(GRB.StringAttr.ConstrName)}")
+            }
+        }
     }
     if (get(GRB.IntAttr.SolCount) > 0) {
         val uOptX = u[0].get(GRB.DoubleAttr.X)
@@ -97,8 +102,13 @@ private fun GRBModel.solveCommon(
     optimize()
     val status = get(GRB.IntAttr.Status)
     if (status == GRB.INFEASIBLE) {
-        println(GRB.INFEASIBLE)
         writeIIS("commonModel.ilp")
+        computeIIS()
+        for (constraint in constrs) {
+            if (constraint.get(GRB.IntAttr.IISConstr) == 1) {
+                println("IIS constraint: ${constraint.get(GRB.StringAttr.ConstrName)}")
+            }
+        }
     }
     if (get(GRB.IntAttr.SolCount) > 0) {
         val zxiOpt = zi[0].get(GRB.DoubleAttr.X)
