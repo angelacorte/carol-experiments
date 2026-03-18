@@ -1,3 +1,13 @@
+## [2.3.1](https://github.com/angelacorte/carol-experiments/compare/2.3.0...2.3.1) (2026-03-18)
+
+### Bug Fixes
+
+* add missing movement action ([#35](https://github.com/angelacorte/carol-experiments/issues/35)) ([d4adad9](https://github.com/angelacorte/carol-experiments/commit/d4adad94f5f6f505eaf43ec86e698b72c22ae68d))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.3.0 [skip ci] ([f6a52b5](https://github.com/angelacorte/carol-experiments/commit/f6a52b509206cb66808501a4c3451c93c6e462c5))
+
 ## [2.3.0](https://github.com/angelacorte/carol-experiments/compare/2.2.0...2.3.0) (2026-03-17)
 
 ### Features
