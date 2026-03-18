@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package it.unibo.collektive.entrypoints
 
 import it.unibo.alchemist.collektive.device.CollektiveDevice
@@ -37,7 +39,7 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
         localCLF = listOf(GoToTargetCLF(target)),
         uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
         localCBF = listOf(ObstacleAvoidanceCBF(getObstacle()), MaxSpeedCBF()),
-        pairwiseCBF = listOf(CollisionAvoidanceCBF()),
+        pairwiseCBF = listOf(CollisionAvoidanceCBF(0.8)),
         settings = QpSettings().base(device),
     )
 }
