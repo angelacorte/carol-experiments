@@ -1,3 +1,17 @@
+## [2.4.0](https://github.com/angelacorte/carol-experiments/compare/2.3.1...2.4.0) (2026-03-18)
+
+### Features
+
+* add movement strategies for speed and target selection from node molecules ([#36](https://github.com/angelacorte/carol-experiments/issues/36)) ([7a8d125](https://github.com/angelacorte/carol-experiments/commit/7a8d1253aeccbd6ad72d82f837407ba4e292d158))
+
+### Dependency updates
+
+* **deps:** update alchemist to v43.0.19 ([8fa9504](https://github.com/angelacorte/carol-experiments/commit/8fa95042000b2f446453564ba7b63b7ba5eefb67))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.3.1 [skip ci] ([34eaf98](https://github.com/angelacorte/carol-experiments/commit/34eaf98f65429de2e8acfcbe3e92b911c094bd81))
+
 ## [2.3.1](https://github.com/angelacorte/carol-experiments/compare/2.3.0...2.3.1) (2026-03-18)
 
 ### Bug Fixes
