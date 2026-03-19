@@ -62,12 +62,12 @@ class GoToTargetCLF(
                 val currentCLF = controlFunction as? GoToTargetCLF
                 val currentTarget = currentCLF?.target ?: target
                 val rate = currentCLF?.convergenceRate ?: convergenceRate
-                val dist = (context.self.position - currentTarget.position).toDoubleArray()
+                val distance = (context.self.position - currentTarget.position).toDoubleArray()
                 val delta = context.settings.deltaTime
-                val rhs = -rate * dist.squaredNorm() - delta.pow(2) * context.self.maxSpeed.pow(2)
+                val rhs = -rate * distance.squaredNorm() - delta.pow(2) * context.self.maxSpeed.pow(2)
                 constr.set(GRB.DoubleAttr.RHS, rhs)
-                for (i in dist.indices) {
-                    model.chgCoeff(constr, uSelf[i], 2.0 * delta * dist[i])
+                for (i in distance.indices) {
+                    model.chgCoeff(constr, uSelf[i], 2.0 * delta * distance[i])
                 }
             }
         }
