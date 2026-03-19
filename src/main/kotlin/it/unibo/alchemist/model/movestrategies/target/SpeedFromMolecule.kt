@@ -3,6 +3,7 @@ package it.unibo.alchemist.model.movestrategies.target
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.Reaction
+import it.unibo.alchemist.model.Time
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.movestrategies.SpeedSelectionStrategy
 import it.unibo.collektive.model.SpeedControl2D

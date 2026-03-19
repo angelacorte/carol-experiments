@@ -1,5 +1,7 @@
 package it.unibo.collektive.admm
 
+import com.gurobi.gurobi.GRBEnv
+import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.ControlFunctionContext
@@ -10,7 +12,8 @@ import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.solver.gurobi.addVecVar
-import it.unibo.collektive.solver.gurobi.withModel
+import it.unibo.collektive.solver.gurobi.withLocalModel
+import it.unibo.collektive.solver.gurobi.withPairwiseModel
 
 /**
  * Solves the local QP that minimizes deviation from a nominal control while
@@ -25,7 +28,7 @@ fun <ID : Comparable<ID>> solveLocalQP(
     settings: QpSettings = QpSettings(),
     localCLFs: List<CLF>,
     localCBFs: List<CBF> = emptyList(),
-): SpeedControl2D = withModel(settings) { model ->
+): SpeedControl2D = withLocalModel { model ->
     val u: GRBVector = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "u")
     val context = ControlFunctionContext(self = robot, settings = settings)
     val activeSlacks = mutableListOf<Pair<ControlFunction, GRBVar>>()
@@ -43,7 +46,7 @@ fun solvePairwiseQP(
     incidentDuals: IncidentDuals,
     settings: QpSettings = QpSettings(),
     pairwiseCBFs: List<CBF> = emptyList(),
-): SuggestedControl = withModel(settings) { model ->
+): SuggestedControl = withPairwiseModel { model ->
     val zi: GRBVector = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "z_ij^i")
     val zj: GRBVector = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")
     val context = ControlFunctionContext(self = robot, otherRobot = other, settings = settings)

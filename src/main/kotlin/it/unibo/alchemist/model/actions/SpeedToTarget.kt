@@ -23,7 +23,7 @@ import it.unibo.alchemist.model.movestrategies.target.TakeTargetFromMolecule
  * @property reaction the reaction associated with the node
  */
 class SpeedToTarget<T, P : Position<P>>(environment: Environment<T, P>, node: Node<T>, reaction: Reaction<T>) :
-    AbstractConfigurableMoveNode<T, P>(
+    EuclideanConfigurableMoveNode<T, P>(
         environment,
         node,
         StraightLine<T, P>(),

@@ -182,23 +182,42 @@ fun setLicense() {
     )
 }
 
+private val localModel: ModelWithEnvironment by lazy {
+    setLicense()
+    ModelWithEnvironment(GRBEnv(true))
+}
+
+private val pairwiseModel: ModelWithEnvironment by lazy {
+    setLicense()
+    ModelWithEnvironment(GRBEnv(true))
+}
+
+@ConsistentCopyVisibility
+private data class ModelWithEnvironment private constructor(val env: GRBEnv, val model: GRBModel) {
+    init {
+        env.set(GRB.IntParam.OutputFlag, 0)
+    }
+    constructor(env: GRBEnv) : this(env.also { it.start() }, GRBModel(env))
+}
+
 /**
  * Helper to create a GRBModel with license setup, optional logging
  * (via [QpSettings.logEnabled]) and automatic disposal.
  */
-inline fun <T> withModel(settings: QpSettings = QpSettings(), block: (GRBModel) -> T): T {
-    setLicense()
-    val env = GRBEnv(true).also {
-        if (!settings.logEnabled) it.set(GRB.IntParam.OutputFlag, 0)
-        it.start()
-    }
-    val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-    return try {
-        block(model)
-    } finally {
-        model.dispose()
-        env.dispose()
-    }
+fun <T> withLocalModel(block: (GRBModel) -> T): T {
+    localModel.env.resetParams()
+    localModel.model.reset()
+    return block(localModel.model)
+}
+
+/**
+ * Helper to create a GRBModel with license setup, optional logging
+ * (via [QpSettings.logEnabled]) and automatic disposal.
+ */
+fun <T> withPairwiseModel(block: (GRBModel) -> T): T {
+    pairwiseModel.env.resetParams()
+    pairwiseModel.model.reset()
+    return block(pairwiseModel.model)
 }
 
 /** Constraint name generator using the prefix in [QpSettings.constraintPrefix]. */
