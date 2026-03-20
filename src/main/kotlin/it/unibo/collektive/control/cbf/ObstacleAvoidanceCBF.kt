@@ -2,9 +2,9 @@ package it.unibo.collektive.control.cbf
 
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.ControlFunctionContext
-import it.unibo.collektive.mathutils.times
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
+import it.unibo.collektive.mathutils.times
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.solver.gurobi.ConstraintNames

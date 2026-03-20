@@ -2,9 +2,9 @@ package it.unibo.collektive.control.cbf
 
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.ControlFunctionContext
-import it.unibo.collektive.mathutils.times
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
+import it.unibo.collektive.mathutils.times
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.solver.gurobi.ConstraintNames
 import kotlin.math.max
@@ -20,7 +20,7 @@ import kotlin.math.pow
  * where `h_col = ‖p_i − p_j‖² − d_min²`.
  *
  * The LHS coefficients `2(p_i − p_j)[k]` and the RHS `−(η/Δt)·h_col` change every step as the
- * robots move.  [GRBModel.chgCoeff] is used to update them in-place without rebuilding the model.
+ * device move.  [GRBModel.chgCoeff] is used to update them in-place without rebuilding the model.
  *
  * @property eta        decay-rate parameter
  * @property slackWeight objective penalty for the slack variable; `null` → hard constraint (no slack)

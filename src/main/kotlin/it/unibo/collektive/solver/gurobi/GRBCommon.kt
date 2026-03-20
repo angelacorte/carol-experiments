@@ -3,7 +3,6 @@
 package it.unibo.collektive.solver.gurobi
 
 import com.gurobi.gurobi.GRB
-import com.gurobi.gurobi.GRBExpr
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
@@ -71,23 +70,6 @@ fun GRBVector.toLinExpr(vector: DoubleArray, multiplier: Double = 1.0): GRBLinEx
  */
 fun GRBVector.toQuadExpr(coefficient: Double = 1.0): GRBQuadExpr =
     GRBQuadExpr().also { it.addRhoNorm2Sq(this, zeroVec(dimensions), coefficient) }
-
-/**
- * If [controlFunction] declares a [ControlFunction.slackWeight], adds a non-negative slack
- * variable to [model] and appends it to [lhs] with coefficient `+1`.
- *
- * Returns the slack [GRBVar] or `null` when no slack is needed.
- */
-fun GRBModel.addSlackOrNull(controlFunction: ControlFunction, lhs: GRBExpr): GRBVar? {
-    if (controlFunction.slackWeight == null) return null
-    val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, ConstraintNames.slack(controlFunction.name))
-    when (lhs) {
-        is GRBQuadExpr -> lhs.addTerm(1.0, slack)
-        is GRBLinExpr -> lhs.addTerm(1.0, slack)
-        else -> return null
-    }
-    return slack
-}
 
 private val DEFAULT_LICENSE_PATH: Path =
     Paths.get(System.getProperty("user.home"), "Library", "gurobi", "gurobi.lic")
