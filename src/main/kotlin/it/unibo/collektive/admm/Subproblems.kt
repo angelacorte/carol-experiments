@@ -56,12 +56,12 @@ fun <ID : Comparable<ID>> solveLocalQP(
  * The template is indexed by the pair `(selfId, neighborId)`; new neighbours get a fresh template
  * automatically.
  *
- * @param selfId       this agent's stable identifier
- * @param neighborId   the neighbour's stable identifier
- * @param robot        this agent's current state
- * @param other        the neighbour's current state
+ * @param selfId this agent identifier
+ * @param neighborId the neighbor identifier
+ * @param robot this agent state
+ * @param other the neighbor state
  * @param incidentDuals current dual variables for this edge
- * @param settings     solver settings
+ * @param settings solver settings
  * @param pairwiseCBFs CBF list — must have the **same length** on every call for a given edge key
  */
 fun <ID : Comparable<ID>> solvePairwiseQP(

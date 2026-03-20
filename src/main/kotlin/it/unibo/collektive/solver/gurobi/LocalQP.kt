@@ -128,12 +128,7 @@ class LocalQP(
         env.dispose()
     }
     companion object {
-        /**
-         * Creates and commits the model structure for a robot's local QP.
-         *
-         * This is the **only** place where [GRBModel.addVar] and [GRBModel.addConstr] are called for
-         * this sub-problem.  After [create] returns, the topology is frozen.
-         */
+
         fun create(robot: Robot, localCLFs: List<CLF>, localCBFs: List<CBF>, settings: QpSettings): LocalQP {
             setLicense()
             val env = GRBEnv(true).also {

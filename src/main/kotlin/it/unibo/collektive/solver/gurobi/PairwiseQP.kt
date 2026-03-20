@@ -124,12 +124,7 @@ class PairwiseQP private constructor(
     }
 
     companion object {
-        /**
-         * Creates and commits the model structure for a directed edge `(self, neighbor)`.
-         *
-         * This is the **only** place where [GRBModel.addVar] and [GRBModel.addConstr] are called for
-         * this sub-problem.
-         */
+
         fun create(robot: Robot, other: Robot, pairwiseCBFs: List<CBF>, settings: QpSettings): PairwiseQP {
             setLicense()
             val env = GRBEnv(true).also {
