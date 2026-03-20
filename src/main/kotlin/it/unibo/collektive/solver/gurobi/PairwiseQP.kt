@@ -63,11 +63,11 @@ class PairwiseQP private constructor(
             "CBF list size changed since install — pairwise template must be rebuilt. " +
                 "Expected $cbfCount, got ${currentCBFs.size}."
         }
-        for (i in zi.vars.indices) {
+        for (i in zi.variables.indices) {
             zi[i].set(GRB.DoubleAttr.LB, -robot.maxSpeed)
             zi[i].set(GRB.DoubleAttr.UB, robot.maxSpeed)
         }
-        for (i in zj.vars.indices) {
+        for (i in zj.variables.indices) {
             zj[i].set(GRB.DoubleAttr.LB, -other.maxSpeed)
             zj[i].set(GRB.DoubleAttr.UB, other.maxSpeed)
         }

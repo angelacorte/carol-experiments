@@ -74,7 +74,7 @@ class LocalQP(
             "CF list size changed since install — local template must be rebuilt. " +
                 "Expected ($clfCount CLF, $cbfCount CBF), got (${currentCLFs.size}, ${currentCBFs.size})."
         }
-        for (i in u.vars.indices) {
+        for (i in u.variables.indices) {
             u[i].set(GRB.DoubleAttr.LB, -robot.maxSpeed)
             u[i].set(GRB.DoubleAttr.UB, robot.maxSpeed)
         }

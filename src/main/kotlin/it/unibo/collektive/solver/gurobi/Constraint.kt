@@ -45,7 +45,7 @@ interface Constraint {
      * Call [GRBModel.update] once after all constraints have been updated, not inside this method.
      *
      * @param model the model whose coefficients/RHS are being mutated
-     * @param controlFunction    the current (possibly updated) instance of the control function that owns this constraint
+     * @param controlFunction the current (possibly updated) instance of the control function that owns this constraint
      * @param context current robot positions, speeds, and solver settings
      */
     fun update(model: GRBModel, controlFunction: ControlFunction, context: ControlFunctionContext)
