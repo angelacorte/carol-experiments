@@ -20,6 +20,7 @@ sourceSets {
     main {
         dependencies {
             implementation(libs.bundles.alchemist)
+            implementation(libs.caffeine)
             implementation(libs.bundles.collektive)
             implementation(libs.gurobi)
         }
