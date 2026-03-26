@@ -15,6 +15,7 @@ import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.zeroSpeed
+import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.stdlib.spreading.gossipMax
 import it.unibo.collektive.stdlib.time.localDeltaTime
@@ -27,25 +28,16 @@ import kotlin.time.DurationUnit
 context(timeSensor: TimeSensor, device: CollektiveDevice<Euclidean2DPosition>)
 fun Aggregate<Int>.admmEntrypoint(
     robot: Robot,
-    frequency: Double? = null,
     maxIterations: Int,
     uNominal: DoubleArray,
+    solver: Solver,
     localCLF: List<CLF>,
     localCBF: List<CBF>,
     pairwiseCBF: List<CBF>,
-    settings: QpSettings,
 ) {
     val deltaTime: Double = localDeltaTime(timeSensor.getTimeAsInstant()).toDouble(DurationUnit.SECONDS)
-        .takeIf { it > 0.0 } ?: (1.0 / (frequency ?: 1.0))
-    val result = controlLoop(
-        robot = robot,
-        uNominal = uNominal,
-        maxIter = maxIterations,
-        settings = settings.copy(deltaTime = deltaTime),
-        localCLF = localCLF,
-        localCBFs = localCBF,
-        pairwiseCBFs = pairwiseCBF,
-    )
+        .takeIf { it > 0.0 } ?: (1.0 / (device["TimeDistribution"] as Double? ?: 1.0))
+    val result = controlLoop(robot, uNominal, maxIterations, deltaTime, solver, localCLF, localCBF, pairwiseCBF)
     if (result.shouldApply) {
         robot.applyControl(result.control, deltaTime)
     } else {
@@ -53,38 +45,35 @@ fun Aggregate<Int>.admmEntrypoint(
     }
 }
 
-/**
- * Runs ADMM iterations until both primal and dual residuals fall below their tolerances,
- * or until [maxIter] iterations are exhausted.
- */
 fun Aggregate<Int>.controlLoop(
     robot: Robot,
     uNominal: DoubleArray,
     maxIter: Int,
-    settings: QpSettings,
+    deltaTime: Double,
+    solver: Solver,
     localCLF: List<CLF>,
-    localCBFs: List<CBF> = emptyList(),
-    pairwiseCBFs: List<CBF> = emptyList(),
+    localCBF: List<CBF>,
+    pairwiseCBF: List<CBF>,
 ): OutputControl = evolving(Infos(0, ControlAndDuals(robot.control, emptyMap()))) { previousDuals ->
     val output = coreADMM(
-        robot = robot.copy(control = previousDuals.admmOutput.control),
-        uNominal = uNominal,
-        duals = previousDuals.admmOutput.duals,
-        settings = settings,
-        localCLF = localCLF,
-        localCBFs = localCBFs,
-        pairwiseCBFs = pairwiseCBFs,
+        robot.copy(control = previousDuals.admmOutput.control),
+        uNominal,
+        previousDuals.admmOutput.duals,
+        deltaTime,
+        solver,
+        localCLF,
+        localCBF,
+        pairwiseCBF
     )
-    val previousSuggested = previousDuals.admmOutput.duals
-        .toMap().mapValues { it.value.suggestedControl }
-    val (primalResidual, dualResidual) = residualUpdate(settings, output, previousSuggested)
+    val previousSuggested = previousDuals.admmOutput.duals.toMap().mapValues { it.value.suggestedControl }
+    val (primalResidual, dualResidual) = residualUpdate(solver.settings, output, previousSuggested)
     val nextIter = previousDuals.iteration + 1
     val (shouldApply, iter) = when {
-        (primalResidual <= settings.tolerance.primal && dualResidual <= settings.tolerance.dual) ||
+        (primalResidual <= solver.settings.tolerance.primal && dualResidual <= solver.settings.tolerance.dual) ||
             nextIter >= maxIter -> true to 0
         else -> false to nextIter
     }
-    val confidence = confidence(primalResidual, dualResidual, settings.tolerance)
+    val confidence = confidence(primalResidual, dualResidual, solver.settings.tolerance)
     val scaledControl = SpeedControl2D(output.control.x * confidence, output.control.y * confidence)
 //    Infos(iter, output).yielding { OutputControl(shouldApply, scaledControl) }
     Infos(iter, output).yielding { OutputControl(shouldApply, output.control) }
@@ -94,27 +83,22 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     robot: Robot,
     uNominal: DoubleArray,
     duals: Map<ID, DualParams>,
-    settings: QpSettings,
+    deltaTime: Double,
+    solver: Solver,
     localCLF: List<CLF>,
-    localCBFs: List<CBF> = emptyList(),
-    pairwiseCBFs: List<CBF> = emptyList(),
+    localCBF: List<CBF>,
+    pairwiseCBF: List<CBF>,
 ): ControlAndDuals<ID> {
-    val control: SpeedControl2D = solveLocalQP(localId, robot, uNominal, duals, settings, localCLF, localCBFs)
+    if (!solver.isLocalModelAvailable) solver.setupLocalModel(robot, localCLF, localCBF)
+    val control: SpeedControl2D = solver.updateAndSolveLocal(robot, uNominal, duals, deltaTime)
     val robotUpdated = robot.copy(control = control)
     return sharing(robotUpdated) { controls ->
         val commons: Map<ID, DualParams> = controls.neighbors.toMap()
             .filterNot { it.key == localId }
             .mapValues { (neighborId, neighbor) ->
                 val incidentDuals = duals[neighborId]?.incidentDuals ?: IncidentDuals()
-                val (zi, zj) = solvePairwiseQP(
-                    localId,
-                    neighborId,
-                    robotUpdated,
-                    neighbor,
-                    incidentDuals,
-                    settings,
-                    pairwiseCBFs,
-                )
+                if (!solver.isPairwiseModelAvailable) solver.setupPairwiseModel(robot, neighbor, pairwiseCBF)
+                val (zi, zj) = solver.updateAndSolvePairwise(robotUpdated, neighbor, incidentDuals, deltaTime)
                 val newIncidentDuals = IncidentDuals(
                     incidentDuals.yi + control - zi, // y_ij^i,t+1
                     incidentDuals.yj + neighbor.control - zj, // y_ij^j,t+1
