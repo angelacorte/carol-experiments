@@ -1,49 +1,72 @@
 package it.unibo.collektive.control.cbf
 
 import com.gurobi.gurobi.GRB
+import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
-import com.gurobi.gurobi.GRBVar
-import it.unibo.collektive.control.ControlFunctionContext
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Obstacle
-import it.unibo.collektive.solver.gurobi.ConstraintNames
+import it.unibo.collektive.model.Robot
+import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
-import it.unibo.collektive.solver.gurobi.addSlackOrNull
-import it.unibo.collektive.solver.gurobi.toLinExpr
+import it.unibo.collektive.solver.gurobi.QpSettings
 import kotlin.math.pow
 
 /**
- * Obstacle-avoidance barrier under ZOH dynamics;
- * adds a keep-out CBF against a static obstacle.
+ * Static obstacle-avoidance barrier under ZOH dynamics.
  *
- * The exact discrete-time inequality enforced is:
- * `2(p_i,k - p_o)^T u_i,k >= -(\eta / \Delta t) h_i,k^obs`
- * where `h_i,k^obs = ||p_i,k - p_o||^2 - (r_o + d_o)^2`.
+ * Discrete-time CBF constraint (installed once, updated every iteration):
+ * ```
+ * 2(p_i − p_o)ᵀ u_i + slack ≥ −(η/Δt) · h_obs
+ * ```
+ * where `h_obs = ‖p_i − p_o‖² − (r_o + d_o)²`.
  *
- * @property obstacle the static [Obstacle] to avoid.
- * @property eta the tuning parameter governing the decay rate of the barrier constraint.
- * @property slackWeight the penalty weight applied to the slack variable (if present).
+ * The obstacle and robot positions may change across iterations, so the current obstacle is
+ * retrieved through [obstacleProvider] during every update and the numerical values are refreshed
+ * via [GRBModel.chgCoeff].
+ *
+ * @property obstacleProvider supplies the current obstacle to avoid
+ * @property eta        decay-rate parameter
+ * @property slackWeight penalty for the soft version; `null` → hard constraint
  */
 class ObstacleAvoidanceCBF(
-    val obstacle: Obstacle,
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
+    private val obstacleProvider: () -> Obstacle,
 ) : CBF() {
-    override val name: String = "obstacle_avoidance"
 
-    override fun GRBModel.applyCBF(uSelf: GRBVector, uOther: GRBVector?, context: ControlFunctionContext): GRBVar? {
-        val distance = (context.self.position - obstacle).toDoubleArray()
-        val safeDistance = obstacle.radius + obstacle.margin
-        val h = distance.squaredNorm() - safeDistance.pow(2)
-        val dt = context.settings.deltaTime
-        // RHS: -(\eta / \Delta t) * h_{i,k}^{obs}
-        val rhs = -(eta / dt) * h
-        // LHS: 2 * (p_i - p_o)^T * u_i
-        val lhs = uSelf.toLinExpr(distance, 2.0)
-        val slack: GRBVar? = addSlackOrNull(this@ObstacleAvoidanceCBF, lhs)
-        addConstr(lhs, GRB.GREATER_EQUAL, rhs, ConstraintNames.obstacle("local"))
-        return slack
+    override val name: String = "obstacle_avoidance_CBF"
+
+    override fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint {
+        val slack = slackWeight?.let {
+            addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
+        }
+        val lhs = GRBLinExpr().apply {
+            repeat(uSelf.dimensions) { i -> addTerm(0.0, uSelf[i]) }
+            slack?.let { addTerm(1.0, it) }
+        }
+        val constr = addConstr(lhs, GRB.GREATER_EQUAL, 0.0, name)
+
+        return object : Constraint {
+            override val slack = slack
+            override val slackWeight = this@ObstacleAvoidanceCBF.slackWeight
+            override fun update(
+                model: GRBModel,
+                self: Robot,
+                otherRobot: Robot?,
+                settings: QpSettings,
+                deltaTime: Double,
+            ) {
+                val obstacle = obstacleProvider()
+                val distance = (self.position - obstacle).toDoubleArray()
+                val h = distance.squaredNorm() - (obstacle.radius + obstacle.margin).pow(2)
+                val rhs = -(eta / deltaTime) * h
+                constr.set(GRB.DoubleAttr.RHS, rhs)
+                for (i in distance.indices) {
+                    model.chgCoeff(constr, uSelf[i], 2.0 * distance[i])
+                }
+            }
+        }
     }
 }

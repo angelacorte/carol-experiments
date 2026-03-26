@@ -14,6 +14,7 @@ import it.unibo.collektive.control.cbf.MaxSpeedCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
+import it.unibo.collektive.alchemist.SimulationSolver.solver
 import it.unibo.collektive.solver.gurobi.QpSettings
 
 /**
@@ -28,12 +29,11 @@ fun Aggregate<Int>.noObstacleEntrypoint(
     val target: Target = getTarget(device["TargetID"] as Number)
     admmEntrypoint(
         robot,
-        device["TimeDistribution"] as Double? ?: 1.0,
         device["MaxIterations"] as? Int ?: 100,
         uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
-        localCLF = listOf(GoToTargetCLF(target)),
+        solver = device.environment.solver(QpSettings().base(device)),
+        localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         localCBF = listOf(MaxSpeedCBF()),
         pairwiseCBF = listOf(CollisionAvoidanceCBF()),
-        settings = QpSettings().base(device),
     )
 }

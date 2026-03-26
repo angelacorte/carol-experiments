@@ -1,8 +1,10 @@
 package it.unibo.alchemist.model.movestrategies.target
 
+import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.Reaction
+import it.unibo.alchemist.model.Time
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.movestrategies.SpeedSelectionStrategy
 import it.unibo.collektive.model.SpeedControl2D
@@ -21,14 +23,22 @@ import kotlin.math.hypot
  * @property node the node whose speed and properties are used to determine the movement length
  * @property reaction the reaction associated with the node, used to retrieve the time distribution rate
  */
-class SpeedFromMolecule<T, P : Position<P>>(private val node: Node<T>, private val reaction: Reaction<T>) :
-    SpeedSelectionStrategy<T, P> {
+class SpeedFromMolecule<T, P : Position<P>>(
+    private val node: Node<T>,
+    private val environment: Environment<T, P>,
+    private val reaction: Reaction<T>,
+) : SpeedSelectionStrategy<T, P> {
+
+    var previousTime: Time = Time.ZERO
 
     override fun getNodeMovementLength(target: P?): Double {
         val speed = node.getConcentration(SimpleMolecule("Velocity")) as? SpeedControl2D ?: return 0.0
         val speedMagnitude = hypot(speed.x, speed.y)
-        val deltaTime = node.getConcentration(SimpleMolecule("DeltaTime")) as? Double
-            ?: (1.0 / reaction.timeDistribution.rate)
+        val current = environment.simulation.time
+        val deltaTime = (current - previousTime).toDouble()
+        previousTime = current
+//        val deltaTime = node.ge/tConcentration(SimpleMolecule("DeltaTime")) as? Double
+//            ?: (1.0 / reaction.timeDistribution.rate)
         return speedMagnitude * deltaTime
     }
 }

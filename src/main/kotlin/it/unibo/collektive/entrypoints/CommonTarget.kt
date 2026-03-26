@@ -19,6 +19,7 @@ import it.unibo.collektive.control.cbf.ObstacleAvoidanceCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
+import it.unibo.collektive.alchemist.SimulationSolver.solver
 import it.unibo.collektive.solver.gurobi.QpSettings
 
 /**
@@ -34,15 +35,14 @@ fun Aggregate<Int>.commonTargetEntrypoint(
     val communicationDistance: Double = device["CommunicationDistance"]
     admmEntrypoint(
         robot,
-        device["TimeDistribution"] as Double? ?: 1.0,
         device["MaxIterations"] as? Int ?: 100,
         uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
-        localCLF = listOf(GoToTargetCLF(target)),
-        localCBF = listOf(ObstacleAvoidanceCBF(getObstacle()), MaxSpeedCBF()),
+        solver = device.environment.solver(QpSettings().base(device)),
+        localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
+        localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),
         ),
-        settings = QpSettings().base(device),
     )
 }

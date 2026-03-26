@@ -6,7 +6,6 @@ import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.control.ControlFunctionContext
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
@@ -14,6 +13,7 @@ import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.zeroSpeed
 import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.solver.gurobi.addRhoNorm2Sq
 import it.unibo.collektive.solver.gurobi.writeIIS
 
@@ -28,16 +28,16 @@ fun GRBModel.minimizeADMMCommonQP(
     other: Robot,
     incidentDuals: IncidentDuals,
     activeSlacks: List<Pair<ControlFunction, GRBVar>> = emptyList(),
-    context: ControlFunctionContext,
+    settings: QpSettings,
 ): SuggestedControl {
     val obj = GRBQuadExpr()
     val ui = robot.control
     val uj = other.control
     val yi = incidentDuals.yi
     val yj = incidentDuals.yj
-    obj.addRhoNorm2Sq(zi, (ui + yi).toDoubleArray(), context.settings.rhoADMM / 2.0)
-    obj.addRhoNorm2Sq(zj, (uj + yj).toDoubleArray(), context.settings.rhoADMM / 2.0)
-    activeSlacks.forEach { (cf, slack) -> cf.addSlackToObjective(obj, slack, context) }
+    obj.addRhoNorm2Sq(zi, (ui + yi).toDoubleArray(), settings.rhoADMM / 2.0)
+    obj.addRhoNorm2Sq(zj, (uj + yj).toDoubleArray(), settings.rhoADMM / 2.0)
+    activeSlacks.forEach { (cf, slack) -> cf.addSlackToObjective(obj, slack, settings) }
     return solveCommon(obj, zi, zj, robot, other)
 }
 
@@ -52,15 +52,15 @@ fun <ID : Comparable<ID>> GRBModel.minimizeADMMLocalQP(
     robot: Robot,
     duals: Map<ID, DualParams>,
     activeSlacks: List<Pair<ControlFunction, GRBVar>>,
-    context: ControlFunctionContext,
+    settings: QpSettings,
 ): SpeedControl2D {
     val obj = GRBQuadExpr()
     obj.addRhoNorm2Sq(u, uNominal)
-    activeSlacks.forEach { (cf, slack) -> cf.addSlackToObjective(obj, slack, context) }
+    activeSlacks.forEach { (cf, slack) -> cf.addSlackToObjective(obj, slack, settings) }
     duals.forEach { (_, value) ->
         val suggested = value.suggestedControl.zi.toDoubleArray()
         val residual = value.incidentDuals.yi.toDoubleArray()
-        obj.addRhoNorm2Sq(u, suggested - residual, context.settings.rhoADMM / 2.0)
+        obj.addRhoNorm2Sq(u, suggested - residual, settings.rhoADMM / 2.0)
     }
     return solveLocal(u, obj, robot)
 }
