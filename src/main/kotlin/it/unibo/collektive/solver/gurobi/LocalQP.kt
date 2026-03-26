@@ -31,7 +31,9 @@ class LocalQP private constructor(
             u[i].set(GRB.DoubleAttr.UB, robot.maxSpeed)
             u[i].set(GRB.DoubleAttr.Start, robot.control.toDoubleArray()[i]) // warm start
         }
-        constraints.forEach { constraint -> constraint.update(model, robot, settings = settings, deltaTime = deltaTime) }
+        constraints.forEach { constraint ->
+            constraint.update(model, robot, settings = settings, deltaTime = deltaTime)
+        }
         model.setObjective(buildObjective(uNominal, duals, settings), GRB.MINIMIZE)
         model.update()
         model.optimize()
@@ -68,7 +70,9 @@ class LocalQP private constructor(
             }
         }
         return when {
-            model.get(GRB.IntAttr.SolCount) > 0 -> SpeedControl2D(u[0].get(GRB.DoubleAttr.X), u[1].get(GRB.DoubleAttr.X))
+            model.get(
+                GRB.IntAttr.SolCount,
+            ) > 0 -> SpeedControl2D(u[0].get(GRB.DoubleAttr.X), u[1].get(GRB.DoubleAttr.X))
             else -> {
                 println("Local QP: no solution found (status $status), returning previous control.")
                 robot.control

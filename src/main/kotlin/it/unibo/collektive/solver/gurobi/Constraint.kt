@@ -31,11 +31,5 @@ interface Constraint {
      */
     val slackWeight: Double?
 
-    fun update(
-        model: GRBModel,
-        self: Robot,
-        otherRobot: Robot? = null,
-        settings: QpSettings,
-        deltaTime: Double,
-    )
+    fun update(model: GRBModel, self: Robot, otherRobot: Robot? = null, settings: QpSettings, deltaTime: Double)
 }

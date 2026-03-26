@@ -43,6 +43,6 @@ fun Aggregate<Int>.commonTargetEntrypoint(
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),
-        )
+        ),
     )
 }

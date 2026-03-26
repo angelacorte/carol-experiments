@@ -75,7 +75,7 @@ class PairwiseQP private constructor(
             model.get(GRB.IntAttr.SolCount) > 0 -> SuggestedControl(
                 SpeedControl2D(zi[0].get(GRB.DoubleAttr.X), zi[1].get(GRB.DoubleAttr.X)),
                 SpeedControl2D(zj[0].get(GRB.DoubleAttr.X), zj[1].get(GRB.DoubleAttr.X)),
-               )
+            )
             else -> {
                 println("Pairwise QP: no solution found (status $status), returning current controls.")
                 SuggestedControl(robot.control, other.control)

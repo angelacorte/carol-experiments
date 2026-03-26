@@ -63,7 +63,7 @@ fun Aggregate<Int>.controlLoop(
         solver,
         localCLF,
         localCBF,
-        pairwiseCBF
+        pairwiseCBF,
     )
     val previousSuggested = previousDuals.admmOutput.duals.toMap().mapValues { it.value.suggestedControl }
     val (primalResidual, dualResidual) = residualUpdate(solver.settings, output, previousSuggested)

@@ -19,9 +19,7 @@ import it.unibo.collektive.solver.gurobi.QpSettings
 import it.unibo.collektive.solver.gurobi.setLicense
 import it.unibo.collektive.solver.gurobi.setupLogger
 
-class Solver(
-    val settings: QpSettings,
-) {
+class Solver(val settings: QpSettings) {
 
     private lateinit var local: LocalQP
 
@@ -38,29 +36,21 @@ class Solver(
 
     val isPairwiseModelAvailable: Boolean get() = this::pairwise.isInitialized
 
-    fun setupLocalModel(
-        robot: Robot,
-        localCLFs: List<CLF>,
-        localCBFs: List<CBF>,
-    ) {
+    fun setupLocalModel(robot: Robot, localCLFs: List<CLF>, localCBFs: List<CBF>) {
         if (!isLocalModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
             local = LocalQP.create(model, robot, localCLFs, localCBFs)
         }
     }
 
-    fun setupPairwiseModel(
-        robot: Robot,
-        otherRobot: Robot,
-        pairwiseCBFs: List<CBF>,
-    ) {
+    fun setupPairwiseModel(robot: Robot, otherRobot: Robot, pairwiseCBFs: List<CBF>) {
         if (!isPairwiseModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
             pairwise = PairwiseQP.create(model, robot, otherRobot, pairwiseCBFs)
         }
     }
 
-    fun <ID: Comparable<ID>> updateAndSolveLocal(
+    fun <ID : Comparable<ID>> updateAndSolveLocal(
         robot: Robot,
         uNominal: DoubleArray,
         duals: Map<ID, DualParams>,
@@ -73,7 +63,6 @@ class Solver(
         duals: IncidentDuals,
         deltaTime: Double,
     ): SuggestedControl = pairwise.updateAndSolve(robot, otherRobot, duals, settings, deltaTime)
-
 }
 
 object SimulationSolver {
@@ -81,7 +70,8 @@ object SimulationSolver {
         .weakKeys()
         .build { key -> Solver(QpSettings()) }
 
-    val Environment<*, *>.solver: Solver get() = activeSolver.getIfPresent(this) ?: error("Could not find solver for $this")
+    val Environment<*, *>.solver: Solver get() = activeSolver.getIfPresent(this)
+        ?: error("Could not find solver for $this")
 
     fun Environment<*, *>.solver(settings: QpSettings): Solver =
         activeSolver.getIfPresent(this) ?: Solver(settings).also { activeSolver.put(this, it) }
