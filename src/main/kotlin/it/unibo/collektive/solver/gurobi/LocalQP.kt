@@ -4,7 +4,6 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import it.unibo.collektive.admm.DualParams
-import it.unibo.collektive.control.ControlFunctionContext
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
 import it.unibo.collektive.mathutils.minus
@@ -24,15 +23,16 @@ class LocalQP private constructor(
         robot: Robot,
         uNominal: DoubleArray,
         duals: Map<ID, DualParams>,
-        context: ControlFunctionContext,
+        settings: QpSettings,
+        deltaTime: Double,
     ): SpeedControl2D {
         for (i in u.variables.indices) {
             u[i].set(GRB.DoubleAttr.LB, -robot.maxSpeed)
             u[i].set(GRB.DoubleAttr.UB, robot.maxSpeed)
             u[i].set(GRB.DoubleAttr.Start, robot.control.toDoubleArray()[i]) // warm start
         }
-        constraints.forEach { constraint -> constraint.update(model, context) }
-        model.setObjective(buildObjective(uNominal, duals, context), GRB.MINIMIZE)
+        constraints.forEach { constraint -> constraint.update(model, robot, settings = settings, deltaTime = deltaTime) }
+        model.setObjective(buildObjective(uNominal, duals, settings), GRB.MINIMIZE)
         model.update()
         model.optimize()
         return extractSolution(robot)
@@ -41,19 +41,19 @@ class LocalQP private constructor(
     private fun buildObjective( // todo this should be taken from outside, can be different by different simulations
         uNominal: DoubleArray,
         duals: Map<*, DualParams>,
-        context: ControlFunctionContext,
+        settings: QpSettings,
     ): GRBQuadExpr = GRBQuadExpr().apply {
         addRhoNorm2Sq(u, uNominal)
         constraints.forEach { constr ->
             constr.slack?.let { slack ->
-                val weight = constr.slackWeight ?: context.settings.rhoSlack
+                val weight = constr.slackWeight ?: settings.rhoSlack
                 addTerm(weight, slack, slack)
             }
         }
         duals.forEach { (_, value) ->
             val suggested = value.suggestedControl.zi.toDoubleArray()
             val residual = value.incidentDuals.yi.toDoubleArray()
-            addRhoNorm2Sq(u, suggested - residual, context.settings.rhoADMM / 2.0)
+            addRhoNorm2Sq(u, suggested - residual, settings.rhoADMM / 2.0)
         }
     }
 

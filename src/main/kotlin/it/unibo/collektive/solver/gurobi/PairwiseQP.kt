@@ -5,7 +5,6 @@ import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import it.unibo.collektive.admm.IncidentDuals
 import it.unibo.collektive.admm.SuggestedControl
-import it.unibo.collektive.control.ControlFunctionContext
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
@@ -25,7 +24,8 @@ class PairwiseQP private constructor(
         robot: Robot,
         other: Robot,
         incidentDuals: IncidentDuals,
-        context: ControlFunctionContext,
+        settings: QpSettings,
+        deltaTime: Double,
     ): SuggestedControl {
         val robotArray = robot.control.toDoubleArray()
         for (i in zi.variables.indices) {
@@ -36,8 +36,8 @@ class PairwiseQP private constructor(
             zj[i].set(GRB.DoubleAttr.UB, other.maxSpeed)
             zj[i].set(GRB.DoubleAttr.Start, robotArray[i]) // warm start
         }
-        constraints.forEach { constraint -> constraint.update(model, context) }
-        model.setObjective(buildObjective(robot, other, incidentDuals, context), GRB.MINIMIZE)
+        constraints.forEach { constraint -> constraint.update(model, robot, other, settings, deltaTime) }
+        model.setObjective(buildObjective(robot, other, incidentDuals, settings), GRB.MINIMIZE)
         model.update()
         model.optimize()
         return extractSolution(robot, other)
@@ -47,15 +47,15 @@ class PairwiseQP private constructor(
         robot: Robot,
         other: Robot,
         incidentDuals: IncidentDuals,
-        context: ControlFunctionContext,
+        settings: QpSettings,
     ): GRBQuadExpr = GRBQuadExpr().apply {
-        val rho = context.settings.rhoADMM / 2.0
+        val rho = settings.rhoADMM / 2.0
         // (ρ/2)‖z_i − (u_i + y_i)‖²  +  (ρ/2)‖z_j − (u_j + y_j)‖²
         addRhoNorm2Sq(zi, (robot.control + incidentDuals.yi).toDoubleArray(), rho)
         addRhoNorm2Sq(zj, (other.control + incidentDuals.yj).toDoubleArray(), rho)
         constraints.forEach { constr ->
             constr.slack?.let { slack ->
-                val weight = constr.slackWeight ?: context.settings.rhoSlack
+                val weight = constr.slackWeight ?: settings.rhoSlack
                 addTerm(weight, slack, slack)
             }
         }
