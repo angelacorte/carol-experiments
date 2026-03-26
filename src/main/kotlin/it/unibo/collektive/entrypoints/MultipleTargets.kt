@@ -18,9 +18,8 @@ import it.unibo.collektive.control.cbf.ObstacleAvoidanceCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
+import it.unibo.collektive.solver.SimulationSolver.solver
 import it.unibo.collektive.solver.gurobi.QpSettings
-import kotlin.Double
-import kotlin.Int
 
 /**
  * Multiple Targets simulation entrypoint.
@@ -34,12 +33,11 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
     val robot = getRobot()
     admmEntrypoint(
         robot,
-        device["TimeDistribution"] as Double? ?: 1.0,
         device["MaxIterations"] as? Int ?: 100,
-        localCLF = listOf(GoToTargetCLF(target)),
+        localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
-        localCBF = listOf(ObstacleAvoidanceCBF(getObstacle()), MaxSpeedCBF()),
+        solver = device.environment.solver(QpSettings().base(device)),
+        localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
         pairwiseCBF = listOf(CollisionAvoidanceCBF(0.8)),
-        settings = QpSettings().base(device),
     )
 }
