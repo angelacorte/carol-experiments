@@ -1,11 +1,8 @@
 package it.unibo.collektive.solver
 
-import com.github.benmanes.caffeine.cache.Caffeine
-import com.github.benmanes.caffeine.cache.LoadingCache
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBModel
-import it.unibo.alchemist.model.Environment
 import it.unibo.collektive.admm.DualParams
 import it.unibo.collektive.admm.IncidentDuals
 import it.unibo.collektive.admm.SuggestedControl
@@ -65,14 +62,3 @@ class Solver(val settings: QpSettings) {
     ): SuggestedControl = pairwise.updateAndSolve(robot, otherRobot, duals, settings, deltaTime)
 }
 
-object SimulationSolver {
-    private val activeSolver: LoadingCache<Environment<*, *>, Solver> = Caffeine.newBuilder()
-        .weakKeys()
-        .build { key -> Solver(QpSettings()) }
-
-    val Environment<*, *>.solver: Solver get() = activeSolver.getIfPresent(this)
-        ?: error("Could not find solver for $this")
-
-    fun Environment<*, *>.solver(settings: QpSettings): Solver =
-        activeSolver.getIfPresent(this) ?: Solver(settings).also { activeSolver.put(this, it) }
-}
