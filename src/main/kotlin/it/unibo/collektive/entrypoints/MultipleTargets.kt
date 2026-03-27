@@ -19,7 +19,7 @@ import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.alchemist.SimulationSolver.solver
-import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.alchemist.device.SimulationQpSettings
 
 /**
  * Multiple Targets simulation entrypoint.
@@ -36,7 +36,7 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
         device["MaxIterations"] as? Int ?: 100,
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
-        solver = device.environment.solver(QpSettings().base(device)),
+        solver = device.environment.solver(SimulationQpSettings().base(device)),
         localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
         pairwiseCBF = listOf(CollisionAvoidanceCBF(0.8)),
     )

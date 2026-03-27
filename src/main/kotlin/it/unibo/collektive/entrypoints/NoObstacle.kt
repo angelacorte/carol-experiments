@@ -15,7 +15,7 @@ import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.alchemist.SimulationSolver.solver
-import it.unibo.collektive.solver.gurobi.QpSettings
+import it.unibo.collektive.alchemist.device.SimulationQpSettings
 
 /**
  * Main aggregate entrypoint: runs distributed ADMM to compute a safe control and applies it when converged.
@@ -31,7 +31,7 @@ fun Aggregate<Int>.noObstacleEntrypoint(
         robot,
         device["MaxIterations"] as? Int ?: 100,
         uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
-        solver = device.environment.solver(QpSettings().base(device)),
+        solver = device.environment.solver(SimulationQpSettings().base(device)),
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         localCBF = listOf(MaxSpeedCBF()),
         pairwiseCBF = listOf(CollisionAvoidanceCBF()),
