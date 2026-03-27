@@ -35,7 +35,7 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
         robot,
         device["MaxIterations"] as? Int ?: 100,
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
-        uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
+        uNominal = GoToTargetNominal{ getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         solver = device.environment.solver(SimulationQpSettings().base(device)),
         localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
         pairwiseCBF = listOf(CollisionAvoidanceCBF(0.8)),

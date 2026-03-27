@@ -30,7 +30,7 @@ fun Aggregate<Int>.noObstacleEntrypoint(
     admmEntrypoint(
         robot,
         device["MaxIterations"] as? Int ?: 100,
-        uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
+        uNominal = GoToTargetNominal{ getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         solver = device.environment.solver(SimulationQpSettings().base(device)),
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         localCBF = listOf(MaxSpeedCBF()),
