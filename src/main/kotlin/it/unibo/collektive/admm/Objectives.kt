@@ -59,7 +59,7 @@ fun <ID : Comparable<ID>> GRBModel.minimizeADMMLocalQP(
     activeSlacks.forEach { (cf, slack) -> cf.addSlackToObjective(obj, slack, settings) }
     duals.forEach { (_, value) ->
         val suggested = value.suggestedControl.zi.toDoubleArray()
-        val residual = value.incidentDuals.yi.toDoubleArray()
+        val residual = value.localDualUpdate.yi.toDoubleArray()
         obj.addRhoNorm2Sq(u, suggested - residual, settings.rhoADMM / 2.0)
     }
     return solveLocal(u, obj, robot)

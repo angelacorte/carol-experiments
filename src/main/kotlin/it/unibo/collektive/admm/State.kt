@@ -32,15 +32,15 @@ data class ControlAndDuals<ID : Comparable<ID>>(
 /**
  * Local dual bundle for a neighbor edge.
  * @property [suggestedControl] consensus controls for the edge.
- * @property [incidentDuals] associated dual variables.
+ * @property [localDualUpdate] associated dual variables.
  */
 data class DualParams(
     val suggestedControl: SuggestedControl = SuggestedControl(),
-    val incidentDuals: LocalDualUpdate = LocalDualUpdate(),
+    val localDualUpdate: LocalDualUpdate = LocalDualUpdate(),
 ) {
-    override fun toString(): String = "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$incidentDuals)"
+    override fun toString(): String = "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$localDualUpdate)"
 
-    fun invert(): DualParams = DualParams(suggestedControl.invert(), incidentDuals.invert())
+    fun invert(): DualParams = DualParams(suggestedControl.invert(), localDualUpdate.invert())
 }
 
 /**
