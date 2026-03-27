@@ -40,7 +40,8 @@ fun Aggregate<Int>.admmEntrypoint(
 ) {
     val deltaTime: Double = localDeltaTime(timeSensor.getTimeAsInstant()).toDouble(DurationUnit.SECONDS)
         .takeIf { it > 0.0 } ?: (1.0 / (device["TimeDistribution"] as Double? ?: 1.0))
-    val result = controlLoop(robot, uNominal, maxIterations, deltaTime, solver, localCLF, localCBF, pairwiseCBF)
+    if (!solver.isLocalModelAvailable) solver.setupLocalModel(robot, localCLF, localCBF)
+    val result = controlLoop(robot, uNominal, maxIterations, deltaTime, solver, pairwiseCBF)
     if (result.shouldApply) {
         robot.applyControl(result.control, deltaTime)
     } else {
@@ -54,18 +55,14 @@ fun Aggregate<Int>.controlLoop(
     maxIter: Int,
     deltaTime: Double,
     solver: Solver,
-    localCLF: List<CLF>,
-    localCBF: List<CBF>,
     pairwiseCBF: List<CBF>,
 ): OutputControl = evolving(Infos(0, ControlAndDuals(robot.control, emptyMap()))) { previousDuals ->
-    val output = coreADMM(
+    val output: ControlAndDuals<Int> = coreADMM(
         robot.copy(control = previousDuals.admmOutput.control),
         uNominal,
         previousDuals.admmOutput.duals,
         deltaTime,
         solver,
-        localCLF,
-        localCBF,
         pairwiseCBF,
     )
     val previousSuggested = previousDuals.admmOutput.duals.toMap().mapValues { it.value.suggestedControl }
@@ -88,11 +85,8 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     duals: Map<ID, DualParams>,
     deltaTime: Double,
     solver: Solver,
-    localCLF: List<CLF>,
-    localCBF: List<CBF>,
     pairwiseCBF: List<CBF>,
 ): ControlAndDuals<ID> {
-    if (!solver.isLocalModelAvailable) solver.setupLocalModel(robot, localCLF, localCBF)
     val control: SpeedControl2D = solver.updateAndSolveLocal(robot, uNominal, duals, deltaTime)
     val robotUpdated = robot.copy(control = control)
     return sharing(robotUpdated) { controls ->
@@ -118,11 +112,8 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMMWithEdges(
     duals: Map<ID, DualParams>,
     deltaTime: Double,
     solver: Solver,
-    localCLF: List<CLF>,
-    localCBF: List<CBF>,
     pairwiseCBF: List<CBF>,
 ): ControlAndDuals<ID> {
-    if (!solver.isLocalModelAvailable) solver.setupLocalModel(robot, localCLF, localCBF)
     val control: SpeedControl2D = solver.updateAndSolveLocal(robot, uNominal, duals, deltaTime)
     val robotUpdated = robot.copy(control = control)
     val result = exchange(robotUpdated to DualParams()) { controls ->
