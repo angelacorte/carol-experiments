@@ -99,10 +99,10 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
         val commons: Map<ID, DualParams> = controls.neighbors.toMap()
             .filterNot { it.key == localId }
             .mapValues { (neighborId, neighbor) ->
-                val incidentDuals = duals[neighborId]?.incidentDuals ?: IncidentDuals()
+                val incidentDuals = duals[neighborId]?.incidentDuals ?: LocalDualUpdate()
                 if (!solver.isPairwiseModelAvailable) solver.setupPairwiseModel(robot, neighbor, pairwiseCBF)
                 val (zi, zj) = solver.updateAndSolvePairwise(robotUpdated, neighbor, incidentDuals, deltaTime)
-                val newIncidentDuals = IncidentDuals(
+                val newIncidentDuals = LocalDualUpdate(
                     incidentDuals.yi + control - zi, // y_ij^i,t+1
                     incidentDuals.yj + neighbor.control - zj, // y_ij^j,t+1
                 )
