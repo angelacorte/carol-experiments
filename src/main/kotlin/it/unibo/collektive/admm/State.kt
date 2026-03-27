@@ -36,9 +36,11 @@ data class ControlAndDuals<ID : Comparable<ID>>(
  */
 data class DualParams(
     val suggestedControl: SuggestedControl = SuggestedControl(),
-    val incidentDuals: IncidentDuals = IncidentDuals(),
+    val incidentDuals: LocalDualUpdate = LocalDualUpdate(),
 ) {
     override fun toString(): String = "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$incidentDuals)"
+
+    fun invert(): DualParams = DualParams(suggestedControl.invert(), incidentDuals.invert())
 }
 
 /**
@@ -46,8 +48,10 @@ data class DualParams(
  * @property [yi] local dual variable.
  * @property [yj] neighbor dual variable.
  */
-data class IncidentDuals(val yi: Vector2D = initVector2D(), val yj: Vector2D = initVector2D()) {
+data class LocalDualUpdate(val yi: Vector2D = initVector2D(), val yj: Vector2D = initVector2D()) {
     override fun toString(): String = "IncidentDuals(yi=(${yi.x}, ${yi.y}), yj=(${yj.x}, ${yj.y})"
+
+    fun invert(): LocalDualUpdate = LocalDualUpdate(yj, yi)
 }
 
 /**
@@ -57,6 +61,8 @@ data class IncidentDuals(val yi: Vector2D = initVector2D(), val yj: Vector2D = i
  */
 data class SuggestedControl(val zi: SpeedControl2D = zeroSpeed(), val zj: SpeedControl2D = zeroSpeed()) {
     override fun toString(): String = "SuggestedControl(zi=(${zi.x}, ${zi.y}), zj=(${zj.x}, ${zj.y})"
+
+    fun invert(): SuggestedControl = SuggestedControl(zj, zi)
 }
 
 /**

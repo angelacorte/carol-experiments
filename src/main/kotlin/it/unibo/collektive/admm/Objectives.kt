@@ -26,7 +26,7 @@ fun GRBModel.minimizeADMMCommonQP(
     zj: GRBVector,
     robot: Robot,
     other: Robot,
-    incidentDuals: IncidentDuals,
+    incidentDuals: LocalDualUpdate,
     activeSlacks: List<Pair<ControlFunction, GRBVar>> = emptyList(),
     settings: QpSettings,
 ): SuggestedControl {

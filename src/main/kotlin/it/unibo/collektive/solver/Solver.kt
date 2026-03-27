@@ -4,7 +4,7 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.admm.DualParams
-import it.unibo.collektive.admm.IncidentDuals
+import it.unibo.collektive.admm.LocalDualUpdate
 import it.unibo.collektive.admm.SuggestedControl
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
@@ -57,7 +57,7 @@ class Solver(val settings: QpSettings) {
     fun updateAndSolvePairwise(
         robot: Robot,
         otherRobot: Robot,
-        duals: IncidentDuals,
+        duals: LocalDualUpdate,
         deltaTime: Double,
     ): SuggestedControl = pairwise.updateAndSolve(robot, otherRobot, duals, settings, deltaTime)
 }
