@@ -3,6 +3,7 @@ package it.unibo.collektive.solver.gurobi
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
+import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.admm.DualParams
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
@@ -14,6 +15,7 @@ import it.unibo.collektive.model.SpeedControl2D
 class LocalQP private constructor(
     private val model: GRBModel,
     private val u: GRBVector,
+    private val slack: GRBVar,
     private val constraints: List<Constraint>,
 ) {
 
@@ -47,11 +49,12 @@ class LocalQP private constructor(
     ): GRBQuadExpr = GRBQuadExpr().apply {
         addRhoNorm2Sq(u, uNominal)
         constraints.forEach { constr ->
-            constr.slack?.let { slack ->
+            constr.slack?.let { slackC ->
                 val weight = constr.slackWeight ?: settings.rhoSlack
-                addTerm(weight, slack, slack)
+                addTerm(settings.rhoSlack, slackC, slackC)
             }
         }
+        addTerm(settings.rhoSlack, slack, slack)
         duals.forEach { (_, value) ->
             val suggested = value.suggestedControl.zi.toDoubleArray()
             val residual = value.incidentDuals.yi.toDoubleArray()
@@ -83,6 +86,7 @@ class LocalQP private constructor(
     companion object {
         fun create(model: GRBModel, robot: Robot, localCLFs: List<CLF>, localCBFs: List<CBF>): LocalQP {
             val u = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "u")
+            val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_localQP")
             val installed = mutableListOf<Constraint>()
             localCLFs.forEach { clf -> installed += clf.install(model, u, null) }
             localCBFs.forEach { cbf -> installed += cbf.install(model, u, null) }
@@ -90,6 +94,7 @@ class LocalQP private constructor(
             return LocalQP(
                 model = model,
                 u = u,
+                slack,
                 constraints = installed,
             )
         }
