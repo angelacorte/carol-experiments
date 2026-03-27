@@ -10,6 +10,7 @@ import it.unibo.collektive.model.Robot
 import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
+import kotlin.math.max
 import kotlin.math.pow
 
 /**
@@ -64,7 +65,9 @@ class CommunicationRangeCBF(
                 }
                 val distance = (self.position - otherRobot.position).toDoubleArray()
                 val h = range.pow(2) - distance.squaredNorm()
-                val rhs = -(eta / deltaTime) * h + deltaTime * (self.maxSpeed + otherRobot.maxSpeed).pow(2)
+                val maxSpeed = max(self.maxSpeed, otherRobot.maxSpeed)
+                val rhs = -(eta / deltaTime) * h + 4 * deltaTime * maxSpeed.pow(2)
+//                val rhs = -(eta / deltaTime) * h + 4 * deltaTime * (self.maxSpeed + otherRobot.maxSpeed).pow(2)
                 constraint.set(GRB.DoubleAttr.RHS, rhs)
                 for (i in distance.indices) {
                     model.chgCoeff(constraint, uSelf[i], -2.0 * distance[i])
