@@ -1,7 +1,7 @@
 package it.unibo.collektive.control
 
 import it.unibo.collektive.mathutils.nominal
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
 
@@ -11,12 +11,12 @@ import it.unibo.collektive.model.Target
  */
 fun interface NominalController {
     /**
-     * Computes the desired nominal speed for the given [robot].
+     * Computes the desired nominal speed for the given [device].
      *
-     * @param robot the robot for which the nominal control is calculated.
+     * @param device the robot for which the nominal control is calculated.
      * @return the computed [SpeedControl2D] representing the unconstrained intended velocity.
      */
-    fun compute(robot: Robot): SpeedControl2D
+    fun compute(device: Device): SpeedControl2D
 }
 
 /**
@@ -30,5 +30,5 @@ fun interface NominalController {
  * @property gain the proportional gain of the controller (default is 0.5).
  */
 class GoToTargetNominal(private val gain: Double = 0.5, private val targetProvider: () -> Target, ) : NominalController {
-    override fun compute(robot: Robot): SpeedControl2D = robot.position.nominal(targetProvider().position, gain)
+    override fun compute(device: Device): SpeedControl2D = device.position.nominal(targetProvider().position, gain)
 }

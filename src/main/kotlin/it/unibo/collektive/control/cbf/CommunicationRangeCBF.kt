@@ -6,7 +6,7 @@ import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
@@ -55,17 +55,17 @@ class CommunicationRangeCBF(
             override val slackWeight = this@CommunicationRangeCBF.slackWeight
             override fun update(
                 model: GRBModel,
-                self: Robot,
-                otherRobot: Robot?,
+                self: Device,
+                otherDevice: Device?,
                 settings: QpSettings,
                 deltaTime: Double,
             ) {
-                checkNotNull(otherRobot) {
+                checkNotNull(otherDevice) {
                     "CommunicationRangeCBF.update: otherRobot must not be null"
                 }
-                val distance = (self.position - otherRobot.position).toDoubleArray()
+                val distance = (self.position - otherDevice.position).toDoubleArray()
                 val h = range.pow(2) - distance.squaredNorm()
-                val maxSpeed = max(self.maxSpeed, otherRobot.maxSpeed)
+                val maxSpeed = max(self.maxSpeed, otherDevice.maxSpeed)
                 val rhs = -(eta / deltaTime) * h + 4 * deltaTime * maxSpeed.pow(2)
 //                val rhs = -(eta / deltaTime) * h + 4 * deltaTime * (self.maxSpeed + otherRobot.maxSpeed).pow(2)
                 constraint.set(GRB.DoubleAttr.RHS, rhs)

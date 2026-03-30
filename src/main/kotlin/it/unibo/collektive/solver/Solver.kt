@@ -8,7 +8,7 @@ import it.unibo.collektive.admm.LocalDualUpdate
 import it.unibo.collektive.admm.SuggestedControl
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.solver.gurobi.LocalQP
 import it.unibo.collektive.solver.gurobi.PairwiseQP
@@ -33,32 +33,32 @@ class Solver(val settings: QpSettings) {
 
     val isPairwiseModelAvailable: Boolean get() = this::pairwise.isInitialized
 
-    fun setupLocalModel(robot: Robot, localCLFs: List<CLF>, localCBFs: List<CBF>) {
+    fun setupLocalModel(device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>) {
         if (!isLocalModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-            local = LocalQP.create(model, robot, localCLFs, localCBFs)
+            local = LocalQP.create(model, device, localCLFs, localCBFs)
         }
     }
 
-    fun setupPairwiseModel(robot: Robot, otherRobot: Robot, pairwiseCBFs: List<CBF>) {
+    fun setupPairwiseModel(device: Device, otherDevice: Device, pairwiseCBFs: List<CBF>) {
         if (!isPairwiseModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-            pairwise = PairwiseQP.create(model, robot, otherRobot, pairwiseCBFs)
+            pairwise = PairwiseQP.create(model, device, otherDevice, pairwiseCBFs)
         }
     }
 
     fun <ID : Comparable<ID>> updateAndSolveLocal(
-        robot: Robot,
+        device: Device,
         uNominal: DoubleArray,
         duals: Map<ID, DualParams>,
         deltaTime: Double,
-    ): SpeedControl2D = local.updateAndSolve(robot, uNominal, duals, settings, deltaTime)
+    ): SpeedControl2D = local.updateAndSolve(device, uNominal, duals, settings, deltaTime)
 
     fun updateAndSolvePairwise(
-        robot: Robot,
-        otherRobot: Robot,
+        device: Device,
+        otherDevice: Device,
         duals: LocalDualUpdate,
         deltaTime: Double,
-    ): SuggestedControl = pairwise.updateAndSolve(robot, otherRobot, duals, settings, deltaTime)
+    ): SuggestedControl = pairwise.updateAndSolve(device, otherDevice, duals, settings, deltaTime)
 }
 

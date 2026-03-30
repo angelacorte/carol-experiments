@@ -9,7 +9,7 @@ import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.zeroSpeed
 import it.unibo.collektive.solver.gurobi.GRBVector
@@ -24,21 +24,21 @@ import it.unibo.collektive.solver.gurobi.writeIIS
 fun GRBModel.minimizeADMMCommonQP(
     zi: GRBVector,
     zj: GRBVector,
-    robot: Robot,
-    other: Robot,
+    device: Device,
+    other: Device,
     incidentDuals: LocalDualUpdate,
     activeSlacks: List<Pair<ControlFunction, GRBVar>> = emptyList(),
     settings: QpSettings,
 ): SuggestedControl {
     val obj = GRBQuadExpr()
-    val ui = robot.control
+    val ui = device.control
     val uj = other.control
     val yi = incidentDuals.yi
     val yj = incidentDuals.yj
     obj.addRhoNorm2Sq(zi, (ui + yi).toDoubleArray(), settings.rhoADMM / 2.0)
     obj.addRhoNorm2Sq(zj, (uj + yj).toDoubleArray(), settings.rhoADMM / 2.0)
     activeSlacks.forEach { (cf, slack) -> cf.addSlackToObjective(obj, slack, settings) }
-    return solveCommon(obj, zi, zj, robot, other)
+    return solveCommon(obj, zi, zj, device, other)
 }
 
 /**
@@ -49,7 +49,7 @@ fun GRBModel.minimizeADMMCommonQP(
 fun <ID : Comparable<ID>> GRBModel.minimizeADMMLocalQP(
     u: GRBVector,
     uNominal: DoubleArray,
-    robot: Robot,
+    device: Device,
     duals: Map<ID, DualParams>,
     activeSlacks: List<Pair<ControlFunction, GRBVar>>,
     settings: QpSettings,
@@ -62,10 +62,10 @@ fun <ID : Comparable<ID>> GRBModel.minimizeADMMLocalQP(
         val residual = value.localDualUpdate.yi.toDoubleArray()
         obj.addRhoNorm2Sq(u, suggested - residual, settings.rhoADMM / 2.0)
     }
-    return solveLocal(u, obj, robot)
+    return solveLocal(u, obj, device)
 }
 
-private fun GRBModel.solveLocal(u: GRBVector, obj: GRBQuadExpr, robot: Robot): SpeedControl2D = try {
+private fun GRBModel.solveLocal(u: GRBVector, obj: GRBQuadExpr, device: Device): SpeedControl2D = try {
     setObjective(obj, GRB.MINIMIZE)
     optimize()
     val status = get(GRB.IntAttr.Status)
@@ -84,7 +84,7 @@ private fun GRBModel.solveLocal(u: GRBVector, obj: GRBQuadExpr, robot: Robot): S
         SpeedControl2D(uOptX, uOptY)
     } else {
         println("Local QP: no solution found (status $status)")
-        robot.control
+        device.control
     }
 } catch (ex: GRBException) {
     println("${ex.message} - Minimization problem is infeasible, returning control: ${zeroSpeed()}.")
@@ -95,8 +95,8 @@ private fun GRBModel.solveCommon(
     obj: GRBQuadExpr,
     zi: GRBVector,
     zj: GRBVector,
-    robot: Robot,
-    other: Robot,
+    device: Device,
+    other: Device,
 ): SuggestedControl = try {
     setObjective(obj, GRB.MINIMIZE)
     optimize()
@@ -118,7 +118,7 @@ private fun GRBModel.solveCommon(
         SuggestedControl(SpeedControl2D(zxiOpt, zyiOpt), SpeedControl2D(zxjOpt, zyjOpt))
     } else {
         println("Common QP: no solution found (status $status)")
-        SuggestedControl(robot.control, other.control)
+        SuggestedControl(device.control, other.control)
     }
 } catch (ex: GRBException) {
     println(

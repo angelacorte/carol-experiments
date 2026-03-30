@@ -6,7 +6,7 @@ import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
@@ -56,8 +56,8 @@ class GoToTargetCLF(
 
             override fun update(
                 model: GRBModel,
-                self: Robot,
-                otherRobot: Robot?,
+                self: Device,
+                otherDevice: Device?,
                 settings: QpSettings,
                 deltaTime: Double,
             ) {

@@ -2,7 +2,7 @@ package it.unibo.collektive.control.cbf
 
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
@@ -38,8 +38,8 @@ class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Doub
             override val slackWeight = this@MaxSpeedCBF.slackWeight
             override fun update(
                 model: GRBModel,
-                self: Robot,
-                otherRobot: Robot?,
+                self: Device,
+                otherDevice: Device?,
                 settings: QpSettings,
                 deltaTime: Double,
             ) {

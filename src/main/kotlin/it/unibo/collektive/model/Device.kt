@@ -5,7 +5,7 @@ package it.unibo.collektive.model
  * A robot has a [safeMargin], a [control] that represent the current vector of speed, and the [maxSpeed] applicable.
  * [position] represent its coordinates [x] [y].
  */
-data class Robot(
+data class Device(
     override val x: Double,
     override val y: Double,
     val safeMargin: Double,
