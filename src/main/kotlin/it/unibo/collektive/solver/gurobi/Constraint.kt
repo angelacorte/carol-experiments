@@ -27,7 +27,7 @@ interface Constraint {
 
     /**
      * The objective penalty weight applied to [slack].
-     * `null` means "use the solver's default ([QpSettings.rhoSlack])".
+     * `null` means this constraint does not contribute its own slack penalty.
      */
     val slackWeight: Double?
 

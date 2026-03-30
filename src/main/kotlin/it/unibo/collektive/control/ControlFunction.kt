@@ -26,16 +26,16 @@ interface ControlFunction {
     val name: String
 
     /**
-     * Penalty weight applied to the slack variable in the QP objective, or `null` for hard constraints.
-     * A `null` value also causes [install] to skip slack variable creation.
+     * Penalty weight applied to the slack variable in the QP objective, or `null` when this control
+     * function should not introduce/use its own slack.
      */
     val slackWeight: Double?
 
     fun install(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?): Constraint
 
     /**
-     * Adds the slack contribution to [objective], weighted by [slackWeight] or the solver default.
-     * Called from the template's objective builder, not from [install] / [Constraint.update].
+     * Legacy helper for objective slack penalties.
+     * The active QP builders currently manage slack penalties directly.
      */
     fun addSlackToObjective(objective: GRBExpr, slack: GRBVar, settings: QpSettings) {
         val weight = slackWeight ?: settings.rhoSlack
