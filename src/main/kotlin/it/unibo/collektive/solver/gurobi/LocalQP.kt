@@ -9,7 +9,7 @@ import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 
 class LocalQP private constructor(
@@ -22,24 +22,24 @@ class LocalQP private constructor(
     fun dispose() = model.dispose()
 
     fun <ID : Comparable<ID>> updateAndSolve(
-        robot: Robot,
+        device: Device,
         uNominal: DoubleArray,
         duals: Map<ID, DualParams>,
         settings: QpSettings,
         deltaTime: Double,
     ): SpeedControl2D {
         for (i in u.variables.indices) {
-            u[i].set(GRB.DoubleAttr.LB, -robot.maxSpeed)
-            u[i].set(GRB.DoubleAttr.UB, robot.maxSpeed)
-            u[i].set(GRB.DoubleAttr.Start, robot.control.toDoubleArray()[i]) // warm start
+            u[i].set(GRB.DoubleAttr.LB, -device.maxSpeed)
+            u[i].set(GRB.DoubleAttr.UB, device.maxSpeed)
+            u[i].set(GRB.DoubleAttr.Start, device.control.toDoubleArray()[i]) // warm start
         }
         constraints.forEach { constraint ->
-            constraint.update(model, robot, settings = settings, deltaTime = deltaTime)
+            constraint.update(model, device, settings = settings, deltaTime = deltaTime)
         }
         model.setObjective(buildObjective(uNominal, duals, settings), GRB.MINIMIZE)
         model.update()
         model.optimize()
-        return extractSolution(robot)
+        return extractSolution(device)
     }
 
     private fun buildObjective( // todo this should be taken from outside, can be different by different simulations
@@ -49,20 +49,19 @@ class LocalQP private constructor(
     ): GRBQuadExpr = GRBQuadExpr().apply {
         addRhoNorm2Sq(u, uNominal)
         constraints.forEach { constr ->
-            constr.slack?.let { slackC ->
-                val weight = constr.slackWeight ?: settings.rhoSlack
-                addTerm(settings.rhoSlack, slackC, slackC)
+            constr.slack?.let { slackConstraint ->
+                if(constr.slackWeight != null) addTerm(constr.slackWeight!!, slackConstraint, slackConstraint)
             }
         }
         addTerm(settings.rhoSlack, slack, slack)
         duals.forEach { (_, value) ->
             val suggested = value.suggestedControl.zi.toDoubleArray()
-            val residual = value.incidentDuals.yi.toDoubleArray()
+            val residual = value.localDualUpdate.yi.toDoubleArray()
             addRhoNorm2Sq(u, suggested - residual, settings.rhoADMM / 2.0)
         }
     }
 
-    private fun extractSolution(robot: Robot): SpeedControl2D {
+    private fun extractSolution(device: Device): SpeedControl2D {
         val status = model.get(GRB.IntAttr.Status)
         if (status == GRB.INFEASIBLE) {
             model.writeIIS("localModel.ilp")
@@ -72,20 +71,25 @@ class LocalQP private constructor(
                 }
             }
         }
+        if (model.get(GRB.IntAttr.Status) == GRB.INF_OR_UNBD) {
+            model.set(GRB.IntParam.DualReductions, 0)
+            model.reset()
+            model.optimize()
+        }
         return when {
             model.get(
                 GRB.IntAttr.SolCount,
             ) > 0 -> SpeedControl2D(u[0].get(GRB.DoubleAttr.X), u[1].get(GRB.DoubleAttr.X))
             else -> {
                 println("Local QP: no solution found (status $status), returning previous control.")
-                robot.control
+                device.control
             }
         }
     }
 
     companion object {
-        fun create(model: GRBModel, robot: Robot, localCLFs: List<CLF>, localCBFs: List<CBF>): LocalQP {
-            val u = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "u")
+        fun create(model: GRBModel, device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>): LocalQP {
+            val u = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "u")
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_localQP")
             val installed = mutableListOf<Constraint>()
             localCLFs.forEach { clf -> installed += clf.install(model, u, null) }

@@ -9,7 +9,7 @@ import it.unibo.collektive.admm.SuggestedControl
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Robot
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 
 class PairwiseQP private constructor(
@@ -23,49 +23,48 @@ class PairwiseQP private constructor(
     fun dispose() = model.dispose()
 
     fun updateAndSolve(
-        robot: Robot,
-        other: Robot,
+        device: Device,
+        other: Device,
         incidentDuals: LocalDualUpdate,
         settings: QpSettings,
         deltaTime: Double,
     ): SuggestedControl {
-        val robotArray = robot.control.toDoubleArray()
+        val robotArray = device.control.toDoubleArray()
         val otherArray = other.control.toDoubleArray()
         for (i in zi.variables.indices) {
-            zi[i].set(GRB.DoubleAttr.LB, -robot.maxSpeed)
-            zi[i].set(GRB.DoubleAttr.UB, robot.maxSpeed)
+            zi[i].set(GRB.DoubleAttr.LB, -device.maxSpeed)
+            zi[i].set(GRB.DoubleAttr.UB, device.maxSpeed)
             zi[i].set(GRB.DoubleAttr.Start, robotArray[i]) // warm start
             zj[i].set(GRB.DoubleAttr.LB, -other.maxSpeed)
             zj[i].set(GRB.DoubleAttr.UB, other.maxSpeed)
             zj[i].set(GRB.DoubleAttr.Start, otherArray[i]) // warm start
         }
-        constraints.forEach { constraint -> constraint.update(model, robot, other, settings, deltaTime) }
-        model.setObjective(buildObjective(robot, other, incidentDuals, settings), GRB.MINIMIZE)
+        constraints.forEach { constraint -> constraint.update(model, device, other, settings, deltaTime) }
+        model.setObjective(buildObjective(device, other, incidentDuals, settings), GRB.MINIMIZE)
         model.update()
         model.optimize()
-        return extractSolution(robot, other)
+        return extractSolution(device, other)
     }
 
     private fun buildObjective(
-        robot: Robot,
-        other: Robot,
+        device: Device,
+        other: Device,
         incidentDuals: LocalDualUpdate,
         settings: QpSettings,
     ): GRBQuadExpr = GRBQuadExpr().apply {
         val rho = settings.rhoADMM / 2.0
         // (ρ/2)‖z_i − (u_i + y_i)‖²  +  (ρ/2)‖z_j − (u_j + y_j)‖²
-        addRhoNorm2Sq(zi, (robot.control + incidentDuals.yi).toDoubleArray(), rho)
+        addRhoNorm2Sq(zi, (device.control + incidentDuals.yi).toDoubleArray(), rho)
         addRhoNorm2Sq(zj, (other.control + incidentDuals.yj).toDoubleArray(), rho)
         constraints.forEach { constr ->
-            constr.slack?.let { slackC ->
-                val weight = constr.slackWeight ?: settings.rhoSlack
-                addTerm(weight, slackC, slackC)
+            constr.slack?.let { slackConstraint ->
+                if(constr.slackWeight != null) addTerm(constr.slackWeight!!, slackConstraint, slackConstraint)
             }
         }
         addTerm(settings.rhoSlack, slack, slack)
     }
 
-    private fun extractSolution(robot: Robot, other: Robot): SuggestedControl {
+    private fun extractSolution(device: Device, other: Device): SuggestedControl {
         val status = model.get(GRB.IntAttr.Status)
         if (status == GRB.INFEASIBLE) {
             model.writeIIS("commonModel.ilp")
@@ -75,6 +74,11 @@ class PairwiseQP private constructor(
                 }
             }
         }
+        if (model.get(GRB.IntAttr.Status) == GRB.INF_OR_UNBD) {
+            model.set(GRB.IntParam.DualReductions, 0)
+            model.reset()
+            model.optimize()
+        }
         return when {
             model.get(GRB.IntAttr.SolCount) > 0 -> SuggestedControl(
                 SpeedControl2D(zi[0].get(GRB.DoubleAttr.X), zi[1].get(GRB.DoubleAttr.X)),
@@ -82,16 +86,16 @@ class PairwiseQP private constructor(
             )
             else -> {
                 println("Pairwise QP: no solution found (status $status), returning current controls.")
-                SuggestedControl(robot.control, other.control)
+                SuggestedControl(device.control, other.control)
             }
         }
     }
 
     companion object {
 
-        fun create(model: GRBModel, robot: Robot, other: Robot, pairwiseCBFs: List<CBF>): PairwiseQP {
+        fun create(model: GRBModel, device: Device, other: Device, pairwiseCBFs: List<CBF>): PairwiseQP {
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_pairwiseQP")
-            val zi = model.addVecVar(robot.position.dimension, -robot.maxSpeed, robot.maxSpeed, "z_ij^i")
+            val zi = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "z_ij^i")
             val zj = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")
             val constrs = mutableListOf<Constraint>()
             pairwiseCBFs.forEach { cbf -> constrs += cbf.install(model, zi, zj) }
