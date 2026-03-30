@@ -3,6 +3,7 @@ package it.unibo.collektive.control.clf
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
+import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
@@ -25,8 +26,8 @@ import kotlin.math.pow
  * moves. The current target is retrieved through [targetProvider] on every update so the cached
  * solver model can react to target motion at runtime.
  *
- * The slack variable is mandatory for CLF feasibility and is always created (regardless of
- * [slackWeight]).
+     * The slack variable is mandatory for CLF feasibility and is provided by the enclosing local QP
+     * as the shared node slack `ω_i`.
  *
  * @property targetProvider  supplies the current navigation goal
  * @property convergenceRate Lyapunov decrease rate λ
@@ -42,10 +43,9 @@ class GoToTargetCLF(
 
     override fun GRBModel.installCLF(uSelf: GRBVector): Constraint {
         val initialTarget = targetProvider()
-        val dim = uSelf.dimensions
         val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
         val lhs = GRBLinExpr().apply {
-            repeat(dim) { i -> addTerm(0.0, uSelf[i]) }
+            repeat(uSelf.dimensions) { i -> addTerm(0.0, uSelf[i]) }
             addTerm(-1.0, slack)
         }
         val constr = addConstr(lhs, GRB.LESS_EQUAL, 0.0, "go_to_target${initialTarget.id}_CLF")
@@ -62,11 +62,11 @@ class GoToTargetCLF(
                 deltaTime: Double,
             ) {
                 val target = targetProvider()
-                val dist = (self.position - target.position).toDoubleArray()
-                val rhs = -convergenceRate * dist.squaredNorm() - deltaTime.pow(2) * self.maxSpeed.pow(2)
+                val distance = (self.position - target.position).toDoubleArray()
+                val rhs = -convergenceRate * distance.squaredNorm() - deltaTime.pow(2) * self.maxSpeed.pow(2)
                 constr.set(GRB.DoubleAttr.RHS, rhs)
-                for (i in dist.indices) {
-                    model.chgCoeff(constr, uSelf[i], 2.0 * deltaTime * dist[i])
+                for (i in distance.indices) {
+                    model.chgCoeff(constr, uSelf[i], 2.0 * deltaTime * distance[i])
                 }
             }
         }
