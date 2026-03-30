@@ -11,5 +11,6 @@ data class Device(
     val safeMargin: Double,
     val control: SpeedControl2D = SpeedControl2D(0.0, 0.0),
     val maxSpeed: Double = Double.MAX_VALUE,
-    val position: Coordinate = Coordinate(x, y),
-) : Vector2D
+) : Vector2D {
+    val position: Coordinate get() = Coordinate(x, y)
+}
