@@ -49,7 +49,7 @@ fun getTarget(targetId: Number): Target =
  */
 context(position: LocationSensor, env: EnvironmentVariables)
 fun getRobot(): Device = position.coordinates().let {
-    val velocity = env.getOrDefault("Velocity", SpeedControl2D(0.0, 0.0))
+    val velocity = env.getOrDefault("Control", SpeedControl2D(0.0, 0.0))
     Device(it.x, it.y, env["SafeMargin"], velocity, env["MaxSpeed"])
 }
 
@@ -75,6 +75,7 @@ fun getObstacle(): Obstacle {
 context(device: CollektiveDevice<Euclidean2DPosition>)
 fun Device.applyControl(control: SpeedControl2D, deltaTime: Double) {
     device["DeltaTime"] = deltaTime
+    device["Control"] = control
     device["Velocity"] = control
 //    moveNodeToPosition(this.position + control * deltaTime)
 }
