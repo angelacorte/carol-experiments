@@ -71,7 +71,7 @@ class LocalQP private constructor(
                 }
             }
         }
-        if (model.get(GRB.IntAttr.Status) == GRB.INF_OR_UNBD) {
+        if (status == GRB.INF_OR_UNBD) {
             model.set(GRB.IntParam.DualReductions, 0)
             model.reset()
             model.optimize()
