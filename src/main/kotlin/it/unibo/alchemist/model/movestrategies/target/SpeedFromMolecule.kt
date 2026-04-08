@@ -23,10 +23,8 @@ import kotlin.math.hypot
  * @property node the node whose speed and properties are used to determine the movement length
  * @property reaction the reaction associated with the node, used to retrieve the time distribution rate
  */
-class SpeedFromMolecule<T, P : Position<P>>(
-    private val node: Node<T>,
-    private val environment: Environment<T, P>,
-) : SpeedSelectionStrategy<T, P> {
+class SpeedFromMolecule<T, P : Position<P>>(private val node: Node<T>, private val environment: Environment<T, P>) :
+    SpeedSelectionStrategy<T, P> {
 
     /**
      * Last simulation time used to compute the elapsed time for the next movement update.

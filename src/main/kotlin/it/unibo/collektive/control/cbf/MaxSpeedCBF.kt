@@ -21,10 +21,10 @@ import kotlin.math.pow
  * the robot's maximum speed is adjusted between iterations; this is updated via the [GRBQConstr]
  * RHS attribute setter — no structural changes are needed.
  *
- * @property eta        unused (kept for interface compatibility with [CBF])
+ * @property eta unused (kept for interface compatibility with [CBF])
  * @property slackWeight always `null`; slack on a quadratic norm constraint requires a quadratic
- *                       addition to the LHS which is not supported after [GRBModel.addQConstr].
-     *                       Use variable bounds on the decision vector as an alternative soft limit if needed.
+ *  addition to the LHS which is not supported after [GRBModel.addQConstr].
+ *  Use variable bounds on the decision vector as an alternative soft limit if needed.
  */
 class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Double? = null) : CBF() {
 

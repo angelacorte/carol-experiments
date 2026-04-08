@@ -35,8 +35,8 @@ fun Aggregate<Int>.commonTargetEntrypoint(
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         solver = device.environment.solver(SimulationQpSettings().base(device)),
+        uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
         pairwiseCBF = listOf(
