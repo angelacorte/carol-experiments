@@ -1,48 +1,38 @@
 package it.unibo.collektive.solver.gurobi
 
-import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.collektive.admm.Tolerance
 
 /**
- * Centralized tuning parameters for the ADMM QP solver.
- *
- * Controls: [rhoSlack] (default slack weight), [rhoADMM] (ADMM penalty), [deltaTime] (discrete time-step),
- * [rhoResidual] (residual balancing), [tolerance] (primal and dual residual thresholds),
- * [logEnabled] (enable solver logging), [constraintPrefix] (constraint naming prefix),
- * and [deltaTime] (discrete time-step).
+ * Numerical and runtime configuration shared by the quadratic programs used in the ADMM solver.
  */
-data class QpSettings(
-    val constraintPrefix: String = "qp",
-    val deltaTime: Double = 0.01,
-    val logEnabled: Boolean = false,
-    val rhoADMM: Double = 10.0,
-    val rhoResidual: Double = 0.5,
-    val rhoSlack: Double = 2.0,
-    val tolerance: Tolerance = Tolerance(DEFAULT_TOLERANCE, DEFAULT_TOLERANCE),
-) {
+interface QpSettings {
     /**
-     * Given a [CollektiveDevice], creates a new [QpSettings]
-     * instance with parameters overridden by device properties if present.
+     * Prefix used when generating Gurobi constraint names.
      */
-    fun base(device: CollektiveDevice<*>, deltaTime: Double? = null): QpSettings = copy(
-        deltaTime = deltaTime ?: this.deltaTime,
-        logEnabled = device["LogEnabled"] as? Boolean ?: logEnabled,
-        rhoADMM = device["RhoADMM"] as? Double ?: rhoADMM,
-        rhoResidual = device["RhoResidual"] as? Double ?: rhoResidual,
-        rhoSlack = device["RhoSlack"] as? Double ?: rhoSlack,
-        tolerance = Tolerance(
-            primal = (device["PrimalTolerance"] as? Double) ?: tolerance.primal,
-            dual = (device["DualTolerance"] as? Double) ?: tolerance.dual,
-        ),
-    )
+    val constraintPrefix: String
 
     /**
-     * Companion object for [QpSettings].
+     * Whether Gurobi logging should be enabled.
      */
-    companion object {
-        /**
-         * Default value for residual tolerance.
-         */
-        const val DEFAULT_TOLERANCE: Double = 1e-3
-    }
+    val logEnabled: Boolean
+
+    /**
+     * ADMM penalty parameter used in the consensus terms of the objective.
+     */
+    val rhoADMM: Double
+
+    /**
+     * Scaling factor used when evaluating the dual residual.
+     */
+    val rhoResidual: Double
+
+    /**
+     * Default penalty applied to slack variables.
+     */
+    val rhoSlack: Double
+
+    /**
+     * Residual thresholds used to evaluate convergence and confidence.
+     */
+    val tolerance: Tolerance
 }

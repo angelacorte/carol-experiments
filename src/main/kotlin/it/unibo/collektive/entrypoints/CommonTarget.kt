@@ -6,6 +6,8 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
+import it.unibo.collektive.alchemist.SimulationSolver.solver
+import it.unibo.collektive.alchemist.device.SimulationQpSettings
 import it.unibo.collektive.alchemist.device.getObstacle
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
@@ -19,7 +21,6 @@ import it.unibo.collektive.control.cbf.ObstacleAvoidanceCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
-import it.unibo.collektive.solver.gurobi.QpSettings
 
 /**
  * Main aggregate entrypoint: runs distributed ADMM to compute a safe control and applies it when converged.
@@ -30,19 +31,17 @@ fun Aggregate<Int>.commonTargetEntrypoint(
     device: CollektiveDevice<Euclidean2DPosition>,
 ) = context(position, device, timeSensor) {
     val robot = getRobot()
-    val target: Target = getTarget(device["TargetID"] as Number)
     val communicationDistance: Double = device["CommunicationDistance"]
     admmEntrypoint(
+        device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        device["TimeDistribution"] as Double? ?: 1.0,
-        device["MaxIterations"] as? Int ?: 100,
-        uNominal = GoToTargetNominal(target).compute(robot).toDoubleArray(),
-        localCLF = listOf(GoToTargetCLF(target)),
-        localCBF = listOf(ObstacleAvoidanceCBF(getObstacle()), MaxSpeedCBF()),
+        solver = device.environment.solver(SimulationQpSettings().base(device)),
+        uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
+        localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
+        localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),
         ),
-        settings = QpSettings().base(device),
     )
 }

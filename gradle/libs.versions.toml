@@ -1,6 +1,7 @@
 [versions]
 kotlin = "2.3.20"
 alchemist = "43.0.31"
+caffeine = "3.2.3"
 collektive = "28.2.2"
 gurobi = "13.0.1"
 
@@ -9,6 +10,7 @@ alchemist = { module = "it.unibo.alchemist:alchemist", version.ref = "alchemist"
 alchemist-swingui = { module = "it.unibo.alchemist:alchemist-swingui", version.ref = "alchemist" }
 alchemist-ui-tooling = { module = "it.unibo.alchemist:alchemist-ui-tooling", version.ref = "alchemist" }
 alchemist-euclidean-geometry = { module = "it.unibo.alchemist:alchemist-euclidean-geometry", version.ref = "alchemist" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 collektive = { module = "it.unibo.collektive:collektive-dsl", version.ref = "collektive" }
 collektive-incarnation = { module = "it.unibo.collektive:alchemist-incarnation-collektive", version.ref = "collektive" }
 collektive-stdlib = { module = "it.unibo.collektive:collektive-stdlib", version.ref = "collektive" }

@@ -8,10 +8,8 @@ import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
-import it.unibo.collektive.mathutils.plus
-import it.unibo.collektive.mathutils.times
+import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.Obstacle
-import it.unibo.collektive.model.Robot
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.model.Vector2D
@@ -47,12 +45,12 @@ fun getTarget(targetId: Number): Target =
     position.targetsPosition().find { it.id == targetId } ?: error("Target $targetId not found.")
 
 /**
- * Builds a [Robot] view for the current device state using environment variables.
+ * Builds a [Device] view for the current device state using environment variables.
  */
 context(position: LocationSensor, env: EnvironmentVariables)
-fun getRobot(): Robot = position.coordinates().let {
-    val velocity = env.getOrDefault("Velocity", SpeedControl2D(0.0, 0.0))
-    Robot(it.x, it.y, env["SafeMargin"], velocity, env["MaxSpeed"])
+fun getRobot(): Device = position.coordinates().let {
+    val velocity = env.getOrDefault("Control", SpeedControl2D(0.0, 0.0))
+    Device(it.x, it.y, env["SafeMargin"], velocity, env["MaxSpeed"])
 }
 
 /**
@@ -74,9 +72,10 @@ fun getObstacle(): Obstacle {
  *
  * Under ZOH dynamics the displacement is ∆t · u:  p_{k+1} = p_k + ∆t · u_k.
  */
-context(device: CollektiveDevice<Euclidean2DPosition>)
-fun Robot.applyControl(control: SpeedControl2D, deltaTime: Double) {
+context(locationSensor: LocationSensor, device: CollektiveDevice<Euclidean2DPosition>)
+fun applyControl(control: SpeedControl2D, deltaTime: Double): Device {
     device["DeltaTime"] = deltaTime
+    device["Control"] = control
     device["Velocity"] = control
-//    moveNodeToPosition(this.position + control * deltaTime)
+    return getRobot().copy(control = control)
 }

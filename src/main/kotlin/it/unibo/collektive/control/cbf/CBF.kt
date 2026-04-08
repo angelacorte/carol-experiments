@@ -1,36 +1,35 @@
 package it.unibo.collektive.control.cbf
 
 import com.gurobi.gurobi.GRBModel
-import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.control.ControlFunctionContext
+import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 
 /**
- * Pluggable barrier builder identified by [name] and exposing [applyToModel] to inject constraints.
+ * Base class for Control Barrier Functions.
+ *
+ * Subclasses implement [GRBModel.installCBF], which is called **once** per model to add the
+ * barrier constraint structure.  Subsequent per-iteration parameter refreshes happen through the
+ * returned [Constraint.update].
  */
 abstract class CBF : ControlFunction {
+
     override val name: String get() = "CBF"
 
-    /**
-     * The tuning parameter governing the decay rate or strictness of the barrier constraint.
-     */
+    /** Decay-rate parameter governing how strictly the barrier is enforced. */
     abstract val eta: Double
 
     /**
-     * Applies the specific Control Barrier Function constraint to the [this] GRBModel.
+     * Adds the barrier constraint to `this` model exactly once.
      *
-     * @param uSelf the decision variables representing the control input of the local robot.
-     * @param uOther the optional decision variables representing the control input of a neighboring robot.
-     * @param context the context providing state variables like positions and solver settings.
-     * @return the generated slack [GRBVar] if [slackWeight] is defined, or null otherwise.
+     * Add variables and constraints here using placeholder zero coefficients for any term
+     * whose value depends on robot positions.  Capture the resulting [GRBConstr]/[GRBQConstr]
+     * handles in the returned [Constraint] closure.
+     *
+     * @see Constraint.update for the per-iteration numerical refresh
      */
-    abstract fun GRBModel.applyCBF(uSelf: GRBVector, uOther: GRBVector?, context: ControlFunctionContext): GRBVar?
+    abstract fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint
 
-    override fun applyToModel(
-        model: GRBModel,
-        uSelf: GRBVector,
-        uOther: GRBVector?,
-        context: ControlFunctionContext,
-    ): GRBVar? = model.applyCBF(uSelf, uOther, context)
+    final override fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint =
+        model.installCBF(selfDecision, otherDecision)
 }
