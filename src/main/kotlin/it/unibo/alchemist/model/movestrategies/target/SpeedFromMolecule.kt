@@ -26,9 +26,11 @@ import kotlin.math.hypot
 class SpeedFromMolecule<T, P : Position<P>>(
     private val node: Node<T>,
     private val environment: Environment<T, P>,
-    private val reaction: Reaction<T>,
 ) : SpeedSelectionStrategy<T, P> {
 
+    /**
+     * Last simulation time used to compute the elapsed time for the next movement update.
+     */
     var previousTime: Time = Time.ZERO
 
     override fun getNodeMovementLength(target: P?): Double {

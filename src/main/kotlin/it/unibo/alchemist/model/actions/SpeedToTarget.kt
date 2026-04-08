@@ -26,14 +26,13 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 class SpeedToTarget<T, P : Position<P>>(
     environment: Environment<T, Euclidean2DPosition>,
     node: Node<T>,
-    reaction: Reaction<T>,
 ) : EuclideanConfigurableMoveNode<T, Euclidean2DPosition>(
     environment = environment,
     node = node,
     routingStrategy = StraightLine(),
     targetSelectionStrategy = TakeTargetFromMolecule(environment, node),
-    speedSelectionStrategy = SpeedFromMolecule(node, environment, reaction),
+    speedSelectionStrategy = SpeedFromMolecule(node, environment),
 ) {
     override fun cloneAction(node: Node<T>, reaction: Reaction<T>): Action<T> =
-        SpeedToTarget(environment, node, reaction)
+        SpeedToTarget(environment, node)
 }

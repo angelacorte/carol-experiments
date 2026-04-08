@@ -31,7 +31,6 @@ fun Aggregate<Int>.commonTargetEntrypoint(
     device: CollektiveDevice<Euclidean2DPosition>,
 ) = context(position, device, timeSensor) {
     val robot = getRobot()
-    val target: Target = getTarget(device["TargetID"] as Number)
     val communicationDistance: Double = device["CommunicationDistance"]
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,

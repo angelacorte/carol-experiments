@@ -26,7 +26,6 @@ fun Aggregate<Int>.noObstacleEntrypoint(
     device: CollektiveDevice<Euclidean2DPosition>,
 ) = context(position, device, timeSensor) {
     val robot = getRobot()
-    val target: Target = getTarget(device["TargetID"] as Number)
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
