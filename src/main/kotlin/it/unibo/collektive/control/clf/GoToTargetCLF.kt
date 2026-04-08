@@ -47,10 +47,10 @@ class GoToTargetCLF(
         }
     }
 
-    override fun GRBModel.installCLF(uSelf: GRBVector): Constraint {
+    override fun GRBModel.installCLF(selfDecision: GRBVector): Constraint {
         val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
         val lhs = GRBLinExpr().apply {
-            repeat(uSelf.dimensions) { i -> addTerm(0.0, uSelf[i]) }
+            repeat(selfDecision.dimensions) { i -> addTerm(0.0, selfDecision[i]) }
             addTerm(-1.0, slack)
         }
         val constr = addConstr(lhs, GRB.LESS_EQUAL, 0.0, "${name}_CLF")
@@ -71,7 +71,7 @@ class GoToTargetCLF(
                 val rhs = -convergenceRate * distance.squaredNorm() - deltaTime.pow(2) * self.maxSpeed.pow(2)
                 constr.set(GRB.DoubleAttr.RHS, rhs)
                 for (i in distance.indices) {
-                    model.chgCoeff(constr, uSelf[i], 2.0 * deltaTime * distance[i])
+                    model.chgCoeff(constr, selfDecision[i], 2.0 * deltaTime * distance[i])
                 }
             }
         }

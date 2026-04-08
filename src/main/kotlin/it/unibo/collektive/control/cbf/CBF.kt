@@ -28,7 +28,8 @@ abstract class CBF : ControlFunction {
      *
      * @see Constraint.update for the per-iteration numerical refresh
      */
-    abstract fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint
+    abstract fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint
 
-    final override fun install(model: GRBModel, zi: GRBVector, zj: GRBVector?): Constraint = model.installCBF(zi, zj)
+    final override fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint =
+        model.installCBF(selfDecision, otherDecision)
 }

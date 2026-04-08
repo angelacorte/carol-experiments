@@ -35,11 +35,13 @@ interface ControlFunction {
      * Installs this control function into [model] by creating all of its variables and constraints once.
      *
      * @param model target Gurobi model.
-     * @param uSelf decision variables for the local device control.
-     * @param uOther decision variables for the neighbor control, when the function is pairwise.
+     * @param selfDecision decision vector for the local endpoint.
+     * It corresponds to the local control variable `u` in single-device QPs and to `z_i` in pairwise QPs.
+     * @param otherDecision decision vector for the neighbor endpoint, when the function is pairwise.
+     * It is `null` for single-device QPs and corresponds to `z_j` in pairwise QPs.
      * @return a handle that can refresh the installed numerical coefficients at runtime.
      */
-    fun install(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?): Constraint
+    fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint
 
     /**
      * Refreshes runtime data from another instance with the same installed model topology.

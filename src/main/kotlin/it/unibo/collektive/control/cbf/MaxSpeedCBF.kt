@@ -24,14 +24,14 @@ import kotlin.math.pow
  * @property eta        unused (kept for interface compatibility with [CBF])
  * @property slackWeight always `null`; slack on a quadratic norm constraint requires a quadratic
  *                       addition to the LHS which is not supported after [GRBModel.addQConstr].
- *                       Use variable bounds on [u] as an alternative soft limit if needed.
+     *                       Use variable bounds on the decision vector as an alternative soft limit if needed.
  */
 class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Double? = null) : CBF() {
 
     override val name: String = "max_speed"
 
-    override fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint {
-        val lhsExpr = uSelf.toQuadExpr()
+    override fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint {
+        val lhsExpr = selfDecision.toQuadExpr()
         val qConstr = addQConstr(lhsExpr, GRB.LESS_EQUAL, 0.0, "u_norm_sq")
         return object : Constraint {
             override val slack = null

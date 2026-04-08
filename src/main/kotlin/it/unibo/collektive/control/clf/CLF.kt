@@ -29,8 +29,8 @@ abstract class CLF : ControlFunction {
      * Add the slack variable and constraint here with placeholder zero coefficients for
      * position-dependent terms.  Capture all GRB handles in the returned [Constraint].
      */
-    abstract fun GRBModel.installCLF(uSelf: GRBVector): Constraint
+    abstract fun GRBModel.installCLF(selfDecision: GRBVector): Constraint
 
-    final override fun install(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?): Constraint =
-        model.installCLF(uSelf)
+    final override fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint =
+        model.installCLF(selfDecision)
 }

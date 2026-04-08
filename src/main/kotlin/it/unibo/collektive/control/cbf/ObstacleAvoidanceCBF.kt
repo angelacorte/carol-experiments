@@ -45,12 +45,12 @@ class ObstacleAvoidanceCBF(
         }
     }
 
-    override fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint {
+    override fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint {
         val slack = slackWeight?.let {
             addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
         }
         val lhs = GRBLinExpr().apply {
-            repeat(uSelf.dimensions) { i -> addTerm(0.0, uSelf[i]) }
+            repeat(selfDecision.dimensions) { i -> addTerm(0.0, selfDecision[i]) }
             slack?.let { addTerm(1.0, it) }
         }
         val constr = addConstr(lhs, GRB.GREATER_EQUAL, 0.0, name)
@@ -71,7 +71,7 @@ class ObstacleAvoidanceCBF(
                 val rhs = -(eta / deltaTime) * h
                 constr.set(GRB.DoubleAttr.RHS, rhs)
                 for (i in distance.indices) {
-                    model.chgCoeff(constr, uSelf[i], 2.0 * distance[i])
+                    model.chgCoeff(constr, selfDecision[i], 2.0 * distance[i])
                 }
             }
         }

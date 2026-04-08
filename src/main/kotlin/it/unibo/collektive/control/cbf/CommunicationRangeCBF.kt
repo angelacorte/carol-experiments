@@ -36,15 +36,15 @@ class CommunicationRangeCBF(
 ) : CBF() {
 
     override val name: String = "communication_range_CBF"
-    override fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint {
-        checkNotNull(uOther) { "CommunicationRangeCBF requires uOther (pairwise constraint)" }
+    override fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint {
+        checkNotNull(otherDecision) { "CommunicationRangeCBF requires the neighbor decision vector" }
         val slack = slackWeight?.let {
             addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
         }
         val lhs = GRBLinExpr().apply {
-            repeat(uSelf.dimensions) { i ->
-                addTerm(0.0, uSelf[i])
-                addTerm(0.0, uOther[i])
+            repeat(selfDecision.dimensions) { i ->
+                addTerm(0.0, selfDecision[i])
+                addTerm(0.0, otherDecision[i])
             }
             slack?.let { addTerm(1.0, it) }
         }
@@ -70,8 +70,8 @@ class CommunicationRangeCBF(
 //                val rhs = -(eta / deltaTime) * h + 4 * deltaTime * (self.maxSpeed + otherRobot.maxSpeed).pow(2)
                 constraint.set(GRB.DoubleAttr.RHS, rhs)
                 for (i in distance.indices) {
-                    model.chgCoeff(constraint, uSelf[i], -2.0 * distance[i])
-                    model.chgCoeff(constraint, uOther[i], 2.0 * distance[i])
+                    model.chgCoeff(constraint, selfDecision[i], -2.0 * distance[i])
+                    model.chgCoeff(constraint, otherDecision[i], 2.0 * distance[i])
                 }
             }
         }

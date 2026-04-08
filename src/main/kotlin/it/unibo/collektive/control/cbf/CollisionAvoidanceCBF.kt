@@ -33,16 +33,16 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
 
     override val name: String = "collision_avoidance_CBF"
 
-    override fun GRBModel.installCBF(zi: GRBVector, zj: GRBVector?): Constraint {
-        checkNotNull(zj) { "CollisionAvoidanceCBF requires uOther (pairwise constraint)" }
-        val dim = zi.dimensions
+    override fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint {
+        checkNotNull(otherDecision) { "CollisionAvoidanceCBF requires the neighbor decision vector" }
+        val dim = selfDecision.dimensions
         val slack = slackWeight?.let {
             addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
         }
         val lhs = GRBLinExpr().apply {
             repeat(dim) { i ->
-                addTerm(0.0, zi[i])
-                addTerm(0.0, zj[i])
+                addTerm(0.0, selfDecision[i])
+                addTerm(0.0, otherDecision[i])
             }
             slack?.let { addTerm(1.0, it) }
         }
@@ -67,8 +67,8 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
                 val rhs = -(eta / deltaTime) * h
                 constr.set(GRB.DoubleAttr.RHS, rhs)
                 for (i in distance.indices) {
-                    model.chgCoeff(constr, zi[i], 2.0 * distance[i])
-                    model.chgCoeff(constr, zj[i], -2.0 * distance[i])
+                    model.chgCoeff(constr, selfDecision[i], 2.0 * distance[i])
+                    model.chgCoeff(constr, otherDecision[i], -2.0 * distance[i])
                 }
             }
         }
