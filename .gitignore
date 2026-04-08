@@ -10,3 +10,5 @@ timeprocessed
 .kotlin
 .DS_Store
 /node_modules/
+/admm-plots/
+/logging/
