@@ -38,7 +38,8 @@ data class DualParams(
     val suggestedControl: SuggestedControl = SuggestedControl(),
     val localDualUpdate: LocalDualUpdate = LocalDualUpdate(),
 ) {
-    override fun toString(): String = "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$localDualUpdate)"
+    override fun toString(): String =
+        "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$localDualUpdate)"
 
     fun swap(): DualParams = DualParams(suggestedControl.swap(), localDualUpdate.swap())
 }

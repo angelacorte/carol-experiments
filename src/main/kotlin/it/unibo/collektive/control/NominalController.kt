@@ -29,6 +29,6 @@ fun interface NominalController {
  * @property target the [Target] the robot should navigate towards.
  * @property gain the proportional gain of the controller (default is 0.5).
  */
-class GoToTargetNominal(private val gain: Double = 0.5, private val targetProvider: () -> Target, ) : NominalController {
+class GoToTargetNominal(private val gain: Double = 0.5, private val targetProvider: () -> Target) : NominalController {
     override fun compute(device: Device): SpeedControl2D = device.position.nominal(targetProvider().position, gain)
 }

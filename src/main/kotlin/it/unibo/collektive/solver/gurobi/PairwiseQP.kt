@@ -58,7 +58,7 @@ class PairwiseQP private constructor(
         addRhoNorm2Sq(zj, (other.control + incidentDuals.yj).toDoubleArray(), rho)
         constraints.forEach { constr ->
             constr.slack?.let { slackConstraint ->
-                if(constr.slackWeight != null) addTerm(constr.slackWeight!!, slackConstraint, slackConstraint)
+                if (constr.slackWeight != null) addTerm(constr.slackWeight!!, slackConstraint, slackConstraint)
             }
         }
         addTerm(settings.rhoSlack, slack, slack)

@@ -26,8 +26,8 @@ import kotlin.math.pow
  * moves. The current target is retrieved through [targetProvider] on every update so the cached
  * solver model can react to target motion at runtime.
  *
-     * The slack variable is mandatory for CLF feasibility and is provided by the enclosing local QP
-     * as the shared node slack `ω_i`.
+ * The slack variable is mandatory for CLF feasibility and is provided by the enclosing local QP
+ * as the shared node slack `ω_i`.
  *
  * @property targetProvider  supplies the current navigation goal
  * @property convergenceRate Lyapunov decrease rate λ

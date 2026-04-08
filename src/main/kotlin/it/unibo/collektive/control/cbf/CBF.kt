@@ -30,6 +30,5 @@ abstract class CBF : ControlFunction {
      */
     abstract fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint
 
-    final override fun install(model: GRBModel, zi: GRBVector, zj: GRBVector?): Constraint =
-        model.installCBF(zi, zj)
+    final override fun install(model: GRBModel, zi: GRBVector, zj: GRBVector?): Constraint = model.installCBF(zi, zj)
 }

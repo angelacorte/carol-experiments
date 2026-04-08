@@ -8,8 +8,8 @@ import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
-import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Device
+import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.SpeedControl2D
 import it.unibo.collektive.model.Target
 import it.unibo.collektive.model.Vector2D
