@@ -12,6 +12,9 @@ import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 
+/**
+ * Reusable Gurobi model for the single-device QP solved during each ADMM iteration.
+ */
 class LocalQP private constructor(
     private val model: GRBModel,
     private val u: GRBVector,
@@ -21,8 +24,16 @@ class LocalQP private constructor(
     private val constraints: List<Constraint>,
 ) {
 
+    /**
+     * Releases the underlying Gurobi model resources.
+     */
     fun dispose() = model.dispose()
 
+    /**
+     * Synchronizes the already-installed control functions with the latest runtime instances.
+     *
+     * The number and ordering of functions must match the topology used when the model was created.
+     */
     fun syncControlFunctions(localCLFs: List<CLF>, localCBFs: List<CBF>) {
         require(this.localCLFs.size == localCLFs.size) {
             "Expected ${this.localCLFs.size} local CLFs, got ${localCLFs.size}"
@@ -34,6 +45,16 @@ class LocalQP private constructor(
         this.localCBFs.zip(localCBFs).forEach { (installed, current) -> installed.syncFrom(current) }
     }
 
+    /**
+     * Updates variable bounds, refreshes constraint coefficients, solves the QP, and returns the new control.
+     *
+     * @param device current local device state.
+     * @param uNominal nominal control used by the quadratic objective.
+     * @param duals per-neighbor ADMM state used to build the consensus penalty.
+     * @param settings numerical settings shared by the solver.
+     * @param deltaTime control horizon expressed in seconds.
+     * @return the control selected by the optimizer, or the previous control if no solution is found.
+     */
     fun <ID : Comparable<ID>> updateAndSolve(
         device: Device,
         uNominal: DoubleArray,
@@ -100,7 +121,19 @@ class LocalQP private constructor(
         }
     }
 
+    /**
+     * Factory methods for creating a fully installed local QP model.
+     */
     companion object {
+        /**
+         * Builds a local QP model with all requested control functions already installed.
+         *
+         * @param model Gurobi model to populate.
+         * @param device device used to size the control vector and bounds.
+         * @param localCLFs local CLF constraints to install.
+         * @param localCBFs local CBF constraints to install.
+         * @return the reusable local QP wrapper.
+         */
         fun create(model: GRBModel, device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>): LocalQP {
             val u = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "u")
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_localQP")

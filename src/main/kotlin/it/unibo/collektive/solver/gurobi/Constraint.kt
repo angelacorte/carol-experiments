@@ -31,5 +31,14 @@ interface Constraint {
      */
     val slackWeight: Double?
 
+    /**
+     * Refreshes the numerical values used by the installed constraint without changing model topology.
+     *
+     * @param model owning Gurobi model.
+     * @param self current state of the local device.
+     * @param otherDevice current state of the neighbor device, when this is a pairwise constraint.
+     * @param settings numerical settings shared by the active QP.
+     * @param deltaTime control horizon expressed in seconds.
+     */
     fun update(model: GRBModel, self: Device, otherDevice: Device? = null, settings: QpSettings, deltaTime: Double)
 }

@@ -22,6 +22,9 @@ import it.unibo.collektive.mathutils.zeroVec
 class GRBVector(val variables: Array<GRBVar>) {
     val dimensions: Int get() = variables.size
 
+    /**
+     * Returns the scalar decision variable at [index].
+     */
     operator fun get(index: Int): GRBVar = variables[index]
 }
 

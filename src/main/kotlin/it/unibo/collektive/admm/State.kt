@@ -41,6 +41,9 @@ data class DualParams(
     override fun toString(): String =
         "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$localDualUpdate)"
 
+    /**
+     * Swaps the local and neighbor perspectives stored in this edge state.
+     */
     fun swap(): DualParams = DualParams(suggestedControl.swap(), localDualUpdate.swap())
 }
 
@@ -52,6 +55,9 @@ data class DualParams(
 data class LocalDualUpdate(val yi: Vector2D = initVector2D(), val yj: Vector2D = initVector2D()) {
     override fun toString(): String = "IncidentDuals(yi=(${yi.x}, ${yi.y}), yj=(${yj.x}, ${yj.y})"
 
+    /**
+     * Swaps the endpoint-associated dual variables.
+     */
     fun swap(): LocalDualUpdate = LocalDualUpdate(yj, yi)
 }
 
@@ -63,6 +69,9 @@ data class LocalDualUpdate(val yi: Vector2D = initVector2D(), val yj: Vector2D =
 data class SuggestedControl(val zi: SpeedControl2D = zeroSpeed(), val zj: SpeedControl2D = zeroSpeed()) {
     override fun toString(): String = "SuggestedControl(zi=(${zi.x}, ${zi.y}), zj=(${zj.x}, ${zj.y})"
 
+    /**
+     * Swaps the consensus controls assigned to the two edge endpoints.
+     */
     fun swap(): SuggestedControl = SuggestedControl(zj, zi)
 }
 

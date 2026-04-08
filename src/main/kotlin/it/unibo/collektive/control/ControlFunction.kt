@@ -31,6 +31,14 @@ interface ControlFunction {
      */
     val slackWeight: Double?
 
+    /**
+     * Installs this control function into [model] by creating all of its variables and constraints once.
+     *
+     * @param model target Gurobi model.
+     * @param uSelf decision variables for the local device control.
+     * @param uOther decision variables for the neighbor control, when the function is pairwise.
+     * @return a handle that can refresh the installed numerical coefficients at runtime.
+     */
     fun install(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?): Constraint
 
     /**

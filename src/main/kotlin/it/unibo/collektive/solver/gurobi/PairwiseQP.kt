@@ -12,6 +12,9 @@ import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
 
+/**
+ * Reusable Gurobi model for the pairwise QP solved on a shared edge during ADMM.
+ */
 class PairwiseQP private constructor(
     private val model: GRBModel,
     private val slack: GRBVar,
@@ -20,8 +23,21 @@ class PairwiseQP private constructor(
     private val constraints: List<Constraint>,
 ) {
 
+    /**
+     * Releases the underlying Gurobi model resources.
+     */
     fun dispose() = model.dispose()
 
+    /**
+     * Updates and solves the pairwise edge model for the current local and neighbor states.
+     *
+     * @param device current local device state.
+     * @param other current neighbor device state.
+     * @param incidentDuals dual variables associated with the shared edge.
+     * @param settings numerical settings shared by the solver.
+     * @param deltaTime control horizon expressed in seconds.
+     * @return the consensus controls suggested for both endpoints.
+     */
     fun updateAndSolve(
         device: Device,
         other: Device,
@@ -91,8 +107,20 @@ class PairwiseQP private constructor(
         }
     }
 
+    /**
+     * Factory methods for creating a fully installed pairwise QP model.
+     */
     companion object {
 
+        /**
+         * Builds a pairwise QP model with all requested edge constraints already installed.
+         *
+         * @param model Gurobi model to populate.
+         * @param device local device used to size the first decision vector.
+         * @param other neighbor device used to size the second decision vector.
+         * @param pairwiseCBFs pairwise barrier functions to install on the model.
+         * @return the reusable pairwise QP wrapper.
+         */
         fun create(model: GRBModel, device: Device, other: Device, pairwiseCBFs: List<CBF>): PairwiseQP {
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_pairwiseQP")
             val zi = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "z_ij^i")

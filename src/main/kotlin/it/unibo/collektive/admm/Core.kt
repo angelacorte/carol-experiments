@@ -126,6 +126,20 @@ internal inline fun <reified ID : Comparable<ID>> Aggregate<ID>.admm(
     controlAndDuals.yielding { scaledControl }
 }
 
+/**
+ * Executes one ADMM iteration using the provided dual variables and returns the updated local state.
+ *
+ * The local QP is solved first to refresh the node control, then the pairwise QPs are evaluated
+ * against each neighbor to produce the consensus suggestions and dual updates associated with each edge.
+ *
+ * @param device current state of the local device.
+ * @param uNominal nominal control used as the reference objective for the local QP.
+ * @param duals current per-neighbor dual state.
+ * @param deltaTime control horizon expressed in seconds.
+ * @param solver solver instance used for both local and pairwise QPs.
+ * @param pairwiseCBF pairwise barrier functions that constrain shared edges.
+ * @return the updated control together with the refreshed dual parameters.
+ */
 fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     device: Device,
     uNominal: DoubleArray,
@@ -153,6 +167,12 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     }
 }
 
+/**
+ * Returns `true` when the current device is the canonical owner of the edge shared with [otherID].
+ *
+ * Ownership is assigned to the endpoint with the smallest identifier so that exactly one device
+ * performs the pairwise optimization for each edge.
+ */
 fun <ID : Comparable<ID>> Aggregate<ID>.isOwnerOf(otherID: ID): Boolean =
     localId != otherID && minOf(localId, otherID) == localId
 
