@@ -1,3 +1,26 @@
+## [2.4.3](https://github.com/angelacorte/carol-experiments/compare/2.4.2...2.4.3) (2026-04-02)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.2.2 ([9195770](https://github.com/angelacorte/carol-experiments/commit/919577020188fa2a241ab5e557253572ad4b9ad4))
+* **deps:** update alchemist to v43.0.23 ([431b82c](https://github.com/angelacorte/carol-experiments/commit/431b82c3747e6c1f65d6deb2a5fff5d944a4fda1))
+* **deps:** update alchemist to v43.0.24 ([f8f6ec7](https://github.com/angelacorte/carol-experiments/commit/f8f6ec71876277d91e0183c73e67ae0dbd94f85c))
+* **deps:** update alchemist to v43.0.25 ([660297d](https://github.com/angelacorte/carol-experiments/commit/660297d1184f53a53b56386186c3c183bc92b300))
+* **deps:** update alchemist to v43.0.26 ([54b5781](https://github.com/angelacorte/carol-experiments/commit/54b5781f27685841ba4bb96df6a00ccd8df05165))
+* **deps:** update alchemist to v43.0.27 ([faf6c2c](https://github.com/angelacorte/carol-experiments/commit/faf6c2cc09b0b571a0647de1a07b5052d49d4638))
+* **deps:** update plugin gitsemver to v7.0.16 ([b20a447](https://github.com/angelacorte/carol-experiments/commit/b20a4471d8c77ec48542da210ac2827a61bea5eb))
+* **deps:** update plugin kotlin-qa to v1.3.2 ([57d48d2](https://github.com/angelacorte/carol-experiments/commit/57d48d2f90d78bac86d9d78e655adca1e327ddd9))
+* **deps:** update plugin kotlin-qa to v1.4.0 ([ac9938c](https://github.com/angelacorte/carol-experiments/commit/ac9938cef8ce7857e31e545e5f6d8e5af19f3d9d))
+
+### Build and continuous integration
+
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.29 ([a7be002](https://github.com/angelacorte/carol-experiments/commit/a7be00245144bc9d15d622337e94e0ea280074ae))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.30 ([76cda0b](https://github.com/angelacorte/carol-experiments/commit/76cda0bf250dc2fa17ab0db6b2e035471ee719bc))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.4.2 [skip ci] ([fc2b7b5](https://github.com/angelacorte/carol-experiments/commit/fc2b7b5a97a9ee0b033c90125998d74677a9408f))
+
 ## [2.4.2](https://github.com/angelacorte/carol-experiments/compare/2.4.1...2.4.2) (2026-03-25)
 
 ### Dependency updates
