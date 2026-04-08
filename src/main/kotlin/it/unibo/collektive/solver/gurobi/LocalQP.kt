@@ -84,7 +84,9 @@ class LocalQP private constructor(
         addRhoNorm2Sq(u, uNominal)
         constraints.forEach { constr ->
             constr.slack?.let { slackConstraint ->
-                if (constr.slackWeight != null) addTerm(constr.slackWeight!!, slackConstraint, slackConstraint)
+                constr.slackWeight?.let { slackWeight ->
+                    addTerm(slackWeight, slackConstraint, slackConstraint)
+                }
             }
         }
         addTerm(settings.rhoSlack, slack, slack)
