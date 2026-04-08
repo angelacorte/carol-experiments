@@ -3,6 +3,7 @@ package it.unibo.collektive.control.cbf
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
+import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
@@ -61,7 +62,7 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
                     "CollisionAvoidanceCBF.update: otherRobot must not be null"
                 }
                 val distance = (self.position - otherDevice.position).toDoubleArray()
-                val minDistance = max(self.safeMargin, otherDevice.safeMargin)
+                val minDistance = self.safeMargin + otherDevice.safeMargin
                 val h = distance.squaredNorm() - minDistance.pow(2)
                 val rhs = -(eta / deltaTime) * h
                 constr.set(GRB.DoubleAttr.RHS, rhs)
