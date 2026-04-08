@@ -5,10 +5,10 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.aggregate.api.Aggregate
 import it.unibo.collektive.aggregate.api.exchange
 import it.unibo.collektive.aggregate.api.exchanging
-import it.unibo.collektive.aggregate.api.neighboring
 import it.unibo.collektive.aggregate.api.sharing
 import it.unibo.collektive.aggregate.toMap
 import it.unibo.collektive.alchemist.device.applyControl
+import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 import it.unibo.collektive.alchemist.device.sensors.TimeSensor
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
@@ -17,26 +17,33 @@ import it.unibo.collektive.mathutils.norm
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
-import it.unibo.collektive.model.zeroSpeed
 import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.stdlib.collapse.maxBy
 import it.unibo.collektive.stdlib.spreading.gossipMax
 import it.unibo.collektive.stdlib.time.localDeltaTime
 import it.unibo.collektive.stdlib.time.sharedTimeLeftTo
+import java.io.File
+import java.io.FileWriter
 import kotlin.math.max
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
 
 internal data class EdgeInfo(
     val device: Device,
     val suggestedControl: SuggestedControl = SuggestedControl(),
+    val localDualUpdate: LocalDualUpdate = LocalDualUpdate(),
 )
 
 /**
  * Aggregate entrypoint: runs the distributed ADMM control loop and applies the resulting velocity.
  */
-context(timeSensor: TimeSensor, collektiveDevice: CollektiveDevice<Euclidean2DPosition>)
+@OptIn(ExperimentalTime::class)
+context(timeSensor: TimeSensor, locationSensor: LocationSensor, collektiveDevice: CollektiveDevice<Euclidean2DPosition>)
 fun Aggregate<Int>.admmEntrypoint(
+    controlPeriod: Double,
     device: Device,
     uNominal: DoubleArray,
     solver: Solver,
@@ -46,49 +53,59 @@ fun Aggregate<Int>.admmEntrypoint(
 ) {
     val deltaTime: Double = localDeltaTime(timeSensor.getTimeAsInstant()).toDouble(DurationUnit.SECONDS)
         .takeIf { it > 0.0 } ?: (1.0 / (collektiveDevice["TimeDistribution"] as Double? ?: 1.0))
+    val timeLeft = sharedTimeLeftTo(timeSensor.getTimeAsInstant(), controlPeriod.milliseconds).also { collektiveDevice["TimeLeft"] = it }
     if (!solver.isLocalModelAvailable) solver.setupLocalModel(device, localCLF, localCBF)
-    val result = ADMM(device, uNominal, deltaTime, solver, pairwiseCBF)
-    device.applyControl(result, deltaTime)
+    val controlPeriodSeconds = Duration.convert(controlPeriod, DurationUnit.MILLISECONDS, DurationUnit.SECONDS)
+    // device snapshots
+    evolve(device) { previous ->
+        val control = ADMM(previous, uNominal, controlPeriodSeconds, solver, pairwiseCBF)
+//        applyControl(control, deltaTime)
+        when {
+            timeLeft <= ZERO -> applyControl(control, controlPeriodSeconds)
+            else -> previous
+        }
+    }
 }
 
 context(collektiveDevice: CollektiveDevice<*>)
 internal inline fun <reified ID : Comparable<ID>> Aggregate<ID>.ADMM(
     device: Device,
     uNominal: DoubleArray,
-    deltaTime: Double,
+    controlPeriod: Double,
     solver: Solver,
     pairwiseCBF: List<CBF>,
 ): SpeedControl2D =
     evolving(ControlAndDuals(device.control)) { previous ->
-        val previousDuals = previous.duals
-        // mi serve anche la posizione precedente presa da previous, non quella corrente - la posizione all'ultimo tempo di controllo
-        val control: SpeedControl2D = solver.updateAndSolveLocal(device.copy(control = previous.control), uNominal, previousDuals, deltaTime)
-        collektiveDevice["Control"] = control
+        val previousDuals = previous.duals.filterNot { localId == it.key}
+        val control: SpeedControl2D = solver.updateAndSolveLocal(device.copy(control = previous.control), uNominal, previousDuals, controlPeriod)
         val deviceUpdated = device.copy(control = control)
         val updatedDuals: Map<ID, DualParams> = exchanging(EdgeInfo(deviceUpdated)) { field ->
-            val newDuals = mutableMapOf<ID, DualParams>()
             field.map { (neighborID: ID, neighborData: EdgeInfo) ->
                 val neighborInfo = neighborData.device
                 val previousLocalUpdate: LocalDualUpdate = previousDuals[neighborID]?.localDualUpdate ?: LocalDualUpdate()
                 when {
                     isOwnerOf(neighborID) -> {
                         if (!solver.isPairwiseModelAvailable) solver.setupPairwiseModel(deviceUpdated, neighborInfo, pairwiseCBF)
-                        val (zi, zj) = solver.updateAndSolvePairwise(deviceUpdated, neighborInfo, previousLocalUpdate, deltaTime)
-                        collektiveDevice["zi$neighborID"] = zi
-                        collektiveDevice["zj$neighborID"] = zj
-                        EdgeInfo(deviceUpdated, SuggestedControl(zi, zj))
-                    }
-                    else -> EdgeInfo(deviceUpdated, neighborData.suggestedControl.swap())
-                }.also { edgeInfo ->
-                    newDuals[neighborID] = DualParams(
-                        edgeInfo.suggestedControl,
-                        LocalDualUpdate(
-                            previousLocalUpdate.yi + deviceUpdated.control - edgeInfo.suggestedControl.zi, // y_ij^i,t+1
-                            previousLocalUpdate.yj + neighborInfo.control - edgeInfo.suggestedControl.zj, // y_ij^j,t+1
+                        val (zi, zj) = solver.updateAndSolvePairwise(deviceUpdated, neighborInfo, previousLocalUpdate, controlPeriod)
+                        val updatedEdgeState = DualParams(
+                            SuggestedControl(zi, zj),
+                            LocalDualUpdate(
+                                previousLocalUpdate.yi + deviceUpdated.control - zi,
+                                previousLocalUpdate.yj + neighborInfo.control - zj,
+                            ),
                         )
-                    )
+                        EdgeInfo(deviceUpdated, updatedEdgeState.suggestedControl, updatedEdgeState.localDualUpdate,)
+                    }
+                    else -> {
+                        val ownerEdgeState = DualParams(neighborData.suggestedControl, neighborData.localDualUpdate).swap()
+                        EdgeInfo(deviceUpdated, ownerEdgeState.suggestedControl, ownerEdgeState.localDualUpdate)
+                    }
                 }
-            }.yielding{ newDuals.filterNot { it.key == localId } }
+            }.yielding {
+                neighbors.toMap().mapValues { (_, edgeData) ->
+                    DualParams(edgeData.suggestedControl, edgeData.localDualUpdate)
+                }
+            }
         }
         val controlAndDuals = ControlAndDuals(deviceUpdated.control, updatedDuals)
         val previousSuggested = previousDuals.mapValues { it.value.suggestedControl }
@@ -96,7 +113,6 @@ internal inline fun <reified ID : Comparable<ID>> Aggregate<ID>.ADMM(
         val confidence = confidence(primalResidual, dualResidual, solver.settings.tolerance)
         val scaledControl = SpeedControl2D(controlAndDuals.control.x * confidence, controlAndDuals.control.y * confidence)
         controlAndDuals.yielding { scaledControl }
-//        Infos(iter, controlAndDuals).yielding { OutputControl(shouldApply, deviceUpdated.control) }
     }
 
 fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
@@ -126,63 +142,6 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     }
 }
 
-
-
-//        val output: ControlAndDuals<ID> = exchanging(EdgeInfo(deviceUpdated)) { controls: Field<ID, EdgeInfo> ->
-//            controls.map { (neighborID: ID, neighborData: EdgeInfo) ->
-//                val neighborInfo: Device = neighborData.device
-//                val previousLocalUpdate: LocalDualUpdate = previousDuals[neighborID]?.localDualUpdate ?: LocalDualUpdate()
-//                when {
-//                    isOwnerOf(neighborID) -> {
-//                        if (!solver.isPairwiseModelAvailable) solver.setupPairwiseModel(deviceUpdated, neighborInfo, pairwiseCBF)
-//                        val (zi, zj) = solver.updateAndSolvePairwise(deviceUpdated, neighborInfo, previousLocalUpdate, deltaTime)
-//                        collektiveDevice["zi$neighborID"] = zi
-//                        collektiveDevice["zj$neighborID"] = zj
-//                        EdgeInfo(deviceUpdated, SuggestedControl(zi, zj))
-//                    }
-//                    else -> EdgeInfo(deviceUpdated, neighborData.suggestedControl.swap())
-//                }//.also { collektiveDevice["suggestedWith$neighborID"] = it.suggestedControl }
-//            }.yielding {
-//                val updatedDuals: Map<ID, DualParams> =
-//                    controls.neighbors.sequence.associate { (neighborID, neighborData) ->
-//                        val previousLocalUpdate = previousDuals[neighborID]?.localDualUpdate ?: LocalDualUpdate()
-//                        val suggestedForMe = when {
-//                            isOwnerOf(neighborID) -> neighborData.suggestedControl
-//                            else -> neighborData.suggestedControl//.swap()
-//                        }
-//                        neighborID to DualParams(
-//                            suggestedForMe,
-//                            LocalDualUpdate(
-//                                previousLocalUpdate.yi + deviceUpdated.control - suggestedForMe.zi,
-//                                previousLocalUpdate.yj + neighborData.device.control - suggestedForMe.zj,
-//                            ).also { collektiveDevice["localUpdate$neighborID"] = it }
-//                        )
-//                    }
-//                ControlAndDuals(deviceUpdated.control, updatedDuals)
-//            }
-//        } //.also { collektiveDevice["output"] = it.control }
-
-
-
-////    return ControlAndDuals(deviceUpdated.control, newDuals)
-//    val previousSuggested = previousDuals.admmOutput.duals.toMap().mapValues { it.value.suggestedControl }
-//    val (primalResidual, dualResidual) = residualUpdate(solver.settings, output, previousSuggested)
-//    val nextIter = previousDuals.iteration + 1
-//    val (shouldApply, iter) = when {
-//        (primalResidual <= solver.settings.tolerance.primal && dualResidual <= solver.settings.tolerance.dual) ||
-//            nextIter >= maxIter -> true to 0
-//        else -> false to nextIter
-//    }
-//    val confidence = confidence(primalResidual, dualResidual, solver.settings.tolerance)
-//    val scaledControl = SpeedControl2D(output.control.x * confidence, output.control.y * confidence)
-////    Infos(iter, output).yielding { OutputControl(shouldApply, scaledControl) }
-//
-////    val updatedDuals = output.duals.mapValues { (_, dual) ->
-////        dual.copy(localDualUpdate = LocalDualUpdate())
-////    }
-//
-//    Infos(iter, output).yielding { OutputControl(shouldApply, output.control) }
-//}
 //
 //fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
 //    device: Device,
