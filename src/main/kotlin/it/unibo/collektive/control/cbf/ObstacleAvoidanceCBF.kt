@@ -3,11 +3,12 @@ package it.unibo.collektive.control.cbf
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
+import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.model.Device
+import it.unibo.collektive.model.Obstacle
 import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
@@ -33,10 +34,16 @@ import kotlin.math.pow
 class ObstacleAvoidanceCBF(
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
-    private val obstacleProvider: () -> Obstacle,
+    private var obstacleProvider: () -> Obstacle,
 ) : CBF() {
 
     override val name: String = "obstacle_avoidance_CBF"
+
+    override fun syncFrom(other: ControlFunction) {
+        if (other is ObstacleAvoidanceCBF) {
+            obstacleProvider = other.obstacleProvider
+        }
+    }
 
     override fun GRBModel.installCBF(uSelf: GRBVector, uOther: GRBVector?): Constraint {
         val slack = slackWeight?.let {
@@ -58,7 +65,7 @@ class ObstacleAvoidanceCBF(
                 settings: QpSettings,
                 deltaTime: Double,
             ) {
-                val obstacle = obstacleProvider()
+                val obstacle = this@ObstacleAvoidanceCBF.obstacleProvider()
                 val distance = (self.position - obstacle).toDoubleArray()
                 val h = distance.squaredNorm() - (obstacle.radius + obstacle.margin).pow(2)
                 val rhs = -(eta / deltaTime) * h

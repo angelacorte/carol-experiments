@@ -37,6 +37,8 @@ class Solver(val settings: QpSettings) {
         if (!isLocalModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
             local = LocalQP.create(model, device, localCLFs, localCBFs)
+        } else {
+            local.syncControlFunctions(localCLFs, localCBFs)
         }
     }
 
@@ -61,4 +63,3 @@ class Solver(val settings: QpSettings) {
         deltaTime: Double,
     ): SuggestedControl = pairwise.updateAndSolve(device, otherDevice, duals, settings, deltaTime)
 }
-

@@ -16,10 +16,23 @@ class LocalQP private constructor(
     private val model: GRBModel,
     private val u: GRBVector,
     private val slack: GRBVar,
+    private val localCLFs: List<CLF>,
+    private val localCBFs: List<CBF>,
     private val constraints: List<Constraint>,
 ) {
 
     fun dispose() = model.dispose()
+
+    fun syncControlFunctions(localCLFs: List<CLF>, localCBFs: List<CBF>) {
+        require(this.localCLFs.size == localCLFs.size) {
+            "Expected ${this.localCLFs.size} local CLFs, got ${localCLFs.size}"
+        }
+        require(this.localCBFs.size == localCBFs.size) {
+            "Expected ${this.localCBFs.size} local CBFs, got ${localCBFs.size}"
+        }
+        this.localCLFs.zip(localCLFs).forEach { (installed, current) -> installed.syncFrom(current) }
+        this.localCBFs.zip(localCBFs).forEach { (installed, current) -> installed.syncFrom(current) }
+    }
 
     fun <ID : Comparable<ID>> updateAndSolve(
         device: Device,
@@ -99,6 +112,8 @@ class LocalQP private constructor(
                 model = model,
                 u = u,
                 slack,
+                localCLFs = localCLFs,
+                localCBFs = localCBFs,
                 constraints = installed,
             )
         }

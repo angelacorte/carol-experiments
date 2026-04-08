@@ -3,7 +3,7 @@ package it.unibo.collektive.control.clf
 import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
-import com.gurobi.gurobi.GRBVar
+import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.squaredNorm
 import it.unibo.collektive.mathutils.toDoubleArray
@@ -36,19 +36,24 @@ import kotlin.math.pow
 class GoToTargetCLF(
     override val convergenceRate: Double = 1.0,
     override val slackWeight: Double? = 1.0,
-    private val targetProvider: () -> Target,
+    private var targetProvider: () -> Target,
 ) : CLF() {
 
     override val name: String = "go_to_target"
 
+    override fun syncFrom(other: ControlFunction) {
+        if (other is GoToTargetCLF) {
+            targetProvider = other.targetProvider
+        }
+    }
+
     override fun GRBModel.installCLF(uSelf: GRBVector): Constraint {
-        val initialTarget = targetProvider()
         val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
         val lhs = GRBLinExpr().apply {
             repeat(uSelf.dimensions) { i -> addTerm(0.0, uSelf[i]) }
             addTerm(-1.0, slack)
         }
-        val constr = addConstr(lhs, GRB.LESS_EQUAL, 0.0, "go_to_target${initialTarget.id}_CLF")
+        val constr = addConstr(lhs, GRB.LESS_EQUAL, 0.0, "${name}_CLF")
 
         return object : Constraint {
             override val slack = slack
@@ -61,7 +66,7 @@ class GoToTargetCLF(
                 settings: QpSettings,
                 deltaTime: Double,
             ) {
-                val target = targetProvider()
+                val target = this@GoToTargetCLF.targetProvider()
                 val distance = (self.position - target.position).toDoubleArray()
                 val rhs = -convergenceRate * distance.squaredNorm() - deltaTime.pow(2) * self.maxSpeed.pow(2)
                 constr.set(GRB.DoubleAttr.RHS, rhs)

@@ -34,6 +34,14 @@ interface ControlFunction {
     fun install(model: GRBModel, uSelf: GRBVector, uOther: GRBVector?): Constraint
 
     /**
+     * Refreshes runtime data from another instance with the same installed model topology.
+     *
+     * Default implementation is a no-op; dynamic control functions can override it to swap
+     * providers or other mutable parameters without rebuilding the model.
+     */
+    fun syncFrom(other: ControlFunction) = Unit
+
+    /**
      * Legacy helper for objective slack penalties.
      * The active QP builders currently manage slack penalties directly.
      */
