@@ -34,8 +34,8 @@ fun Aggregate<Int>.commonTargetEntrypoint(
     val target: Target = getTarget(device["TargetID"] as Number)
     val communicationDistance: Double = device["CommunicationDistance"]
     admmEntrypoint(
+        device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        device["MaxIterations"] as? Int ?: 100,
         uNominal = GoToTargetNominal{ getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         solver = device.environment.solver(SimulationQpSettings().base(device)),
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),

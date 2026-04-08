@@ -29,11 +29,10 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
     timeSensor: TimeSensor,
     device: CollektiveDevice<Euclidean2DPosition>,
 ) = context(position, device, timeSensor) {
-    val target: Target = getTarget(device["TargetID"] as Number)
     val robot = getRobot()
     admmEntrypoint(
+        device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        device["MaxIterations"] as? Int ?: 100,
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         uNominal = GoToTargetNominal{ getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         solver = device.environment.solver(SimulationQpSettings().base(device)),

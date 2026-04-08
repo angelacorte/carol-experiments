@@ -28,8 +28,8 @@ fun Aggregate<Int>.noObstacleEntrypoint(
     val robot = getRobot()
     val target: Target = getTarget(device["TargetID"] as Number)
     admmEntrypoint(
+        device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        device["MaxIterations"] as? Int ?: 100,
         uNominal = GoToTargetNominal{ getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         solver = device.environment.solver(SimulationQpSettings().base(device)),
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
