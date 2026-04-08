@@ -1,3 +1,24 @@
+## [2.5.0](https://github.com/angelacorte/carol-experiments/compare/2.4.3...2.5.0) (2026-04-08)
+
+### Features
+
+* admm with check on owners and initialise models and solver once ([#50](https://github.com/angelacorte/carol-experiments/issues/50)) ([3d5fafd](https://github.com/angelacorte/carol-experiments/commit/3d5fafdc6d7e33b82488c084760b7389f2aa6e6e))
+
+### Dependency updates
+
+* **deps:** update alchemist to v43.0.28 ([3c1f1aa](https://github.com/angelacorte/carol-experiments/commit/3c1f1aa52bbad59ffa9bcd082934373ed190506b))
+* **deps:** update alchemist to v43.0.29 ([17d3968](https://github.com/angelacorte/carol-experiments/commit/17d3968ce778f2488b109f4479b4960dfdf2c206))
+* **deps:** update alchemist to v43.0.30 ([cd943cb](https://github.com/angelacorte/carol-experiments/commit/cd943cb8dc6da75464f0c697ae22c68545c155a2))
+* **deps:** update alchemist to v43.0.31 ([45aedd3](https://github.com/angelacorte/carol-experiments/commit/45aedd3f07e6610cbec00e76c42e957c20ba8984))
+
+### Build and continuous integration
+
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.31 ([bb7decf](https://github.com/angelacorte/carol-experiments/commit/bb7decf2be24730e70eef915310fc2db661cc11a))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.4.3 [skip ci] ([0fb6565](https://github.com/angelacorte/carol-experiments/commit/0fb6565d72a85e1b5a39dec9fa89200d5c0a5f43))
+
 ## [2.4.3](https://github.com/angelacorte/carol-experiments/compare/2.4.2...2.4.3) (2026-04-02)
 
 ### Dependency updates
