@@ -40,7 +40,7 @@ data class DualParams(
 ) {
     override fun toString(): String = "DualParams(suggestedControl=$suggestedControl, \n incidentDuals=$localDualUpdate)"
 
-//    fun swap(): DualParams = DualParams(suggestedControl.swap(), localDualUpdate.invert())
+    fun swap(): DualParams = DualParams(suggestedControl.swap(), localDualUpdate.swap())
 }
 
 /**
@@ -51,7 +51,7 @@ data class DualParams(
 data class LocalDualUpdate(val yi: Vector2D = initVector2D(), val yj: Vector2D = initVector2D()) {
     override fun toString(): String = "IncidentDuals(yi=(${yi.x}, ${yi.y}), yj=(${yj.x}, ${yj.y})"
 
-//    fun swap(): LocalDualUpdate = LocalDualUpdate(yj, yi)
+    fun swap(): LocalDualUpdate = LocalDualUpdate(yj, yi)
 }
 
 /**
