@@ -8,11 +8,12 @@ variables:
   primalTolerance: &primalTolerance 1e-2
   dualTolerance: &dualTolerance 1e-2
   maxIterations: &maxIter 50
-  moveTargetTime1: &moveTargetTime1 80.0
-  moveTargetTime2: &moveTargetTime2 150.0
-  timeDistribution: &timeDistribution 100.0 # 10 ms
+  moveTargetTime1: &moveTargetTime1 40.0
+  moveTargetTime2: &moveTargetTime2 90.0
+  timeDistribution: &timeDistribution 100.0 # times in a second > 100 = 10 ms
   obstacleRadius: &obstacleRadius 3.0
   obstacleMargin: &obstacleMargin 2.0
+  controlPeriodMS: &controlPeriodMS 100.0 #ms
 
 network-model:
   type: ConnectWithinDistance
@@ -70,6 +71,8 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
     properties:
@@ -97,6 +100,8 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
     properties:
@@ -124,6 +129,8 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
     properties:
@@ -147,10 +154,12 @@ deployments:
         concentration: *primalTolerance
       - molecule: DualTolerance
         concentration: *dualTolerance
-      - molecule: MaxIterations
+      - molecule: MaxIterationss
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
     properties:
@@ -178,3 +187,7 @@ deployments:
         concentration: *obstacleRadius
       - molecule: SafeMargin
         concentration: *obstacleMargin
+
+#terminate:
+#  type: AfterTime
+#  parameters: 20.0

@@ -2,14 +2,15 @@ incarnation: collektive
 
 variables:
   connectWithinDistance: &connectWithinDistance 10.0
-  robotSafeMargin: &robotSafeMargin 1.5
-  robotMaxSpeed: &robotMaxSpeed 4.0
+  robotSafeMargin: &robotSafeMargin 1.0
+  robotMaxSpeed: &robotMaxSpeed 2.0
   primalTolerance: &primalTolerance 1e-3
   dualTolerance: &dualTolerance 1e-3
   maxIterations: &maxIter 50
-  moveTargetTime1: &moveTargetTime1 20.0
-  moveTargetTime2: &moveTargetTime2 40.0
-  timeDistribution: &timeDistribution 100.0 # 10 ms
+  moveTargetTime1: &moveTargetTime1 40.0
+  moveTargetTime2: &moveTargetTime2 90.0
+  timeDistribution: &timeDistribution 100.0 # times in a second > 100 = 10 ms
+  controlPeriodMS: &controlPeriodMS 100.0 #ms
 
 network-model:
   type: ConnectWithinDistance
@@ -22,7 +23,7 @@ _pool: &program
       - type: RunCollektiveProgram
         parameters: [ it.unibo.collektive.entrypoints.NoObstacleKt.noObstacleEntrypoint ]
       - type: SpeedToTarget
-        parameters: [ ]
+        parameters: []
 
 environment:
   type: Continuous2DEnvironment
@@ -65,9 +66,10 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
@@ -91,9 +93,10 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
@@ -117,9 +120,10 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
@@ -143,9 +147,10 @@ deployments:
         concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
+      - molecule: ControlPeriodMS
+        concentration: *controlPeriodMS
     programs:
       - *program
-#      - *movement
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
@@ -161,13 +166,7 @@ deployments:
     contents:
       - molecule: Target
         concentration: 2
-#
-#  - type: Point
-#    parameters: [ 10, 10 ]
-#    contents:
-#      - molecule: Obstacle
-#        concentration: true
-#      - molecule: SafeRadius
-#        concentration: *obstacleRadius
-#      - molecule: SafeMargin
-#        concentration: *obstacleMargin
+
+#terminate:
+#  type: AfterTime
+#  parameters: 20.0
