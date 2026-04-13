@@ -15,7 +15,6 @@ import it.unibo.collektive.control.cbf.CollisionAvoidanceCBF
 import it.unibo.collektive.control.cbf.MaxSpeedCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Target
 
 /**
  * Main aggregate entrypoint: runs distributed ADMM to compute a safe control and applies it when converged.
