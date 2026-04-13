@@ -63,7 +63,6 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
                 }
                 val distance = (self.position - otherDevice.position).toDoubleArray()
                 val minDistance = max(self.safeMargin, otherDevice.safeMargin)
-//                val minDistance = self.safeMargin + otherDevice.safeMargin
                 val h = distance.squaredNorm() - minDistance.pow(2)
                 val rhs = -(eta / deltaTime) * h
                 constr.set(GRB.DoubleAttr.RHS, rhs)
