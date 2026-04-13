@@ -5,7 +5,6 @@ variables:
   connectWithinDistance: &connectWithinDistance 10.0
   robotSafeMargin: &robotSafeMargin 1.0
   robotMaxSpeed: &robotMaxSpeed 2.0
-  maxIterations: &maxIter 50
   moveTargetTime1: &moveTargetTime1 60.0
   moveTargetTime2: &moveTargetTime2 120.0
   timeDistribution: &timeDistribution 100.0 # times in a second > 100 = 10 ms
@@ -97,8 +96,6 @@ deployments:
         concentration: 1
       - molecule: CommunicationDistance
         concentration: *maxCommDistance
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -124,8 +121,6 @@ deployments:
         concentration: 1
       - molecule: CommunicationDistance
         concentration: *maxCommDistance
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -151,8 +146,6 @@ deployments:
         concentration:  *maxCommDistance
       - molecule: TargetID
         concentration: 1
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -178,8 +171,6 @@ deployments:
         concentration:  *maxCommDistance
       - molecule: TargetID
         concentration: 1
-      - molecule: MaxIterationss
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
