@@ -1,3 +1,20 @@
+## [2.6.1](https://github.com/angelacorte/carol-experiments/compare/2.6.0...2.6.1) (2026-04-13)
+
+### Bug Fixes
+
+* remove docker and charts from release config ([3a209f1](https://github.com/angelacorte/carol-experiments/commit/3a209f13f006782256eb9543436174a236b72c02))
+* temporary change docker gradlew command ([342315e](https://github.com/angelacorte/carol-experiments/commit/342315e7ac072bf8acf025abc05297b034adb532))
+
+### General maintenance
+
+* add license ([35b8328](https://github.com/angelacorte/carol-experiments/commit/35b8328c713dfab4d938a044f2feadd220021364))
+* **release:** update gradle.properties .env versions to 2.6.0 [skip ci] ([b77f398](https://github.com/angelacorte/carol-experiments/commit/b77f3980ac8b2cec0c5b900f02514e61232083d9))
+* update readme ([a38255e](https://github.com/angelacorte/carol-experiments/commit/a38255eb48762dda4f1517483d0d42b1ea3694f0))
+
+### Style improvements
+
+* adapt to ktlint ([39d05d0](https://github.com/angelacorte/carol-experiments/commit/39d05d09871bb62eef0ebc6cf3325b54433cd3b7))
+
 ## [2.6.0](https://github.com/angelacorte/carol-experiments/compare/2.5.0...2.6.0) (2026-04-13)
 
 ### Features
