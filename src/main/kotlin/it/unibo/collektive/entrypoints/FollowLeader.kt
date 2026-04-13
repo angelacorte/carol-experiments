@@ -49,7 +49,7 @@ fun Aggregate<Int>.followLeaderEntrypoint(
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        solver = device.environment.solver(SimulationQpSettings().base(device)),
+        solver = device.environment.solver,
         uNominal = GoToTargetNominal { targetSelectionStrategy }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { targetSelectionStrategy }),
         localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
