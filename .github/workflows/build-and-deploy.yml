@@ -25,7 +25,7 @@ jobs:
       - uses: DanySK/build-check-deploy-gradle-action@4.0.31
         with:
           build-command: true
-          check-command: ./gradlew check runAllGraphics
+          check-command: ./gradlew check runAllGraphic
           deploy-command: true
           should-validate-wrapper: ${{ contains('Linux', runner.os) }}
   release:
