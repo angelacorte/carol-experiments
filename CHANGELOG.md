@@ -1,3 +1,29 @@
+## [2.6.0](https://github.com/angelacorte/carol-experiments/compare/2.5.0...2.6.0) (2026-04-13)
+
+### Features
+
+* implement follow leader experiment ([#69](https://github.com/angelacorte/carol-experiments/issues/69)) ([c7ded51](https://github.com/angelacorte/carol-experiments/commit/c7ded51bb1f8186f47dbd4eb8c0f813ee8b2df95))
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.2.3 ([953fe16](https://github.com/angelacorte/carol-experiments/commit/953fe163f55fad92027a0ecc1723a98f58f89e74))
+* **deps:** update alchemist to v43.0.32 ([95d2d66](https://github.com/angelacorte/carol-experiments/commit/95d2d66cd08e93ff7a7641f48bdcc214ae27e9ad))
+* **deps:** update alchemist to v43.0.33 ([5111a17](https://github.com/angelacorte/carol-experiments/commit/5111a17922519caf1a6d8b5ac01a5142e560bc72))
+* **deps:** update python docker tag to v3.14.4 ([b121dad](https://github.com/angelacorte/carol-experiments/commit/b121dada326b738dcd605fc1e1d6785d6f81a3ff))
+
+### Bug Fixes
+
+* remove useless parameter ([#75](https://github.com/angelacorte/carol-experiments/issues/75)) ([58bb21b](https://github.com/angelacorte/carol-experiments/commit/58bb21b904c96593136b5e9e83b3343aa952dd65))
+* update minimum distance calculation in CollisionAvoidanceCBF ([#68](https://github.com/angelacorte/carol-experiments/issues/68)) ([9acaae5](https://github.com/angelacorte/carol-experiments/commit/9acaae57bd4b1905cb2a1df764b81a8e3fa6b527))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.5.0 [skip ci] ([81be38f](https://github.com/angelacorte/carol-experiments/commit/81be38f0f4960aad9ebc41b2ce7b1a2b0cbef961))
+
+### Refactoring
+
+* rename experiment files ([#74](https://github.com/angelacorte/carol-experiments/issues/74)) ([8fd3b9f](https://github.com/angelacorte/carol-experiments/commit/8fd3b9f9e8b69dee62d437e812896eaddf58c59e))
+
 ## [2.5.0](https://github.com/angelacorte/carol-experiments/compare/2.4.3...2.5.0) (2026-04-08)
 
 ### Features
