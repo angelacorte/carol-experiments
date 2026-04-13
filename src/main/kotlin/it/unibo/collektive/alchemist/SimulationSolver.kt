@@ -42,7 +42,9 @@ object NodeSolver {
     private val activeSolver: LoadingCache<Node<*>, Solver> = Caffeine.newBuilder()
         .weakKeys()
         .build { node ->
-            val prop: SettingsProperty<*,*> = node.properties.first { it is SettingsProperty<*,*> } as SettingsProperty<*, *>
+            val prop: SettingsProperty<*, *> = node.properties.first {
+                it is SettingsProperty<*, *>
+            } as SettingsProperty<*, *>
             Solver(prop.settings)
         }
 
