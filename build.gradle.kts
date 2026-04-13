@@ -36,19 +36,27 @@ multiJvm {
 
 // Heap size estimation for batches
 val maxHeap: Long? by project
-val heap: Long = maxHeap ?: if (System.getProperty("os.name").lowercase().contains("linux")) {
-    File("/proc/meminfo").useLines { lines ->
-        lines.firstOrNull { it.startsWith("MemAvailable:") }
-            ?.trim()
-            ?.split(Regex("\\s+"))?.getOrNull(1)?.toLong()
-            ?.let { it / 1024 }
-            ?: error("MemAvailable not found in /proc/meminfo")
-    }.toString().trim().toLong()
-        .also { println("Detected ${it}MB RAM available.") } * 9 / 10
-} else {
-    // Guess 16GB RAM of which 2 used by the OS
-    14 * 1024L
-}
+val heap: Long =
+    maxHeap
+        ?: if (System.getProperty("os.name").lowercase().contains("linux")) {
+            File("/proc/meminfo")
+                .useLines { lines ->
+                    lines.firstOrNull { it.startsWith("MemAvailable:") }
+                        ?.trim()
+                        ?.split(Regex("\\s+"))
+                        ?.getOrNull(1)
+                        ?.toLong()
+                        ?.let { it / 1024 }
+                        ?: error("MemAvailable not found in /proc/meminfo")
+                }
+                .toString()
+                .trim()
+                .toLong()
+                .also { println("Detected ${it}MB RAM available.") } * 9 / 10
+        } else {
+            // Guess 16GB RAM of which 2 used by the OS
+            14 * 1024L
+        }
 val taskSizeFromProject: Int? by project
 val taskSize = taskSizeFromProject ?: 512
 val threadCount = maxOf(1, minOf(Runtime.getRuntime().availableProcessors(), heap.toInt() / taskSize))
