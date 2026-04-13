@@ -7,7 +7,6 @@ variables:
   robotMaxSpeed: &robotMaxSpeed 2.0
   primalTolerance: &primalTolerance 1e-2
   dualTolerance: &dualTolerance 1e-2
-  maxIterations: &maxIter 50
   moveTargetTime1: &moveTargetTime1 60.0
   moveTargetTime2: &moveTargetTime2 120.0
   timeDistribution: &timeDistribution 100.0 # times in a second > 100 = 10 ms
@@ -83,8 +82,6 @@ deployments:
         concentration: *primalTolerance
       - molecule: DualTolerance
         concentration: *dualTolerance
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -112,8 +109,6 @@ deployments:
         concentration: *primalTolerance
       - molecule: DualTolerance
         concentration: *dualTolerance
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -141,8 +136,6 @@ deployments:
         concentration: *primalTolerance
       - molecule: DualTolerance
         concentration: *dualTolerance
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -170,8 +163,6 @@ deployments:
         concentration: *primalTolerance
       - molecule: DualTolerance
         concentration: *dualTolerance
-      - molecule: MaxIterationss
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS

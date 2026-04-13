@@ -66,8 +66,6 @@ deployments:
         concentration: *primalTolerance
       - molecule: DualTolerance
         concentration: *dualTolerance
-      - molecule: MaxIterations
-        concentration: *maxIter
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
