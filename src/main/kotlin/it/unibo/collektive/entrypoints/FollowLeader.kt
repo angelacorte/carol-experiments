@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package it.unibo.collektive.entrypoints
 
 import it.unibo.alchemist.collektive.device.CollektiveDevice
@@ -22,6 +24,9 @@ import it.unibo.collektive.model.Target
 import it.unibo.collektive.stdlib.consensus.boundedElection
 import it.unibo.collektive.stdlib.spreading.hopGradientCast
 
+/**
+ * Entrypoint for simulation where the leader goes towards a target and other nodes have as target the leader.
+ */
 fun Aggregate<Int>.followLeaderEntrypoint(
     position: LocationSensor,
     timeSensor: TimeSensor,
@@ -31,14 +36,14 @@ fun Aggregate<Int>.followLeaderEntrypoint(
     val communicationDistance: Double = device["CommunicationDistance"]
 
     val leaderID = boundedElection(strength = localId, bound = communicationDistance.toInt())
-    val isLeader = (leaderID == localId).also { device["isLeader"] = it}
+    val isLeader = (leaderID == localId).also { device["isLeader"] = it }
 
     val leaderAsTarget = hopGradientCast(isLeader, robot.position)
         .let { coordinate -> Target(coordinate.x, coordinate.y, leaderID) }
 
     val targetSelectionStrategy = when {
-        isLeader -> { getTarget(device["TargetID"] as Number) }
-        else -> { leaderAsTarget }
+        isLeader -> getTarget(device["TargetID"] as Number)
+        else -> leaderAsTarget
     }
 
     admmEntrypoint(
