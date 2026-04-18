@@ -5,7 +5,6 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
 import it.unibo.collektive.alchemist.SimulationSolver.solver
-import it.unibo.collektive.alchemist.device.SimulationQpSettings
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
@@ -29,7 +28,7 @@ fun Aggregate<Int>.noObstacleEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
         uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
-        solver = device.environment.solver(SimulationQpSettings().base(device)),
+        solver = device.environment.solver,
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         localCBF = listOf(MaxSpeedCBF()),
         pairwiseCBF = listOf(CollisionAvoidanceCBF()),
