@@ -26,7 +26,9 @@ import it.unibo.collektive.solver.gurobi.setupLogger
  *
  * @property settings numerical and logging configuration shared by every managed QP.
  */
-class SolverProperty<T>(override val settings: QpSettings, override val node: Node<T>) : Solver, NodeProperty<T> {
+class SolverProperty<T>(override val settings: QpSettings, override val node: Node<T>) :
+    Solver,
+    NodeProperty<T> {
 
     private lateinit var local: LocalQP
 

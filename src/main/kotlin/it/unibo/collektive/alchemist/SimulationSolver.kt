@@ -25,12 +25,11 @@ object SimulationSolver {
             SolverProperty(settings, environment.nodes.first())
         }
 
-/**
- * Returns the solver already associated with this environment.
- *
- * @throws IllegalStateException if no solver has been created for the environment yet.
- */
-val Environment<*, *>.solver: Solver
-    get() = activeSolver[this]
+    /**
+     * Returns the solver already associated with this environment.
+     *
+     * @throws IllegalStateException if no solver has been created for the environment yet.
+     */
+    val Environment<*, *>.solver: Solver
+        get() = activeSolver[this]
 }
-
