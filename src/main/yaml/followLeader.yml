@@ -11,29 +11,42 @@ variables:
   obstacleRadius: &obstacleRadius 3.0
   obstacleMargin: &obstacleMargin 2.0
   controlPeriodMS: &controlPeriodMS 100.0 #ms
-  constraintPrefix: "qp"
-  logEnabled: false
-  rhoADMM: 10.0
-  rhoResidual: 0.5
-  rhoSlack: 2.0
-  primalTolerance: 1e-2
-  dualTolerance: 1e-2
-  QPSettings: &QPSettings # TODO FIX WHEN ALCHEMIST BUG IS SOLVED
+  constraintPrefix:
+    formula: |
+      "qp"
+  logEnabled:
+    formula: "false"
+  rhoADMM:
+    language: kotlin
+    formula: 10.0
+  rhoResidual:
+    language: kotlin
+    formula: 0.5
+  rhoSlack:
+    language: kotlin
+    formula: 2.0
+  primalTolerance:
+    language: kotlin
+    formula: 1e-2
+  dualTolerance:
+    language: kotlin
+    formula: 1e-2
+  QPSettings: &QPSettings
     language: kotlin
     formula: |
       import it.unibo.collektive.alchemist.device.SimulationQpSettings
       import it.unibo.collektive.admm.Tolerance
-      val tolerance = Tolerance(1e-2, 1e-2)
-      SimulationQpSettings("qp", false, 10.0, 0.5, 2.0, tolerance)
+      val tolerance = Tolerance(primalTolerance, dualTolerance)
+      SimulationQpSettings("qp", false, rhoADMM, rhoResidual, rhoSlack, tolerance)
 
 network-model:
   type: ConnectWithinDistance
   parameters: [*connectWithinDistance]
 
-layers:
-  - type: ConstantLayer
-    parameters: [ *QPSettings ]
-    molecule: QPSettings
+#layers:
+#  - type: ConstantLayer
+#    parameters: [ *QPSettings ]
+#    molecule: QPSettings
 
 
 _pool: &program
@@ -105,7 +118,7 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
-      - type: it.unibo.collektive.alchemist.device.sensors.impl.SettingsProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
         parameters: [ *QPSettings ]
 
   - type: Point
@@ -130,7 +143,7 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
-      - type: it.unibo.collektive.alchemist.device.sensors.impl.SettingsProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
         parameters: [ *QPSettings ]
 #
   - type: Point
@@ -155,7 +168,7 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
-      - type: it.unibo.collektive.alchemist.device.sensors.impl.SettingsProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
         parameters: [ *QPSettings ]
 
   - type: Point
@@ -180,7 +193,7 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
-      - type: it.unibo.collektive.alchemist.device.sensors.impl.SettingsProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
         parameters: [ *QPSettings ]
 
   - type: Point
