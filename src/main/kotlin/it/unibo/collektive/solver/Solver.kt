@@ -1,8 +1,5 @@
 package it.unibo.collektive.solver
 
-import com.gurobi.gurobi.GRB
-import com.gurobi.gurobi.GRBEnv
-import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.admm.DualParams
 import it.unibo.collektive.admm.LocalDualUpdate
 import it.unibo.collektive.admm.SuggestedControl
@@ -10,41 +7,37 @@ import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
-import it.unibo.collektive.solver.gurobi.LocalQP
-import it.unibo.collektive.solver.gurobi.PairwiseQP
 import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.solver.gurobi.setLicense
-import it.unibo.collektive.solver.gurobi.setupLogger
 
 /**
- * High-level facade that owns the reusable Gurobi environments and QP templates used by ADMM.
+ * Contract for optimization backends used to solve local and pairwise ADMM subproblems.
  *
- * A solver lazily builds one local model and one pairwise model, then updates and solves them at each step.
+ * A `Solver` implementation is responsible for:
+ * - creating and maintaining optimization models,
+ * - updating model coefficients from the current system state,
+ * - solving both local and edge-coupled QPs,
+ * - returning controls in the domain model format.
  *
- * @property settings numerical and logging configuration shared by every managed QP.
+ * Typical usage sequence:
+ * 1. Configure local and pairwise models through setup methods.
+ * 2. At each control step, call update-and-solve methods with fresh state and ADMM duals.
  */
-class Solver(val settings: QpSettings) {
+interface Solver {
 
-    private lateinit var local: LocalQP
-
-    private lateinit var pairwise: PairwiseQP
-
-    private val env: GRBEnv = setLicense().let {
-        GRBEnv(true).also { env ->
-            env.set(GRB.IntParam.OutputFlag, if (settings.logEnabled) 1 else 0)
-            env.start()
-        }
-    }
+    /**
+     * Static and numeric settings used by the underlying QP backend.
+     */
+    val settings: QpSettings
 
     /**
      * Whether the local-device QP has already been created.
      */
-    val isLocalModelAvailable: Boolean get() = this::local.isInitialized
+    val isLocalModelAvailable: Boolean
 
     /**
      * Whether the pairwise-edge QP has already been created.
      */
-    val isPairwiseModelAvailable: Boolean get() = this::pairwise.isInitialized
+    val isPairwiseModelAvailable: Boolean
 
     /**
      * Creates the local-device QP if needed, or synchronizes the installed control functions otherwise.
@@ -53,14 +46,7 @@ class Solver(val settings: QpSettings) {
      * @param localCLFs local control Lyapunov functions enforced by the model.
      * @param localCBFs local control barrier functions enforced by the model.
      */
-    fun setupLocalModel(device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>) {
-        if (!isLocalModelAvailable) {
-            val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-            local = LocalQP.create(model, device, localCLFs, localCBFs)
-        } else {
-            local.syncControlFunctions(localCLFs, localCBFs)
-        }
-    }
+    fun setupLocalModel(device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>)
 
     /**
      * Creates the pairwise QP used to negotiate controls on an edge, if it is not available yet.
@@ -69,12 +55,7 @@ class Solver(val settings: QpSettings) {
      * @param otherDevice neighbor device involved in the pairwise optimization.
      * @param pairwiseCBFs pairwise barrier functions enforced on the shared edge.
      */
-    fun setupPairwiseModel(device: Device, otherDevice: Device, pairwiseCBFs: List<CBF>) {
-        if (!isPairwiseModelAvailable) {
-            val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-            pairwise = PairwiseQP.create(model, device, otherDevice, pairwiseCBFs)
-        }
-    }
+    fun setupPairwiseModel(device: Device, otherDevice: Device, pairwiseCBFs: List<CBF>)
 
     /**
      * Updates and solves the local-device QP for the current ADMM iteration.
@@ -90,7 +71,7 @@ class Solver(val settings: QpSettings) {
         uNominal: DoubleArray,
         duals: Map<ID, DualParams>,
         deltaTime: Double,
-    ): SpeedControl2D = local.updateAndSolve(device, uNominal, duals, settings, deltaTime)
+    ): SpeedControl2D
 
     /**
      * Updates and solves the pairwise QP associated with a shared edge.
@@ -106,5 +87,5 @@ class Solver(val settings: QpSettings) {
         otherDevice: Device,
         duals: LocalDualUpdate,
         deltaTime: Double,
-    ): SuggestedControl = pairwise.updateAndSolve(device, otherDevice, duals, settings, deltaTime)
+    ): SuggestedControl
 }

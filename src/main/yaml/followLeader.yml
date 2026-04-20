@@ -5,18 +5,49 @@ variables:
   connectWithinDistance: &connectWithinDistance 10.0
   robotSafeMargin: &robotSafeMargin 1.0
   robotMaxSpeed: &robotMaxSpeed 2.0
-  primalTolerance: &primalTolerance 1e-2
-  dualTolerance: &dualTolerance 1e-2
   moveTargetTime1: &moveTargetTime1 60.0
   moveTargetTime2: &moveTargetTime2 120.0
   timeDistribution: &timeDistribution 100.0 # times in a second > 100 = 10 ms
   obstacleRadius: &obstacleRadius 3.0
   obstacleMargin: &obstacleMargin 2.0
   controlPeriodMS: &controlPeriodMS 100.0 #ms
+  constraintPrefix:
+    formula: |
+      "qp"
+  logEnabled:
+    formula: "false"
+  rhoADMM:
+    language: kotlin
+    formula: 10.0
+  rhoResidual:
+    language: kotlin
+    formula: 0.5
+  rhoSlack:
+    language: kotlin
+    formula: 2.0
+  primalTolerance:
+    language: kotlin
+    formula: 1e-2
+  dualTolerance:
+    language: kotlin
+    formula: 1e-2
+  QPSettings: &QPSettings
+    language: kotlin
+    formula: |
+      import it.unibo.collektive.alchemist.device.SimulationQpSettings
+      import it.unibo.collektive.admm.Tolerance
+      val tolerance = Tolerance(primalTolerance, dualTolerance)
+      SimulationQpSettings("qp", false, rhoADMM, rhoResidual, rhoSlack, tolerance)
 
 network-model:
   type: ConnectWithinDistance
   parameters: [*connectWithinDistance]
+
+#layers:
+#  - type: ConstantLayer
+#    parameters: [ *QPSettings ]
+#    molecule: QPSettings
+
 
 _pool: &program
   - time-distribution: *timeDistribution
@@ -78,10 +109,6 @@ deployments:
         concentration: 1
       - molecule: CommunicationDistance
         concentration: *maxCommDistance
-      - molecule: PrimalTolerance
-        concentration: *primalTolerance
-      - molecule: DualTolerance
-        concentration: *dualTolerance
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -91,6 +118,8 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
+        parameters: [ *QPSettings ]
 
   - type: Point
     parameters: [ 7, 0 ]
@@ -105,10 +134,6 @@ deployments:
         concentration: 1
       - molecule: CommunicationDistance
         concentration: *maxCommDistance
-      - molecule: PrimalTolerance
-        concentration: *primalTolerance
-      - molecule: DualTolerance
-        concentration: *dualTolerance
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -118,6 +143,8 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
+        parameters: [ *QPSettings ]
 #
   - type: Point
     parameters: [ 5, -5 ]
@@ -132,10 +159,6 @@ deployments:
         concentration:  *maxCommDistance
       - molecule: TargetID
         concentration: 1
-      - molecule: PrimalTolerance
-        concentration: *primalTolerance
-      - molecule: DualTolerance
-        concentration: *dualTolerance
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -145,6 +168,8 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
+        parameters: [ *QPSettings ]
 
   - type: Point
     parameters: [ 0, -7 ]
@@ -159,10 +184,6 @@ deployments:
         concentration:  *maxCommDistance
       - molecule: TargetID
         concentration: 1
-      - molecule: PrimalTolerance
-        concentration: *primalTolerance
-      - molecule: DualTolerance
-        concentration: *dualTolerance
       - molecule: TimeDistribution
         concentration: *timeDistribution
       - molecule: ControlPeriodMS
@@ -172,6 +193,8 @@ deployments:
     properties:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
+      - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
+        parameters: [ *QPSettings ]
 
   - type: Point
     parameters: [ 20, 20 ]
