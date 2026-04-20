@@ -1,3 +1,22 @@
+## [2.8.0](https://github.com/angelacorte/carol-experiments/compare/2.7.0...2.8.0) (2026-04-20)
+
+### Features
+
+* add node solver property and fix the simulation solver cache ([#72](https://github.com/angelacorte/carol-experiments/issues/72)) ([12f2389](https://github.com/angelacorte/carol-experiments/commit/12f2389e2e4017c19f1ca66a075a598d40b4e27b))
+
+### Dependency updates
+
+* **deps:** update alpine docker tag to v3.23.4 ([2746bfd](https://github.com/angelacorte/carol-experiments/commit/2746bfd7bc1df1eb3ef883d932828d06fbbc3525))
+* **deps:** update plugin com.gradle.develocity to v4.4.1 ([77494e7](https://github.com/angelacorte/carol-experiments/commit/77494e7681134e63a36b1ded252052bbd6a89126))
+
+### Build and continuous integration
+
+* **deps:** update actions/setup-node action to v6.4.0 ([bdd8a9f](https://github.com/angelacorte/carol-experiments/commit/bdd8a9f69fc73c7f206f5dc336b109ca1f84642d))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.7.0 [skip ci] ([7e3716a](https://github.com/angelacorte/carol-experiments/commit/7e3716a45d37e183e40507c453540633a46b68a1))
+
 ## [2.7.0](https://github.com/angelacorte/carol-experiments/compare/2.6.1...2.7.0) (2026-04-20)
 
 ### Features
