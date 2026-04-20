@@ -6,8 +6,6 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
-import it.unibo.collektive.alchemist.SimulationSolver.solver
-import it.unibo.collektive.alchemist.device.SimulationQpSettings
 import it.unibo.collektive.alchemist.device.getObstacle
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
@@ -21,6 +19,7 @@ import it.unibo.collektive.control.cbf.ObstacleAvoidanceCBF
 import it.unibo.collektive.control.clf.GoToTargetCLF
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
+import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.stdlib.consensus.boundedElection
 import it.unibo.collektive.stdlib.spreading.hopGradientCast
 
@@ -31,7 +30,8 @@ fun Aggregate<Int>.followLeaderEntrypoint(
     position: LocationSensor,
     timeSensor: TimeSensor,
     device: CollektiveDevice<Euclidean2DPosition>,
-) = context(position, device, timeSensor) {
+    solver: Solver,
+) = context(position, device, timeSensor, solver) {
     val robot = getRobot()
     val communicationDistance: Double = device["CommunicationDistance"]
 
@@ -49,7 +49,6 @@ fun Aggregate<Int>.followLeaderEntrypoint(
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        solver = device.environment.solver,
         uNominal = GoToTargetNominal { targetSelectionStrategy }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { targetSelectionStrategy }),
         localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),

@@ -31,25 +31,23 @@ import kotlin.time.ExperimentalTime
  * Aggregate entrypoint: runs the distributed ADMM control loop and applies the resulting velocity.
  */
 @OptIn(ExperimentalTime::class)
-context(timeSensor: TimeSensor, locationSensor: LocationSensor, collektiveDevice: CollektiveDevice<Euclidean2DPosition>)
+context(solver: Solver, timeSensor: TimeSensor, locationSensor: LocationSensor, collektiveDevice: CollektiveDevice<Euclidean2DPosition>)
 fun Aggregate<Int>.admmEntrypoint(
     controlPeriod: Double,
     device: Device,
     uNominal: DoubleArray,
-    solver: Solver,
     localCLF: List<CLF>,
     localCBF: List<CBF>,
     pairwiseCBF: List<CBF>,
 ) {
     val timeLeft = sharedTimeLeftTo(timeSensor.getTimeAsInstant(), controlPeriod.milliseconds).also {
-        collektiveDevice["TimeLeft"] =
-            it
+        collektiveDevice["TimeLeft"] = it
     }
     val controlPeriodSeconds = Duration.convert(controlPeriod, DurationUnit.MILLISECONDS, DurationUnit.SECONDS)
     // device snapshots
     evolve(device) { previous ->
         solver.setupLocalModel(previous, localCLF, localCBF)
-        val control = admm(previous, uNominal, controlPeriodSeconds, solver, pairwiseCBF)
+        val control = admm(previous, uNominal, controlPeriodSeconds, pairwiseCBF)
         when {
             timeLeft <= ZERO -> applyControl(control, controlPeriodSeconds)
             else -> previous
@@ -57,11 +55,11 @@ fun Aggregate<Int>.admmEntrypoint(
     }
 }
 
+context(solver: Solver)
 internal inline fun <reified ID : Comparable<ID>> Aggregate<ID>.admm(
     device: Device,
     uNominal: DoubleArray,
     controlPeriod: Double,
-    solver: Solver,
     pairwiseCBF: List<CBF>,
 ): SpeedControl2D = evolving(ControlAndDuals(device.control)) { previous ->
     val previousDuals = previous.duals.filterNot { localId == it.key }
@@ -140,12 +138,12 @@ internal inline fun <reified ID : Comparable<ID>> Aggregate<ID>.admm(
  * @param pairwiseCBF pairwise barrier functions that constrain shared edges.
  * @return the updated control together with the refreshed dual parameters.
  */
+context(solver: Solver)
 fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
     device: Device,
     uNominal: DoubleArray,
     duals: Map<ID, DualParams>,
     deltaTime: Double,
-    solver: Solver,
     pairwiseCBF: List<CBF>,
 ): ControlAndDuals<ID> {
     val control: SpeedControl2D = solver.updateAndSolveLocal(device, uNominal, duals, deltaTime)
