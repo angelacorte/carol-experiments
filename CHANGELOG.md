@@ -1,3 +1,26 @@
+## [2.7.0](https://github.com/angelacorte/carol-experiments/compare/2.6.1...2.7.0) (2026-04-20)
+
+### Features
+
+* add simulation run on CI with GRB_LICENSE_FILE ([#53](https://github.com/angelacorte/carol-experiments/issues/53)) ([426d05b](https://github.com/angelacorte/carol-experiments/commit/426d05be8c7694b205731a1e1a04bd83e9b3d58a))
+
+### Dependency updates
+
+* **deps:** update alchemist to v43.0.34 ([b0b2662](https://github.com/angelacorte/carol-experiments/commit/b0b266295d1e77d19ba1b1c88a02321c9ae022bb))
+* **deps:** update alchemist to v43.0.35 ([dab39c9](https://github.com/angelacorte/carol-experiments/commit/dab39c9a1dc6df6823e60dfc4e1c84d348dde5bf))
+* **deps:** update alchemist to v43.0.37 ([71c2358](https://github.com/angelacorte/carol-experiments/commit/71c2358cccb73ff22691d0c9bdbd071e3d22af76))
+* **deps:** update alchemist to v43.0.38 ([391f0c7](https://github.com/angelacorte/carol-experiments/commit/391f0c7d6f19d57fd6034f4d6b351b26d04cabaa))
+* **deps:** update dependency xarray to v2026.4.0 ([1dc2719](https://github.com/angelacorte/carol-experiments/commit/1dc2719f89e0e1f1ee4dc3abc9e815f92b628918))
+* **deps:** update node.js to 24.15 ([32cc5b5](https://github.com/angelacorte/carol-experiments/commit/32cc5b55c01a46855b39e89377d3c9ae34d4bd25))
+
+### Build and continuous integration
+
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.32 ([00264c7](https://github.com/angelacorte/carol-experiments/commit/00264c7133835e78246d344733255e54a05ca5fe))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.6.1 [skip ci] ([5f9ba55](https://github.com/angelacorte/carol-experiments/commit/5f9ba551016455ac6447935d95cda8027797777d))
+
 ## [2.6.1](https://github.com/angelacorte/carol-experiments/compare/2.6.0...2.6.1) (2026-04-13)
 
 ### Bug Fixes
