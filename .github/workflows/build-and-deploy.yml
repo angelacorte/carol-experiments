@@ -15,10 +15,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create Gurobi license file
+        shell: bash
+        run: |
+          cat <<'EOF' > gurobi.lic
+          ${{ secrets.GRB_LICENSE_FILE }}
+          EOF
+          echo "GRB_LICENSE_FILE=$(pwd)/gurobi.lic" >> $GITHUB_ENV
       - uses: DanySK/build-check-deploy-gradle-action@4.0.32
         with:
           build-command: true
-          check-command: ./gradlew check
+          check-command: ./gradlew check runAllGraphic
           deploy-command: true
           should-validate-wrapper: ${{ contains('Linux', runner.os) }}
   release:
