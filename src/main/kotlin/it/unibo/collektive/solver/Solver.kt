@@ -70,7 +70,7 @@ interface Solver {
         device: Device,
         uNominal: DoubleArray,
         duals: Map<ID, DualParams>,
-        deltaTime: Double
+        deltaTime: Double,
     ): SpeedControl2D
 
     /**
@@ -86,6 +86,6 @@ interface Solver {
         device: Device,
         otherDevice: Device,
         duals: LocalDualUpdate,
-        deltaTime: Double
+        deltaTime: Double,
     ): SuggestedControl
 }

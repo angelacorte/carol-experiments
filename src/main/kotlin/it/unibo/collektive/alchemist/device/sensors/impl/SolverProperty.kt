@@ -12,10 +12,10 @@ import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
+import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.solver.gurobi.LocalQP
 import it.unibo.collektive.solver.gurobi.PairwiseQP
 import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.solver.gurobi.setLicense
 import it.unibo.collektive.solver.gurobi.setupLogger
 
@@ -26,7 +26,7 @@ import it.unibo.collektive.solver.gurobi.setupLogger
  *
  * @property settings numerical and logging configuration shared by every managed QP.
  */
-class SolverProperty<T>(override val settings: QpSettings, override val node: Node<T>): Solver, NodeProperty<T> {
+class SolverProperty<T>(override val settings: QpSettings, override val node: Node<T>) : Solver, NodeProperty<T> {
 
     private lateinit var local: LocalQP
 
@@ -46,7 +46,7 @@ class SolverProperty<T>(override val settings: QpSettings, override val node: No
     override fun setupLocalModel(device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>) {
         if (!isLocalModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-            local = LocalQP.Companion.create(model, device, localCLFs, localCBFs)
+            local = LocalQP.create(model, device, localCLFs, localCBFs)
         } else {
             local.syncControlFunctions(localCLFs, localCBFs)
         }
@@ -55,7 +55,7 @@ class SolverProperty<T>(override val settings: QpSettings, override val node: No
     override fun setupPairwiseModel(device: Device, otherDevice: Device, pairwiseCBFs: List<CBF>) {
         if (!isPairwiseModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
-            pairwise = PairwiseQP.Companion.create(model, device, otherDevice, pairwiseCBFs)
+            pairwise = PairwiseQP.create(model, device, otherDevice, pairwiseCBFs)
         }
     }
 
@@ -65,7 +65,6 @@ class SolverProperty<T>(override val settings: QpSettings, override val node: No
         duals: Map<ID, DualParams>,
         deltaTime: Double,
     ): SpeedControl2D = local.updateAndSolve(device, uNominal, duals, settings, deltaTime)
-
 
     override fun updateAndSolvePairwise(
         device: Device,

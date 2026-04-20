@@ -31,7 +31,12 @@ import kotlin.time.ExperimentalTime
  * Aggregate entrypoint: runs the distributed ADMM control loop and applies the resulting velocity.
  */
 @OptIn(ExperimentalTime::class)
-context(solver: Solver, timeSensor: TimeSensor, locationSensor: LocationSensor, collektiveDevice: CollektiveDevice<Euclidean2DPosition>)
+context(
+    collektiveDevice: CollektiveDevice<Euclidean2DPosition>,
+    locationSensor: LocationSensor,
+    solver: Solver,
+    timeSensor: TimeSensor,
+)
 fun Aggregate<Int>.admmEntrypoint(
     controlPeriod: Double,
     device: Device,
