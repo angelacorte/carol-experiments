@@ -1,3 +1,18 @@
+## [2.8.1](https://github.com/angelacorte/carol-experiments/compare/2.8.0...2.8.1) (2026-04-23)
+
+### Dependency updates
+
+* **core-deps:** update dependency org.jetbrains.kotlin.jvm to v2.3.21 ([799af16](https://github.com/angelacorte/carol-experiments/commit/799af165b56d7d12263ed93c2fcf8bbed7490550))
+* **deps:** update alchemist to v43.0.39 ([1bb2c9a](https://github.com/angelacorte/carol-experiments/commit/1bb2c9ac7152529e73c4011f4261b92f6bc95e25))
+* **deps:** update alchemist to v43.0.40 ([10e4acb](https://github.com/angelacorte/carol-experiments/commit/10e4acbd603c17e4b1d40bb4be4cd69278bd59f2))
+* **deps:** update plugin gitsemver to v7.0.17 ([b191c4a](https://github.com/angelacorte/carol-experiments/commit/b191c4abd54150f93edbbbddbdb840ad5901aaf2))
+* **deps:** update plugin kotlin-qa to v1.4.1 ([78f9008](https://github.com/angelacorte/carol-experiments/commit/78f900835af3ad7855cbbf7fce42a86511d0688b))
+* **deps:** update plugin kotlin-qa to v1.5.0 ([601e0c0](https://github.com/angelacorte/carol-experiments/commit/601e0c01526a92333ab2f9c29fcbd8faf1529d12))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.8.0 [skip ci] ([a2a4c50](https://github.com/angelacorte/carol-experiments/commit/a2a4c50beba1d4ac831ac3435b10ef170dc134a0))
+
 ## [2.8.0](https://github.com/angelacorte/carol-experiments/compare/2.7.0...2.8.0) (2026-04-20)
 
 ### Features
