@@ -1,3 +1,16 @@
+## [2.8.2](https://github.com/angelacorte/carol-experiments/compare/2.8.1...2.8.2) (2026-04-25)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.2.4 ([3784655](https://github.com/angelacorte/carol-experiments/commit/37846553c5a7e0523e3fd5f7d414d75877c95d6c))
+* **deps:** update alchemist to v43.0.41 ([ec0034b](https://github.com/angelacorte/carol-experiments/commit/ec0034b5fd63efbef764d040428e98d9fccf0d17))
+* **deps:** update plugin kotlin-qa to v1.5.1 ([b93c1a6](https://github.com/angelacorte/carol-experiments/commit/b93c1a625f20ede4294d1ec47ddb65875532c30e))
+* **deps:** update plugin kotlin-qa to v1.6.0 ([e382ad9](https://github.com/angelacorte/carol-experiments/commit/e382ad9dce8863296ae3030d56f040a490e2fb29))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.8.1 [skip ci] ([f3145e0](https://github.com/angelacorte/carol-experiments/commit/f3145e04a914d94e2bd81299ebd3807ceaf0dabe))
+
 ## [2.8.1](https://github.com/angelacorte/carol-experiments/compare/2.8.0...2.8.1) (2026-04-23)
 
 ### Dependency updates
