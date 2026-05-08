@@ -1,3 +1,28 @@
+## [2.8.3](https://github.com/angelacorte/carol-experiments/compare/2.8.2...2.8.3) (2026-05-08)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.2.5 ([9354784](https://github.com/angelacorte/carol-experiments/commit/93547841405e53af6917fdda50712a8626743edf))
+* **deps:** update alchemist to v43.0.42 ([fe4c00c](https://github.com/angelacorte/carol-experiments/commit/fe4c00c6dc447be477cb3d0dc2529cefab0f136f))
+* **deps:** update alchemist to v43.0.43 ([6992d1f](https://github.com/angelacorte/carol-experiments/commit/6992d1fff880f07e09af772e1b39668f2f547fca))
+* **deps:** update alchemist to v43.0.44 ([3e57643](https://github.com/angelacorte/carol-experiments/commit/3e576438f173cfcfb9cb58aa41eacf3458359a14))
+* **deps:** update alchemist to v43.0.45 ([f1bb786](https://github.com/angelacorte/carol-experiments/commit/f1bb78679797e015ad2e370df11daa1ee9c5f46f))
+* **deps:** update alchemist to v43.0.46 ([0b6e1fd](https://github.com/angelacorte/carol-experiments/commit/0b6e1fd96b025d2fb8016f6a370608cc21fd86e7))
+* **deps:** update alchemist to v43.0.47 ([84d47ad](https://github.com/angelacorte/carol-experiments/commit/84d47ad49a7d0610d517b7872e42191e49fb6b61))
+* **deps:** update dependency com.github.ben-manes.caffeine:caffeine to v3.2.4 ([2662074](https://github.com/angelacorte/carol-experiments/commit/2662074ee013822804172f7307ce3dd3226b76ec))
+* **deps:** update dependency com.gurobi:gurobi to v13.0.2 ([8b5b2ce](https://github.com/angelacorte/carol-experiments/commit/8b5b2ceaa8ca0aeed885e4c2e7add8db8d37c811))
+* **deps:** update dependency matplotlib to v3.10.9 ([0916325](https://github.com/angelacorte/carol-experiments/commit/09163258b1a70ba78c95a5d30d6eaa4f85e6be0f))
+* **deps:** update gradle to v9.5.0 ([a6f43d1](https://github.com/angelacorte/carol-experiments/commit/a6f43d1cca518d5c2122e7b00d4b54733f6f19a0))
+* **deps:** update plugin gitsemver to v7.0.18 ([2899857](https://github.com/angelacorte/carol-experiments/commit/2899857113b80961f2bb6ebe479634412b7e5198))
+* **deps:** update plugin kotlin-qa to v1.6.1 ([2ea3778](https://github.com/angelacorte/carol-experiments/commit/2ea37780196979c1cab78df9a27ea6145233463d))
+* **deps:** update plugin multijvmtesting to v4.3.3 ([e6b8eac](https://github.com/angelacorte/carol-experiments/commit/e6b8eac9592be933bcdfb75d6eaccc9c484bd436))
+* **deps:** update plugin multijvmtesting to v4.3.4 ([54bf881](https://github.com/angelacorte/carol-experiments/commit/54bf881a394e21c589863553e07aaada3c3bd49d))
+* **deps:** update plugin multijvmtesting to v4.3.5 ([d4168ad](https://github.com/angelacorte/carol-experiments/commit/d4168adc268d141751d86d695d357cefbe305886))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.8.2 [skip ci] ([d7f8241](https://github.com/angelacorte/carol-experiments/commit/d7f82414f78ed3cd7c75b2b0833151b2ee42e312))
+
 ## [2.8.2](https://github.com/angelacorte/carol-experiments/compare/2.8.1...2.8.2) (2026-04-25)
 
 ### Dependency updates
