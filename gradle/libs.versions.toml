@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.21"
-alchemist = "43.0.47"
+alchemist = "43.0.48"
 caffeine = "3.2.4"
 collektive = "28.2.5"
 gurobi = "13.0.2"
