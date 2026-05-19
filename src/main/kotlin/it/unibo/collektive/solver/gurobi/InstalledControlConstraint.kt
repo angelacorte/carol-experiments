@@ -6,7 +6,8 @@ import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.model.Device
 
 /**
- * A handle to variables and constraints that have been structurally installed into a [GRBModel] **exactly once**.
+ * A handle to a control-function constraint that has been structurally installed into a [GRBModel]
+ * **exactly once**.
  *
  * After [ControlFunction.install] returns this handle, the model topology is frozen.
  * Every ADMM iteration must only call [update] to refresh numerical parameters (RHS, linear coefficients,
@@ -17,7 +18,7 @@ import it.unibo.collektive.model.Device
  * [GRBModel.chgCoeff] and attribute setters (RHS, bounds) are cheap in-place mutations that do
  * **not** trigger a structural rebuild, so they are the right tool for per-iteration updates.
  */
-interface Constraint {
+interface InstalledControlConstraint {
 
     /**
      * The slack decision variable introduced for this constraint,
