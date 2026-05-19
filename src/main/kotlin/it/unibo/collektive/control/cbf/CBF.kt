@@ -6,14 +6,14 @@ import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.installFormulaConstraint
-import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
+import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
 
 /**
  * Base class for Control Barrier Functions.
  *
  * Subclasses define a symbolic [formula].  The base class installs that formula into Gurobi once and
- * returns a [Constraint] that refreshes only numerical coefficients and RHS values at runtime.
+ * returns an [InstalledControlConstraint] that refreshes only numerical coefficients and RHS values at runtime.
  */
 abstract class CBF : ControlFunction {
 
@@ -44,15 +44,18 @@ abstract class CBF : ControlFunction {
      */
     protected abstract fun ControlFunctionScope.formula(): ConstraintFormula
 
-    final override fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint =
-        model.installFormulaConstraint(
-            name = constraintName,
-            slackName = name,
-            selfDecision = selfDecision,
-            otherDecision = otherDecision,
-            slackPolicy = slackPolicy,
-            slackWeight = slackWeight,
-        ) {
-            formula()
-        }
+    final override fun install(
+        model: GRBModel,
+        selfDecision: GRBVector,
+        otherDecision: GRBVector?,
+    ): InstalledControlConstraint = model.installFormulaConstraint(
+        name = constraintName,
+        slackName = name,
+        selfDecision = selfDecision,
+        otherDecision = otherDecision,
+        slackPolicy = slackPolicy,
+        slackWeight = slackWeight,
+    ) {
+        formula()
+    }
 }
