@@ -41,7 +41,6 @@ class CommunicationRangeCBF(
         val distance = self.position - other.position
         val h = squared(range) - squaredNorm(distance)
         val maxSpeed = max(self.maxSpeed, other.maxSpeed)
-
         return -2.0 * dot(distance, self.u - other.u) + slack greaterThanOrEqualTo
             -(eta / timeStep) * h + 4.0 * timeStep * squared(maxSpeed)
     }
