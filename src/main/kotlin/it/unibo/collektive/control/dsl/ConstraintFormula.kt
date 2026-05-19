@@ -1,6 +1,10 @@
 package it.unibo.collektive.control.dsl
 
 import com.gurobi.gurobi.GRB
+import it.unibo.collektive.control.dsl.expressions.AffineExpression
+import it.unibo.collektive.control.dsl.expressions.QuadraticExpression
+import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
+import it.unibo.collektive.control.dsl.expressions.scalar
 
 /**
  * Inequality direction supported by formula-backed constraints.
