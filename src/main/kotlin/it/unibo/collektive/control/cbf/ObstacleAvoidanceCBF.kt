@@ -1,7 +1,8 @@
 package it.unibo.collektive.control.cbf
 
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.ConstraintFormula
+import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.div
 import it.unibo.collektive.control.dsl.dot
 import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
@@ -45,7 +46,7 @@ class ObstacleAvoidanceCBF(
         }
     }
 
-    protected override fun FormulaScope.formula() = local {
+    override fun ControlFunctionScope.formula(): ConstraintFormula {
         val obstaclePosition = vector { obstacleProvider().toDoubleArray() }
         val obstacleRadius = scalar {
             obstacleProvider().radius + obstacleProvider().margin
@@ -53,7 +54,7 @@ class ObstacleAvoidanceCBF(
         val distance = self.position - obstaclePosition
         val h = squaredNorm(distance) - squared(obstacleRadius)
 
-        2.0 * dot(distance, self.u) + slack greaterThanOrEqualTo
+        return 2.0 * dot(distance, self.u) + slack greaterThanOrEqualTo
             -(eta / timeStep) * h
     }
 }

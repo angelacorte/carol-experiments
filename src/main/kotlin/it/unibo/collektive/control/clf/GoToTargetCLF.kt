@@ -1,7 +1,8 @@
 package it.unibo.collektive.control.clf
 
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.ConstraintFormula
+import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.dot
 import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.control.dsl.minus
@@ -44,11 +45,11 @@ class GoToTargetCLF(
         }
     }
 
-    protected override fun FormulaScope.formula() = local {
+    override fun ControlFunctionScope.formula(): ConstraintFormula {
         val targetPosition = vector { targetProvider().position.toDoubleArray() }
         val distance = self.position - targetPosition
 
-        2.0 * timeStep * dot(distance, self.u) - slack lessThanOrEqualTo
+        return 2.0 * timeStep * dot(distance, self.u) - slack lessThanOrEqualTo
             -convergenceRate * squaredNorm(distance) - squared(timeStep) * squared(self.maxSpeed)
     }
 }

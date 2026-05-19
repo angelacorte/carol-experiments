@@ -1,6 +1,7 @@
 package it.unibo.collektive.control.cbf
 
-import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.ConstraintFormula
+import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.div
 import it.unibo.collektive.control.dsl.dot
 import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
@@ -31,12 +32,12 @@ class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWe
 
     override val name: String = "collision_avoidance_CBF"
 
-    protected override fun FormulaScope.formula() = pairwise {
+    override fun ControlFunctionScope.formula(): ConstraintFormula {
         val distance = self.position - other.position
         val minDistance = max(self.safeMargin, other.safeMargin)
         val h = squaredNorm(distance) - squared(minDistance)
 
-        2.0 * dot(distance, self.u - other.u) + slack greaterThanOrEqualTo
+        return 2.0 * dot(distance, self.u - other.u) + slack greaterThanOrEqualTo
             -(eta / timeStep) * h
     }
 }
