@@ -21,7 +21,7 @@ class LocalQP private constructor(
     private val slack: GRBVar,
     private val localCLFs: List<CLF>,
     private val localCBFs: List<CBF>,
-    private val constraints: List<Constraint>,
+    private val constraints: List<InstalledControlConstraint>,
 ) {
 
     /**
@@ -139,7 +139,7 @@ class LocalQP private constructor(
         fun create(model: GRBModel, device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>): LocalQP {
             val u = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "u")
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_localQP")
-            val installed = mutableListOf<Constraint>()
+            val installed = mutableListOf<InstalledControlConstraint>()
             localCLFs.forEach { clf -> installed += clf.install(model, u, null) }
             localCBFs.forEach { cbf -> installed += cbf.install(model, u, null) }
             model.update()

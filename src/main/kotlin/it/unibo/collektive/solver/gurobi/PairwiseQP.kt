@@ -20,7 +20,7 @@ class PairwiseQP private constructor(
     private val slack: GRBVar,
     private val zi: GRBVector,
     private val zj: GRBVector,
-    private val constraints: List<Constraint>,
+    private val constraints: List<InstalledControlConstraint>,
 ) {
 
     /**
@@ -127,7 +127,7 @@ class PairwiseQP private constructor(
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_pairwiseQP")
             val zi = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "z_ij^i")
             val zj = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")
-            val constrs = mutableListOf<Constraint>()
+            val constrs = mutableListOf<InstalledControlConstraint>()
             pairwiseCBFs.forEach { cbf -> constrs += cbf.install(model, zi, zj) }
             model.update()
             return PairwiseQP(
