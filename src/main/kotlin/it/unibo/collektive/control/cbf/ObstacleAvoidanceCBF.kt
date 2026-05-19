@@ -3,7 +3,6 @@ package it.unibo.collektive.control.cbf
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
 import it.unibo.collektive.control.dsl.expressions.div
 import it.unibo.collektive.control.dsl.expressions.dot
 import it.unibo.collektive.control.dsl.expressions.minus
@@ -12,6 +11,7 @@ import it.unibo.collektive.control.dsl.expressions.squared
 import it.unibo.collektive.control.dsl.expressions.squaredNorm
 import it.unibo.collektive.control.dsl.expressions.times
 import it.unibo.collektive.control.dsl.expressions.unaryMinus
+import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Obstacle
 
@@ -53,7 +53,6 @@ class ObstacleAvoidanceCBF(
         }
         val distance = self.position - obstaclePosition
         val h = squaredNorm(distance) - squared(obstacleRadius)
-
         return 2.0 * dot(distance, self.u) + slack greaterThanOrEqualTo
             -(eta / timeStep) * h
     }

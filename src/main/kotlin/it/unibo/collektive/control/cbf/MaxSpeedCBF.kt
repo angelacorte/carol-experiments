@@ -3,14 +3,14 @@ package it.unibo.collektive.control.cbf
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.SlackPolicy
-import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.control.dsl.expressions.squared
 import it.unibo.collektive.control.dsl.expressions.squaredNorm
+import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 
 /**
  * Maximum-speed constraint enforced as a quadratic barrier.
  *
- * Constraint (installed once):
+ * Formula installed once:
  * ```
  * ‖u_i‖² ≤ u_max²
  * ```

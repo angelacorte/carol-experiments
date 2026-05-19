@@ -30,4 +30,3 @@ fun dot(coefficients: VectorExpression, decision: DecisionVectorExpression): Aff
     }
     return AffineExpression(linearTerms)
 }
-
