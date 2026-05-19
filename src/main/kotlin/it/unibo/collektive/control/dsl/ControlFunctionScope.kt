@@ -13,9 +13,9 @@ class AgentExpression internal constructor(
 
     val position: VectorExpression = VectorExpression { runtime -> device(runtime).position.toDoubleArray() }
 
-    val safeMargin: ScalarExpression = ScalarExpression { runtime -> device(runtime).safeMargin }
+    val safeMargin: RuntimeScalar = RuntimeScalar { runtime -> device(runtime).safeMargin }
 
-    val maxSpeed: ScalarExpression = ScalarExpression { runtime -> device(runtime).maxSpeed }
+    val maxSpeed: RuntimeScalar = RuntimeScalar { runtime -> device(runtime).maxSpeed }
 }
 
 class ControlFunctionScope internal constructor(
@@ -32,14 +32,20 @@ class ControlFunctionScope internal constructor(
         }
     }
 
-    val timeStep: ScalarExpression = ScalarExpression { it.deltaTime }
+    val timeStep: RuntimeScalar = RuntimeScalar { it.deltaTime }
 
     val slack: AffineExpression = slackVariable?.let {
         AffineExpression(listOf(LinearTerm(it, scalar(1.0))))
     } ?: AffineExpression()
 
-    fun scalar(block: FormulaRuntime.() -> Double): ScalarExpression =
-        ScalarExpression { runtime -> runtime.block() }
+    /**
+     * Lifts a runtime scalar into the formula DSL.
+     *
+     * Use this for values that are not part of [AgentExpression] but still have to be refreshed at
+     * each solver iteration, such as a moving obstacle radius or a target-dependent coefficient.
+     */
+    fun scalar(block: FormulaRuntime.() -> Double): RuntimeScalar =
+        RuntimeScalar { runtime -> runtime.block() }
 
     fun vector(block: FormulaRuntime.() -> DoubleArray): VectorExpression =
         VectorExpression { runtime -> runtime.block() }
