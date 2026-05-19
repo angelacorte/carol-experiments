@@ -1,18 +1,19 @@
 package it.unibo.collektive.control.cbf
 
-import com.gurobi.gurobi.GRB
-import com.gurobi.gurobi.GRBLinExpr
-import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.mathutils.minus
-import it.unibo.collektive.mathutils.squaredNorm
+import it.unibo.collektive.control.dsl.FormulaCBF
+import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.div
+import it.unibo.collektive.control.dsl.dot
+import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
+import it.unibo.collektive.control.dsl.minus
+import it.unibo.collektive.control.dsl.plus
+import it.unibo.collektive.control.dsl.squared
+import it.unibo.collektive.control.dsl.squaredNorm
+import it.unibo.collektive.control.dsl.times
+import it.unibo.collektive.control.dsl.unaryMinus
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.Obstacle
-import it.unibo.collektive.solver.gurobi.Constraint
-import it.unibo.collektive.solver.gurobi.GRBVector
-import it.unibo.collektive.solver.gurobi.QpSettings
-import kotlin.math.pow
 
 /**
  * Static obstacle-avoidance barrier under ZOH dynamics.
@@ -35,7 +36,7 @@ class ObstacleAvoidanceCBF(
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
     private var obstacleProvider: () -> Obstacle,
-) : CBF() {
+) : FormulaCBF() {
 
     override val name: String = "obstacle_avoidance_CBF"
 
@@ -45,35 +46,15 @@ class ObstacleAvoidanceCBF(
         }
     }
 
-    override fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint {
-        val slack = slackWeight?.let {
-            addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
+    override fun FormulaScope.formula() = local {
+        val obstaclePosition = vector { obstacleProvider().toDoubleArray() }
+        val obstacleRadius = scalar {
+            obstacleProvider().radius + obstacleProvider().margin
         }
-        val lhs = GRBLinExpr().apply {
-            repeat(selfDecision.dimensions) { i -> addTerm(0.0, selfDecision[i]) }
-            slack?.let { addTerm(1.0, it) }
-        }
-        val constr = addConstr(lhs, GRB.GREATER_EQUAL, 0.0, name)
+        val distance = self.position - obstaclePosition
+        val h = squaredNorm(distance) - squared(obstacleRadius)
 
-        return object : Constraint {
-            override val slack = slack
-            override val slackWeight = this@ObstacleAvoidanceCBF.slackWeight
-            override fun update(
-                model: GRBModel,
-                self: Device,
-                otherDevice: Device?,
-                settings: QpSettings,
-                deltaTime: Double,
-            ) {
-                val obstacle = this@ObstacleAvoidanceCBF.obstacleProvider()
-                val distance = (self.position - obstacle).toDoubleArray()
-                val h = distance.squaredNorm() - (obstacle.radius + obstacle.margin).pow(2)
-                val rhs = -(eta / deltaTime) * h
-                constr.set(GRB.DoubleAttr.RHS, rhs)
-                for (i in distance.indices) {
-                    model.chgCoeff(constr, selfDecision[i], 2.0 * distance[i])
-                }
-            }
-        }
+        2.0 * dot(distance, self.u) + slack greaterThanOrEqualTo
+            -(eta / timeStep) * h
     }
 }

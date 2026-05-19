@@ -1,13 +1,11 @@
 package it.unibo.collektive.control.cbf
 
-import com.gurobi.gurobi.GRB
-import com.gurobi.gurobi.GRBModel
-import it.unibo.collektive.model.Device
-import it.unibo.collektive.solver.gurobi.Constraint
-import it.unibo.collektive.solver.gurobi.GRBVector
-import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.solver.gurobi.toQuadExpr
-import kotlin.math.pow
+import it.unibo.collektive.control.dsl.FormulaCBF
+import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.SlackPolicy
+import it.unibo.collektive.control.dsl.lessThanOrEqualTo
+import it.unibo.collektive.control.dsl.squared
+import it.unibo.collektive.control.dsl.squaredNorm
 
 /**
  * Maximum-speed constraint enforced as a quadratic barrier.
@@ -26,25 +24,15 @@ import kotlin.math.pow
  *  addition to the LHS which is not supported after [GRBModel.addQConstr].
  *  Use variable bounds on the decision vector as an alternative soft limit if needed.
  */
-class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Double? = null) : CBF() {
+class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Double? = null) : FormulaCBF() {
 
     override val name: String = "max_speed"
 
-    override fun GRBModel.installCBF(selfDecision: GRBVector, otherDecision: GRBVector?): Constraint {
-        val lhsExpr = selfDecision.toQuadExpr()
-        val qConstr = addQConstr(lhsExpr, GRB.LESS_EQUAL, 0.0, "u_norm_sq")
-        return object : Constraint {
-            override val slack = null
-            override val slackWeight = this@MaxSpeedCBF.slackWeight
-            override fun update(
-                model: GRBModel,
-                self: Device,
-                otherDevice: Device?,
-                settings: QpSettings,
-                deltaTime: Double,
-            ) {
-                qConstr.set(GRB.DoubleAttr.QCRHS, self.maxSpeed.pow(2))
-            }
-        }
+    override val constraintName: String = "u_norm_sq"
+
+    override val slackPolicy: SlackPolicy = SlackPolicy.None
+
+    override fun FormulaScope.formula() = local {
+        squaredNorm(self.u) lessThanOrEqualTo squared(self.maxSpeed)
     }
 }
