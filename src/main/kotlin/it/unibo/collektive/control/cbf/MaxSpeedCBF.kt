@@ -4,8 +4,8 @@ import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.lessThanOrEqualTo
-import it.unibo.collektive.control.dsl.squared
-import it.unibo.collektive.control.dsl.squaredNorm
+import it.unibo.collektive.control.dsl.expressions.squared
+import it.unibo.collektive.control.dsl.expressions.squaredNorm
 
 /**
  * Maximum-speed constraint enforced as a quadratic barrier.

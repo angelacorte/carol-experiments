@@ -1,6 +1,12 @@
 package it.unibo.collektive.control.dsl
 
 import com.gurobi.gurobi.GRBVar
+import it.unibo.collektive.control.dsl.expressions.AffineExpression
+import it.unibo.collektive.control.dsl.expressions.DecisionVector
+import it.unibo.collektive.control.dsl.expressions.LinearTerm
+import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
+import it.unibo.collektive.control.dsl.expressions.VectorExpression
+import it.unibo.collektive.control.dsl.expressions.scalar
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.GRBVector
