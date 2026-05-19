@@ -10,6 +10,7 @@ import it.unibo.collektive.solver.gurobi.GRBVector
  * numeric coefficients from optimization variables.
  */
 class DecisionVector internal constructor(internal val vector: GRBVector) {
+    /** Number of scalar Gurobi variables in this decision vector. */
     val dimensions: Int get() = vector.dimensions
 
     internal fun asExpression(): DecisionVectorExpression =
@@ -30,33 +31,69 @@ internal data class DecisionVectorTerm(val coefficient: RuntimeScalar, val vecto
  */
 class DecisionVectorExpression internal constructor(internal val terms: List<DecisionVectorTerm>)
 
+/**
+ * Adds two decision vectors as a symbolic vector expression.
+ */
 operator fun DecisionVector.plus(other: DecisionVector): DecisionVectorExpression =
     asExpression() + other.asExpression()
 
+/**
+ * Subtracts another decision vector from this one as a symbolic vector expression.
+ */
 operator fun DecisionVector.minus(other: DecisionVector): DecisionVectorExpression =
     asExpression() - other.asExpression()
 
+/**
+ * Negates this decision vector as a symbolic vector expression.
+ */
 operator fun DecisionVector.unaryMinus(): DecisionVectorExpression = -asExpression()
 
+/**
+ * Adds two symbolic linear combinations of decision vectors.
+ */
 operator fun DecisionVectorExpression.plus(other: DecisionVectorExpression): DecisionVectorExpression =
     DecisionVectorExpression(terms + other.terms)
 
+/**
+ * Adds a decision vector to a symbolic linear combination of decision vectors.
+ */
 operator fun DecisionVectorExpression.plus(other: DecisionVector): DecisionVectorExpression =
     this + other.asExpression()
 
+/**
+ * Subtracts one symbolic linear combination of decision vectors from another.
+ */
 operator fun DecisionVectorExpression.minus(other: DecisionVectorExpression): DecisionVectorExpression = this + (-other)
 
+/**
+ * Subtracts a decision vector from a symbolic linear combination of decision vectors.
+ */
 operator fun DecisionVectorExpression.minus(other: DecisionVector): DecisionVectorExpression =
     this - other.asExpression()
 
+/**
+ * Negates every coefficient in this symbolic linear combination of decision vectors.
+ */
 operator fun DecisionVectorExpression.unaryMinus(): DecisionVectorExpression =
     DecisionVectorExpression(terms.map { DecisionVectorTerm(-it.coefficient, it.vector) })
 
+/**
+ * Scales a symbolic linear combination of decision vectors by a runtime scalar.
+ */
 operator fun RuntimeScalar.times(decision: DecisionVectorExpression): DecisionVectorExpression =
     DecisionVectorExpression(decision.terms.map { it.copy(coefficient = it.coefficient * this) })
 
+/**
+ * Scales a symbolic linear combination of decision vectors by a constant number.
+ */
 operator fun Number.times(decision: DecisionVectorExpression): DecisionVectorExpression = asRuntimeScalar() * decision
 
+/**
+ * Scales a decision vector by a runtime scalar.
+ */
 operator fun RuntimeScalar.times(decision: DecisionVector): DecisionVectorExpression = this * decision.asExpression()
 
+/**
+ * Scales a decision vector by a constant number.
+ */
 operator fun Number.times(decision: DecisionVector): DecisionVectorExpression = asRuntimeScalar() * decision
