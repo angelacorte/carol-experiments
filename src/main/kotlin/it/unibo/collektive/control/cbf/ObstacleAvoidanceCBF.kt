@@ -1,7 +1,6 @@
 package it.unibo.collektive.control.cbf
 
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.control.dsl.FormulaCBF
 import it.unibo.collektive.control.dsl.FormulaScope
 import it.unibo.collektive.control.dsl.div
 import it.unibo.collektive.control.dsl.dot
@@ -36,7 +35,7 @@ class ObstacleAvoidanceCBF(
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
     private var obstacleProvider: () -> Obstacle,
-) : FormulaCBF() {
+) : CBF() {
 
     override val name: String = "obstacle_avoidance_CBF"
 
@@ -46,7 +45,7 @@ class ObstacleAvoidanceCBF(
         }
     }
 
-    override fun FormulaScope.formula() = local {
+    protected override fun FormulaScope.formula() = local {
         val obstaclePosition = vector { obstacleProvider().toDoubleArray() }
         val obstacleRadius = scalar {
             obstacleProvider().radius + obstacleProvider().margin

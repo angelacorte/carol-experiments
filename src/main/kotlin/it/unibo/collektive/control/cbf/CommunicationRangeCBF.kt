@@ -1,6 +1,5 @@
 package it.unibo.collektive.control.cbf
 
-import it.unibo.collektive.control.dsl.FormulaCBF
 import it.unibo.collektive.control.dsl.FormulaScope
 import it.unibo.collektive.control.dsl.div
 import it.unibo.collektive.control.dsl.dot
@@ -33,11 +32,11 @@ class CommunicationRangeCBF(
     private val range: Double,
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
-) : FormulaCBF() {
+) : CBF() {
 
     override val name: String = "communication_range_CBF"
 
-    override fun FormulaScope.formula() = pairwise {
+    protected override fun FormulaScope.formula() = pairwise {
         val distance = self.position - other.position
         val h = squared(range) - squaredNorm(distance)
         val maxSpeed = max(self.maxSpeed, other.maxSpeed)

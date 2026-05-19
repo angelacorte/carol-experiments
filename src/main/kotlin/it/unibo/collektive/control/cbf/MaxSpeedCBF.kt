@@ -1,6 +1,5 @@
 package it.unibo.collektive.control.cbf
 
-import it.unibo.collektive.control.dsl.FormulaCBF
 import it.unibo.collektive.control.dsl.FormulaScope
 import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.lessThanOrEqualTo
@@ -24,7 +23,7 @@ import it.unibo.collektive.control.dsl.squaredNorm
  *  addition to the LHS which is not supported after [GRBModel.addQConstr].
  *  Use variable bounds on the decision vector as an alternative soft limit if needed.
  */
-class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Double? = null) : FormulaCBF() {
+class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Double? = null) : CBF() {
 
     override val name: String = "max_speed"
 
@@ -32,7 +31,7 @@ class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Doub
 
     override val slackPolicy: SlackPolicy = SlackPolicy.None
 
-    override fun FormulaScope.formula() = local {
+    protected override fun FormulaScope.formula() = local {
         squaredNorm(self.u) lessThanOrEqualTo squared(self.maxSpeed)
     }
 }

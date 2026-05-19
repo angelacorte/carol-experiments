@@ -1,7 +1,6 @@
 package it.unibo.collektive.control.clf
 
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.control.dsl.FormulaCLF
 import it.unibo.collektive.control.dsl.FormulaScope
 import it.unibo.collektive.control.dsl.dot
 import it.unibo.collektive.control.dsl.lessThanOrEqualTo
@@ -35,7 +34,7 @@ class GoToTargetCLF(
     override val convergenceRate: Double = 1.0,
     override val slackWeight: Double? = 1.0,
     private var targetProvider: () -> Target,
-) : FormulaCLF() {
+) : CLF() {
 
     override val name: String = "go_to_target"
 
@@ -45,7 +44,7 @@ class GoToTargetCLF(
         }
     }
 
-    override fun FormulaScope.formula() = local {
+    protected override fun FormulaScope.formula() = local {
         val targetPosition = vector { targetProvider().position.toDoubleArray() }
         val distance = self.position - targetPosition
 
