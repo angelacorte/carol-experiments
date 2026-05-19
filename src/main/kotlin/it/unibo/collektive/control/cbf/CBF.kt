@@ -22,11 +22,26 @@ abstract class CBF : ControlFunction {
     /** Decay-rate parameter governing how strictly the barrier is enforced. */
     abstract val eta: Double
 
+    /**
+     * Name of the Gurobi constraint generated for this CBF.
+     *
+     * By default it matches [name], but subclasses can override it when they need to preserve a
+     * legacy solver/debug name independently of the control function name.
+     */
     protected open val constraintName: String get() = name
 
+    /**
+     * Slack creation strategy used when compiling this CBF formula.
+     */
     protected open val slackPolicy: SlackPolicy
         get() = if (slackWeight == null) SlackPolicy.None else SlackPolicy.Optional
 
+    /**
+     * Mathematical formula enforced by this CBF.
+     *
+     * The formula is built once during model installation.  Any state-dependent value must be
+     * represented through [ControlFunctionScope] runtime expressions rather than read eagerly.
+     */
     protected abstract fun ControlFunctionScope.formula(): ConstraintFormula
 
     final override fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint =
