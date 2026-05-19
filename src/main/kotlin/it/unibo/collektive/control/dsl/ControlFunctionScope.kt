@@ -5,12 +5,6 @@ import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.GRBVector
 
-enum class SlackPolicy {
-    None,
-    Optional,
-    Required,
-}
-
 class AgentExpression internal constructor(
     decision: GRBVector,
     private val device: (FormulaRuntime) -> Device,
@@ -24,11 +18,19 @@ class AgentExpression internal constructor(
     val maxSpeed: ScalarExpression = ScalarExpression { runtime -> device(runtime).maxSpeed }
 }
 
-sealed class ConstraintFormulaScope(
+class ControlFunctionScope internal constructor(
     selfDecision: GRBVector,
+    otherDecision: GRBVector?,
     slackVariable: GRBVar?,
 ) {
     val self: AgentExpression = AgentExpression(selfDecision) { it.self }
+
+    val other: AgentExpression by lazy {
+        val decision = checkNotNull(otherDecision) { "Formula requires the neighbor decision vector" }
+        AgentExpression(decision) {
+            checkNotNull(it.other) { "Formula requires the neighbor device at update time" }
+        }
+    }
 
     val timeStep: ScalarExpression = ScalarExpression { it.deltaTime }
 
@@ -41,33 +43,4 @@ sealed class ConstraintFormulaScope(
 
     fun vector(block: FormulaRuntime.() -> DoubleArray): VectorExpression =
         VectorExpression { runtime -> runtime.block() }
-}
-
-class LocalFormulaScope internal constructor(
-    selfDecision: GRBVector,
-    slackVariable: GRBVar?,
-) : ConstraintFormulaScope(selfDecision, slackVariable)
-
-class PairwiseFormulaScope internal constructor(
-    selfDecision: GRBVector,
-    otherDecision: GRBVector,
-    slackVariable: GRBVar?,
-) : ConstraintFormulaScope(selfDecision, slackVariable) {
-    val other: AgentExpression = AgentExpression(otherDecision) {
-        checkNotNull(it.other) { "Pairwise formula requires the neighbor device at update time" }
-    }
-}
-
-class FormulaScope internal constructor(
-    private val selfDecision: GRBVector,
-    private val otherDecision: GRBVector?,
-    private val slackVariable: GRBVar?,
-) {
-    fun local(block: LocalFormulaScope.() -> ConstraintFormula): ConstraintFormula =
-        LocalFormulaScope(selfDecision, slackVariable).block()
-
-    fun pairwise(block: PairwiseFormulaScope.() -> ConstraintFormula): ConstraintFormula {
-        val decision = checkNotNull(otherDecision) { "Pairwise formula requires the neighbor decision vector" }
-        return PairwiseFormulaScope(selfDecision, decision, slackVariable).block()
-    }
 }

@@ -3,7 +3,7 @@ package it.unibo.collektive.control.clf
 import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
-import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.installFormulaConstraint
 import it.unibo.collektive.solver.gurobi.Constraint
@@ -30,7 +30,7 @@ abstract class CLF : ControlFunction {
 
     protected open val slackPolicy: SlackPolicy get() = SlackPolicy.Required
 
-    protected abstract fun FormulaScope.formula(): ConstraintFormula
+    protected abstract fun ControlFunctionScope.formula(): ConstraintFormula
 
     final override fun install(model: GRBModel, selfDecision: GRBVector, otherDecision: GRBVector?): Constraint =
         model.installFormulaConstraint(

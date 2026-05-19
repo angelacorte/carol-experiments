@@ -1,6 +1,7 @@
 package it.unibo.collektive.control.cbf
 
-import it.unibo.collektive.control.dsl.FormulaScope
+import it.unibo.collektive.control.dsl.ConstraintFormula
+import it.unibo.collektive.control.dsl.ControlFunctionScope
 import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.control.dsl.squared
@@ -31,7 +32,6 @@ class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Doub
 
     override val slackPolicy: SlackPolicy = SlackPolicy.None
 
-    protected override fun FormulaScope.formula() = local {
+    override fun ControlFunctionScope.formula(): ConstraintFormula =
         squaredNorm(self.u) lessThanOrEqualTo squared(self.maxSpeed)
-    }
 }
