@@ -6,10 +6,7 @@ import it.unibo.collektive.control.dsl.FormulaRuntime
 /**
  * One affine term attached to a concrete Gurobi variable.
  */
-internal data class LinearTerm(
-    val variable: GRBVar,
-    val coefficient: RuntimeScalar,
-)
+internal data class LinearTerm(val variable: GRBVar, val coefficient: RuntimeScalar)
 
 /**
  * Affine expression in Gurobi decision variables with runtime coefficients.

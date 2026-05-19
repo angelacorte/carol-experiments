@@ -24,10 +24,7 @@ import it.unibo.collektive.solver.gurobi.GRBVector
  * @property safeMargin current safety radius contribution.
  * @property maxSpeed current speed bound.
  */
-class AgentExpression internal constructor(
-    decision: GRBVector,
-    private val device: (FormulaRuntime) -> Device,
-) {
+class AgentExpression internal constructor(decision: GRBVector, private val device: (FormulaRuntime) -> Device) {
     val u: DecisionVector = DecisionVector(decision)
 
     val position: VectorExpression = VectorExpression { runtime -> device(runtime).position.toDoubleArray() }
@@ -74,8 +71,7 @@ class ControlFunctionScope internal constructor(
      * Use this for values that are not part of [AgentExpression] but still have to be refreshed at
      * each solver iteration, such as a moving obstacle radius or a target-dependent coefficient.
      */
-    fun scalar(block: FormulaRuntime.() -> Double): RuntimeScalar =
-        RuntimeScalar { runtime -> runtime.block() }
+    fun scalar(block: FormulaRuntime.() -> Double): RuntimeScalar = RuntimeScalar { runtime -> runtime.block() }
 
     /**
      * Lifts a runtime vector into the formula DSL.

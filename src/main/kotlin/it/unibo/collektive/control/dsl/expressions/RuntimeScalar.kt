@@ -9,11 +9,9 @@ import kotlin.math.max
  * This type is the scalar building block of the DSL.  It represents both constant numbers and
  * values that change at every solver iteration, such as `timeStep`, `self.maxSpeed`, or an obstacle
  * radius.  Formula compilation stores these expressions and evaluates them during
- * [it.unibo.collektive.solver.gurobi.Constraint.update].
+ * [it.unibo.collektive.solver.gurobi.InstalledControlConstraint.update].
  */
-class RuntimeScalar internal constructor(
-    internal val evaluate: (FormulaRuntime) -> Double,
-)
+class RuntimeScalar internal constructor(internal val evaluate: (FormulaRuntime) -> Double)
 
 /**
  * Creates a constant runtime scalar.

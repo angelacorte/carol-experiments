@@ -16,9 +16,4 @@ import it.unibo.collektive.solver.gurobi.QpSettings
  * @property settings solver settings shared by the active QP.
  * @property deltaTime control horizon expressed in seconds.
  */
-data class FormulaRuntime(
-    val self: Device,
-    val other: Device?,
-    val settings: QpSettings,
-    val deltaTime: Double,
-)
+data class FormulaRuntime(val self: Device, val other: Device?, val settings: QpSettings, val deltaTime: Double)

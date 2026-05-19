@@ -3,12 +3,12 @@ package it.unibo.collektive.control.clf
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.control.dsl.expressions.dot
 import it.unibo.collektive.control.dsl.expressions.minus
 import it.unibo.collektive.control.dsl.expressions.squared
 import it.unibo.collektive.control.dsl.expressions.squaredNorm
 import it.unibo.collektive.control.dsl.expressions.times
+import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
 
@@ -48,7 +48,6 @@ class GoToTargetCLF(
     override fun ControlFunctionScope.formula(): ConstraintFormula {
         val targetPosition = vector { targetProvider().position.toDoubleArray() }
         val distance = self.position - targetPosition
-
         return 2.0 * timeStep * dot(distance, self.u) - slack lessThanOrEqualTo
             -convergenceRate * squaredNorm(distance) - squared(timeStep) * squared(self.maxSpeed)
     }
