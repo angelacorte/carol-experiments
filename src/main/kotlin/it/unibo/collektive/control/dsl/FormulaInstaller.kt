@@ -12,6 +12,14 @@ import it.unibo.collektive.solver.gurobi.Constraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.QpSettings
 
+/**
+ * Compiles a formula-backed control function into a reusable Gurobi constraint.
+ *
+ * This is the only layer of the DSL that knows about Gurobi expression objects.  It creates the
+ * optional slack variable, evaluates the formula once to discover its variable structure, installs
+ * the matching linear or quadratic constraint, and returns a [Constraint] that refreshes numerical
+ * coefficients/RHS values on every solver iteration.
+ */
 internal fun GRBModel.installFormulaConstraint(
     name: String,
     slackName: String = name,
@@ -19,15 +27,18 @@ internal fun GRBModel.installFormulaConstraint(
     otherDecision: GRBVector?,
     slackPolicy: SlackPolicy,
     slackWeight: Double?,
-    buildFormula: FormulaScope.() -> ConstraintFormula,
+    buildFormula: ControlFunctionScope.() -> ConstraintFormula,
 ): Constraint {
     val slack = createSlack(slackPolicy, slackWeight, slackName)
-    return when (val formula = FormulaScope(selfDecision, otherDecision, slack).buildFormula()) {
-        is LinearConstraintFormula -> installLinearFormula(name, slack, slackWeight, formula)
-        is QuadraticConstraintFormula -> installQuadraticFormula(name, slack, slackWeight, formula)
+    return when (val formula = ControlFunctionScope(selfDecision, otherDecision, slack).buildFormula()) {
+        is LinearConstraintFormula -> compileLinearFormula(name, slack, slackWeight, formula)
+        is QuadraticConstraintFormula -> compileQuadraticFormula(name, slack, slackWeight, formula)
     }
 }
 
+/**
+ * Creates the slack variable requested by [SlackPolicy].
+ */
 private fun GRBModel.createSlack(policy: SlackPolicy, slackWeight: Double?, name: String): GRBVar? =
     when (policy) {
         SlackPolicy.None -> null
@@ -35,7 +46,10 @@ private fun GRBModel.createSlack(policy: SlackPolicy, slackWeight: Double?, name
         SlackPolicy.Required -> addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
     }
 
-private fun GRBModel.installLinearFormula(
+/**
+ * Installs the fixed variable structure of an affine formula and returns its runtime updater.
+ */
+private fun GRBModel.compileLinearFormula(
     name: String,
     slack: GRBVar?,
     slackWeight: Double?,
@@ -46,10 +60,16 @@ private fun GRBModel.installLinearFormula(
         variables.forEach { addTerm(0.0, it) }
     }
     val constraint = addConstr(leftHandSideExpression, formula.sense.gurobiSense, 0.0, name)
-    return LinearFormulaConstraint(slack, slackWeight, formula, variables, constraint)
+    return CompiledLinearFormula(slack, slackWeight, formula, variables, constraint)
 }
 
-private class LinearFormulaConstraint(
+/**
+ * Runtime handle for a compiled affine formula.
+ *
+ * The installed `GRBConstr` keeps the same variables for the lifetime of the model.  On update this
+ * handle recomputes the RHS and every dynamic coefficient from [FormulaRuntime].
+ */
+private class CompiledLinearFormula(
     override val slack: GRBVar?,
     override val slackWeight: Double?,
     private val formula: LinearConstraintFormula,
@@ -72,7 +92,10 @@ private class LinearFormulaConstraint(
     }
 }
 
-private fun GRBModel.installQuadraticFormula(
+/**
+ * Installs the fixed quadratic structure of a formula and returns its runtime updater.
+ */
+private fun GRBModel.compileQuadraticFormula(
     name: String,
     slack: GRBVar?,
     slackWeight: Double?,
@@ -82,10 +105,16 @@ private fun GRBModel.installQuadraticFormula(
         formula.leftHandSide.terms.forEach { addTerm(it.coefficient, it.first, it.second) }
     }
     val constraint = addQConstr(leftHandSideExpression, formula.sense.gurobiSense, 0.0, name)
-    return QuadraticFormulaConstraint(slack, slackWeight, formula, constraint)
+    return CompiledQuadraticFormula(slack, slackWeight, formula, constraint)
 }
 
-private class QuadraticFormulaConstraint(
+/**
+ * Runtime handle for a compiled quadratic formula.
+ *
+ * Quadratic terms are fixed when the model is built.  The updater only refreshes the quadratic
+ * constraint RHS, which is enough for the currently supported norm constraints.
+ */
+private class CompiledQuadraticFormula(
     override val slack: GRBVar?,
     override val slackWeight: Double?,
     private val formula: QuadraticConstraintFormula,
