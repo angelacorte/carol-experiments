@@ -42,31 +42,71 @@ fun squared(value: RuntimeScalar): RuntimeScalar = value * value
 fun max(left: RuntimeScalar, right: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { max(left.evaluate(it), right.evaluate(it)) }
 
+/**
+ * Divides a constant number by a runtime scalar.
+ */
 operator fun Number.div(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() / other
+
+/**
+ * Adds two runtime scalars.
+ */
 operator fun RuntimeScalar.plus(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) + other.evaluate(it) }
 
+/**
+ * Adds a constant number to this runtime scalar.
+ */
 operator fun RuntimeScalar.plus(other: Number): RuntimeScalar = this + other.asRuntimeScalar()
 
+/**
+ * Adds a runtime scalar to this constant number.
+ */
 operator fun Number.plus(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() + other
 
+/**
+ * Subtracts one runtime scalar from another.
+ */
 operator fun RuntimeScalar.minus(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) - other.evaluate(it) }
 
+/**
+ * Subtracts a constant number from this runtime scalar.
+ */
 operator fun RuntimeScalar.minus(other: Number): RuntimeScalar = this - other.asRuntimeScalar()
 
+/**
+ * Subtracts a runtime scalar from this constant number.
+ */
 operator fun Number.minus(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() - other
 
+/**
+ * Negates this runtime scalar.
+ */
 operator fun RuntimeScalar.unaryMinus(): RuntimeScalar = RuntimeScalar { -evaluate(it) }
 
+/**
+ * Multiplies two runtime scalars.
+ */
 operator fun RuntimeScalar.times(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) * other.evaluate(it) }
 
+/**
+ * Multiplies this runtime scalar by a constant number.
+ */
 operator fun RuntimeScalar.times(other: Number): RuntimeScalar = this * other.asRuntimeScalar()
 
+/**
+ * Multiplies a runtime scalar by this constant number.
+ */
 operator fun Number.times(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() * other
 
+/**
+ * Divides this runtime scalar by another runtime scalar.
+ */
 operator fun RuntimeScalar.div(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) / other.evaluate(it) }
 
+/**
+ * Divides this runtime scalar by a constant number.
+ */
 operator fun RuntimeScalar.div(other: Number): RuntimeScalar = this / other.asRuntimeScalar()

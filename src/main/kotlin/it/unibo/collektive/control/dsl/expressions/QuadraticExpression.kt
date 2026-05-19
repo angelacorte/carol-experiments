@@ -28,7 +28,13 @@ fun squaredNorm(decision: DecisionVector): QuadraticExpression = QuadraticExpres
     },
 )
 
+/**
+ * Scales every quadratic coefficient by a constant number.
+ */
 operator fun QuadraticExpression.times(factor: Number): QuadraticExpression =
     QuadraticExpression(terms.map { it.copy(coefficient = it.coefficient * factor.toDouble()) })
 
+/**
+ * Scales a quadratic expression by this constant number.
+ */
 operator fun Number.times(expression: QuadraticExpression): QuadraticExpression = expression * this
