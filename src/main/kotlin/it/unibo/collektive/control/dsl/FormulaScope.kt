@@ -24,7 +24,7 @@ class AgentExpression internal constructor(
     val maxSpeed: ScalarExpression = ScalarExpression { runtime -> device(runtime).maxSpeed }
 }
 
-sealed class ConstraintFormulaScope protected constructor(
+sealed class ConstraintFormulaScope(
     selfDecision: GRBVector,
     slackVariable: GRBVar?,
 ) {

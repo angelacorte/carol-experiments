@@ -1,6 +1,5 @@
 package it.unibo.collektive.control.cbf
 
-import it.unibo.collektive.control.dsl.FormulaCBF
 import it.unibo.collektive.control.dsl.FormulaScope
 import it.unibo.collektive.control.dsl.div
 import it.unibo.collektive.control.dsl.dot
@@ -28,11 +27,11 @@ import it.unibo.collektive.control.dsl.unaryMinus
  * @property eta        decay-rate parameter
  * @property slackWeight objective penalty for the slack variable; `null` → hard constraint (no slack)
  */
-class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWeight: Double? = null) : FormulaCBF() {
+class CollisionAvoidanceCBF(override val eta: Double = 0.5, override val slackWeight: Double? = null) : CBF() {
 
     override val name: String = "collision_avoidance_CBF"
 
-    override fun FormulaScope.formula() = pairwise {
+    protected override fun FormulaScope.formula() = pairwise {
         val distance = self.position - other.position
         val minDistance = max(self.safeMargin, other.safeMargin)
         val h = squaredNorm(distance) - squared(minDistance)
