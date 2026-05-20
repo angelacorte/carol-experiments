@@ -197,7 +197,7 @@ deployments:
         concentration: *obstacleMargin
 
   - type: Point
-    parameters: [ 15, 10 ]
+    parameters: [ 15, 15 ]
     contents:
       - molecule: Obstacle
         concentration: true

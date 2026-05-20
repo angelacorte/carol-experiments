@@ -30,6 +30,7 @@ fun Aggregate<Int>.multipleObstaclesEntrypoint(
     device: CollektiveDevice<Euclidean2DPosition>,
     solver: Solver,
 ) = context(position, device, timeSensor, solver) {
+    val myTarget = device["TargetID"] as Number
     val robot = getRobot()
     val communicationDistance: Double = device["CommunicationDistance"]
     val obstacles = getObstacles()
@@ -37,9 +38,9 @@ fun Aggregate<Int>.multipleObstaclesEntrypoint(
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
-        uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
-        localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
-        localCBF = listOf(MaxSpeedCBF()) + obstaclesCBF,
+        uNominal = GoToTargetNominal { getTarget(myTarget) }.compute(robot).toDoubleArray(),
+        localCLF = listOf(GoToTargetCLF { getTarget(myTarget) }),
+        localCBF = obstaclesCBF + MaxSpeedCBF(),
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),
