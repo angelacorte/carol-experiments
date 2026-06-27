@@ -1,18 +1,16 @@
 package it.unibo.collektive.control.clf
 
-import com.gurobi.gurobi.GRB
-import com.gurobi.gurobi.GRBLinExpr
-import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.control.ControlFunction
-import it.unibo.collektive.mathutils.minus
-import it.unibo.collektive.mathutils.squaredNorm
+import it.unibo.collektive.control.dsl.ConstraintFormula
+import it.unibo.collektive.control.dsl.ControlFunctionScope
+import it.unibo.collektive.control.dsl.expressions.dot
+import it.unibo.collektive.control.dsl.expressions.minus
+import it.unibo.collektive.control.dsl.expressions.squared
+import it.unibo.collektive.control.dsl.expressions.squaredNorm
+import it.unibo.collektive.control.dsl.expressions.times
+import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.mathutils.toDoubleArray
-import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.Target
-import it.unibo.collektive.solver.gurobi.Constraint
-import it.unibo.collektive.solver.gurobi.GRBVector
-import it.unibo.collektive.solver.gurobi.QpSettings
-import kotlin.math.pow
 
 /**
  * Discrete-time CLF constraint for goal-reaching under ZOH dynamics.
@@ -47,33 +45,10 @@ class GoToTargetCLF(
         }
     }
 
-    override fun GRBModel.installCLF(selfDecision: GRBVector): Constraint {
-        val slack = addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
-        val lhs = GRBLinExpr().apply {
-            repeat(selfDecision.dimensions) { i -> addTerm(0.0, selfDecision[i]) }
-            addTerm(-1.0, slack)
-        }
-        val constr = addConstr(lhs, GRB.LESS_EQUAL, 0.0, "${name}_CLF")
-
-        return object : Constraint {
-            override val slack = slack
-            override val slackWeight = this@GoToTargetCLF.slackWeight
-
-            override fun update(
-                model: GRBModel,
-                self: Device,
-                otherDevice: Device?,
-                settings: QpSettings,
-                deltaTime: Double,
-            ) {
-                val target = this@GoToTargetCLF.targetProvider()
-                val distance = (self.position - target.position).toDoubleArray()
-                val rhs = -convergenceRate * distance.squaredNorm() - deltaTime.pow(2) * self.maxSpeed.pow(2)
-                constr.set(GRB.DoubleAttr.RHS, rhs)
-                for (i in distance.indices) {
-                    model.chgCoeff(constr, selfDecision[i], 2.0 * deltaTime * distance[i])
-                }
-            }
-        }
+    override fun ControlFunctionScope.formula(): ConstraintFormula {
+        val targetPosition = vector { targetProvider().position.toDoubleArray() }
+        val distance = self.position - targetPosition
+        return 2.0 * timeStep * dot(distance, self.u) - slack lessThanOrEqualTo
+            -convergenceRate * squaredNorm(distance) - squared(timeStep) * squared(self.maxSpeed)
     }
 }
