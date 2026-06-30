@@ -1,3 +1,13 @@
+## [2.8.5](https://github.com/angelacorte/carol-experiments/compare/2.8.4...2.8.5) (2026-06-30)
+
+### Bug Fixes
+
+* **ci:** missing gh release config ([a7999b1](https://github.com/angelacorte/carol-experiments/commit/a7999b1dcc54c9d1f9cc33899c2121dddfe31215))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.8.4 [skip ci] ([59fabe1](https://github.com/angelacorte/carol-experiments/commit/59fabe1f2a7ead53f668d78646b1daeee07b83a1))
+
 ## [2.8.4](https://github.com/angelacorte/carol-experiments/compare/2.8.3...2.8.4) (2026-06-30)
 
 ### Dependency updates
