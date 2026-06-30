@@ -1,3 +1,53 @@
+## [2.8.4](https://github.com/angelacorte/carol-experiments/compare/2.8.3...2.8.4) (2026-06-30)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.3.0 ([633dc53](https://github.com/angelacorte/carol-experiments/commit/633dc530af48882f6eda784d61a69724d054fa78))
+* **deps:** update alchemist to v43.0.48 ([ed94909](https://github.com/angelacorte/carol-experiments/commit/ed94909786e0a5b89cc2ee187c460f2118e34bab))
+* **deps:** update alchemist to v43.0.49 ([0469aed](https://github.com/angelacorte/carol-experiments/commit/0469aed318e3ce241fc4f2beebee509f3b234d9f))
+* **deps:** update alchemist to v43.0.51 ([f9f1e29](https://github.com/angelacorte/carol-experiments/commit/f9f1e29757e4cd37c84b6bd882dd08ee6e7244dd))
+* **deps:** update alchemist to v43.0.52 ([9f1835f](https://github.com/angelacorte/carol-experiments/commit/9f1835f4c5b7d15ce59cf2f1a16689f29da7edc2))
+* **deps:** update alchemist to v43.0.53 ([efebb82](https://github.com/angelacorte/carol-experiments/commit/efebb82385bc30b65994ce9934ade28e6ea2acce))
+* **deps:** update alchemist to v43.0.54 ([a0d5114](https://github.com/angelacorte/carol-experiments/commit/a0d511471e5ad35887c17c2881b0e9f8a6b96aca))
+* **deps:** update alchemist to v43.0.55 ([d5a68c6](https://github.com/angelacorte/carol-experiments/commit/d5a68c68bda803e45fdca0741a3ce02af08b8943))
+* **deps:** update alchemist to v43.0.56 ([43213c8](https://github.com/angelacorte/carol-experiments/commit/43213c89831c3e6c7d01e2a1c81c225f46c2da97))
+* **deps:** update alpine docker tag to v3.24.0 ([3126027](https://github.com/angelacorte/carol-experiments/commit/312602797dff7fb930de8c49dbb3539b5cd15f3b))
+* **deps:** update alpine docker tag to v3.24.1 ([4261cb5](https://github.com/angelacorte/carol-experiments/commit/4261cb55c312a87152a47cf87cc95b73ce30e30a))
+* **deps:** update dependency matplotlib to v3.11.0 ([af5b002](https://github.com/angelacorte/carol-experiments/commit/af5b0028a6c338f782597fe8f48c15b232f5d727))
+* **deps:** update gradle to v9.5.1 ([ad65610](https://github.com/angelacorte/carol-experiments/commit/ad65610852b83ea8e4c0dc9e989bad98090de366))
+* **deps:** update gradle to v9.6.0 ([4a30537](https://github.com/angelacorte/carol-experiments/commit/4a305375aefe2e9d0d3cc5bf35ecd76729afa8bc))
+* **deps:** update gradle to v9.6.1 ([2ed21ea](https://github.com/angelacorte/carol-experiments/commit/2ed21ea6ba165f80fe833aa149e5862402da4e37))
+* **deps:** update node.js to 24.16 ([250a9e0](https://github.com/angelacorte/carol-experiments/commit/250a9e052376f86bb0492e5c8d35a33406e1d996))
+* **deps:** update node.js to 24.17 ([513fdd7](https://github.com/angelacorte/carol-experiments/commit/513fdd7c7f16103bb1e683b0cef27c1738ce45d6))
+* **deps:** update node.js to 24.18 ([bc264f5](https://github.com/angelacorte/carol-experiments/commit/bc264f5d047cbee6749a0c62ef00638e902c7136))
+* **deps:** update plugin com.gradle.develocity to v4.4.2 ([b431838](https://github.com/angelacorte/carol-experiments/commit/b431838b1bdb3b30e8f380caaea244317561c625))
+* **deps:** update plugin com.gradle.develocity to v4.4.3 ([7f5ad81](https://github.com/angelacorte/carol-experiments/commit/7f5ad81655aafa4acf9124958bdbcc7a84c1535b))
+* **deps:** update plugin gitsemver to v7.0.19 ([bbfd016](https://github.com/angelacorte/carol-experiments/commit/bbfd0168f7792afa668a847b4e7adea2f629df58))
+* **deps:** update plugin gitsemver to v7.0.20 ([2281d5e](https://github.com/angelacorte/carol-experiments/commit/2281d5ef4ea844ac0c3c84adb2ae89ed30c4c757))
+* **deps:** update plugin gitsemver to v7.0.22 ([b758945](https://github.com/angelacorte/carol-experiments/commit/b758945a0408da2a911db122fe1d38e25a7a9513))
+* **deps:** update plugin kotlin-qa to v1.6.2 ([2fbcafa](https://github.com/angelacorte/carol-experiments/commit/2fbcafab8cf15e0fd20a9d8632c6b19e77e542a4))
+* **deps:** update plugin kotlin-qa to v1.7.0 ([7bbbe81](https://github.com/angelacorte/carol-experiments/commit/7bbbe811c383b9880559b8facb5ee20ee2c6ee17))
+* **deps:** update plugin multijvmtesting to v4.3.6 ([8a04b36](https://github.com/angelacorte/carol-experiments/commit/8a04b367729b3e9d68cb136fd2256eb7cd572472))
+* **deps:** update plugin multijvmtesting to v4.5.0 ([15922bf](https://github.com/angelacorte/carol-experiments/commit/15922bf776139af928ccece90333affc5e3b8bb5))
+* **deps:** update python docker tag to v3.14.5 ([538c909](https://github.com/angelacorte/carol-experiments/commit/538c909ac8e85a24917d24bde2ac3eb5da2d94a1))
+* **deps:** update python docker tag to v3.14.6 ([6826ad2](https://github.com/angelacorte/carol-experiments/commit/6826ad2cf5881e3f7633bc17c6f3152e490c2e02))
+
+### Build and continuous integration
+
+* **deps:** update actions/checkout action to v6.0.3 ([fcdc26f](https://github.com/angelacorte/carol-experiments/commit/fcdc26f42070fd8e78e98ebe19ce1274dcc1c064))
+* **deps:** update actions/checkout action to v7 ([855fc8d](https://github.com/angelacorte/carol-experiments/commit/855fc8dac7620ec572633a64978b3895b3871e46))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.33 ([8e8b70b](https://github.com/angelacorte/carol-experiments/commit/8e8b70bd3565246c8cde913896efcf7f5b30e2ac))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.34 ([18051bd](https://github.com/angelacorte/carol-experiments/commit/18051bd2c0eead8fb6053e93e60659fc8039d64c))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.35 ([e646ccb](https://github.com/angelacorte/carol-experiments/commit/e646ccb309cfd3a1b8c7895c8c9534359782c452))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.36 ([0affa4c](https://github.com/angelacorte/carol-experiments/commit/0affa4c49b2c590003487f6cba192a0ad2b99c3d))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.37 ([8659fd5](https://github.com/angelacorte/carol-experiments/commit/8659fd534eb13686bf15fb15968375c4401af29a))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.38 ([9c3d6a6](https://github.com/angelacorte/carol-experiments/commit/9c3d6a69acc7b5dc44dffafe857398b749801790))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.39 ([4c2fd07](https://github.com/angelacorte/carol-experiments/commit/4c2fd0773f2d0df6e2a9f3456ded4eb196d89806))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.8.3 [skip ci] ([0129ff7](https://github.com/angelacorte/carol-experiments/commit/0129ff7387f156c4348977536aa2bfff8f39715c))
+
 ## [2.8.3](https://github.com/angelacorte/carol-experiments/compare/2.8.2...2.8.3) (2026-05-08)
 
 ### Dependency updates
