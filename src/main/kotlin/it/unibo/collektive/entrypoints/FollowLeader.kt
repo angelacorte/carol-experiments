@@ -6,7 +6,7 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
-import it.unibo.collektive.alchemist.device.getObstacle
+import it.unibo.collektive.alchemist.device.getObstacles
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
@@ -22,6 +22,7 @@ import it.unibo.collektive.model.Target
 import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.stdlib.consensus.boundedElection
 import it.unibo.collektive.stdlib.spreading.hopGradientCast
+import kotlin.collections.plus
 
 /**
  * Entrypoint for simulation where the leader goes towards a target and other nodes have as target the leader.
@@ -51,7 +52,7 @@ fun Aggregate<Int>.followLeaderEntrypoint(
         robot,
         uNominal = GoToTargetNominal { targetSelectionStrategy }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { targetSelectionStrategy }),
-        localCBF = listOf(ObstacleAvoidanceCBF { getObstacle() }, MaxSpeedCBF()),
+        localCBF = getObstacles().map(::ObstacleAvoidanceCBF) + MaxSpeedCBF(),
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),

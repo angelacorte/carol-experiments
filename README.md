@@ -22,6 +22,7 @@ By leveraging the **Alternating Direction Method of Multipliers (ADMM)**, CAROL 
     * *Communication Range*: Soft constraints (with L1 penalty) to maintain network connectivity without causing solver freezing when physical boundaries force a split.
 * **Goal Tracking (CLFs)**: Proportional nominal controllers paired with CLFs to ensure asymptotic convergence to target destinations.
 * **Zero-Order Hold (ZOH) Discretization**: Exact discrete-time robustification of continuous-time dynamics, ensuring the QP solver remains strictly affine and mathematically sound.
+* **Formula DSL for CLF/CBF constraints**: CLFs and CBFs are declared through a small Kotlin DSL that keeps formulas readable while updating state-dependent coefficients at runtime.
 * **Stateless Architecture**: Completely thread-safe and immutable constraint definitions, ready for parallelized processing and coroutines.
 
 ## Current experiments
@@ -46,11 +47,43 @@ src/main/
         ├── entrypoints/                    Scenario entrypoints (NoObstacle, FollowLeader, ...)
         ├── admm/                           ADMM state/core/objectives
         ├── control/                        CLF/CBF definitions and nominal control
+        │   └── dsl/                        Formula DSL for reusable CLF/CBF constraints
         ├── alchemist/device/               Sensors + environment bridge + QP settings
         ├── solver/gurobi/                  Gurobi integration, constraints, license setup
         ├── mathutils/                      Vector and numeric utilities
         └── model/                          Domain models (Device, Target, Obstacle, ...)
 ```
+
+## CLF/CBF formula DSL
+
+Control functions are defined in `src/main/kotlin/it/unibo/collektive/control/`.
+The reusable formula machinery lives in `src/main/kotlin/it/unibo/collektive/control/dsl/`.
+
+The DSL keeps the important solver invariant explicit: formulas are built once when the reusable
+Gurobi model is installed, while robot positions, neighbor state, time step, safety margins, speed
+bounds, and other runtime values are evaluated again at every solver update. This lets constraints
+such as collision avoidance stay readable:
+
+```kotlin
+override fun ControlFunctionScope.formula(): ConstraintFormula {
+    val distance = self.position - other.position
+    val minDistance = max(self.safeMargin, other.safeMargin)
+    val h = squaredNorm(distance) - squared(minDistance)
+    return 2.0 * dot(distance, self.u - other.u) + slack greaterThanOrEqualTo
+        -(eta / timeStep) * h
+}
+```
+
+To add a new control function:
+
+- extend `CBF` or `CLF`;
+- implement `ControlFunctionScope.formula()`;
+- express changing values through `self`, `other`, `timeStep`, `scalar { ... }`, or `vector { ... }`;
+- use `syncFrom` when the installed function must refresh dynamic providers such as moving targets
+  or obstacles.
+
+More details, including the extension rules and available expression operators, are documented in
+`src/main/kotlin/it/unibo/collektive/control/dsl/README.md`.
 
 ## 🚀 Prerequisites
 

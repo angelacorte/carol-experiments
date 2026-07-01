@@ -54,32 +54,24 @@ fun getRobot(): Device = position.coordinates().let {
 }
 
 /**
- * Returns the first obstacle in the environment, failing fast if none is present.
+ * Returns one live obstacle provider for each obstacle currently in the environment.
+ *
+ * Each provider keeps an internal reference to the corresponding environment node and reads its
+ * current position, radius, and margin every time it is invoked.
  */
 context(device: CollektiveDevice<*>)
-fun getObstacle(): Obstacle {
-    val obstacle =
-        device.environment.nodes.firstOrNull { it.contains(SimpleMolecule("Obstacle")) }
-            ?: error("Currently, there are no obstacles in the environment")
-    val obstaclePos = device.environment.getPosition(obstacle).coordinates
-    val radius = obstacle.getConcentration(SimpleMolecule("SafeRadius")) as Double
-    val margin = obstacle.getConcentration(SimpleMolecule("SafeMargin")) as Double
-    return Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
-}
-
-context(device: CollektiveDevice<*>)
-fun getObstacles(): List<Obstacle> {
-    val obstacles = device.environment.nodes.filter { it.contains(SimpleMolecule("Obstacle")) }
-    return obstacles.map { obstacle ->
-        val obstaclePos = device.environment.getPosition(obstacle).coordinates
-        val radius = obstacle.getConcentration(SimpleMolecule("SafeRadius")) as Double
-        val margin = obstacle.getConcentration(SimpleMolecule("SafeMargin")) as Double
-        Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
+fun getObstacles(): List<() -> Obstacle> = device.environment.nodes.filter { it.contains(SimpleMolecule("Obstacle")) }
+    .map { obstacle ->
+        {
+            val obstaclePos = device.environment.getPosition(obstacle).coordinates
+            val radius = obstacle.getConcentration(SimpleMolecule("SafeRadius")) as Double
+            val margin = obstacle.getConcentration(SimpleMolecule("SafeMargin")) as Double
+            Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
+        }
     }
-}
 
 /**
- * Applies the computed control [velocity][control] to the robot by moving its node inside the environment.
+ * Applies 2the computed control [velocity][control] to the robot by moving its node inside the environment.
  *
  * Under ZOH dynamics the displacement is ∆t · u:  p_{k+1} = p_k + ∆t · u_k.
  */

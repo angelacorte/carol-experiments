@@ -131,6 +131,5 @@ File(rootProject.rootDir.path + "/src/main/yaml")
 tasks.withType<KotlinCompilationTask<*>>().all {
     compilerOptions {
         allWarningsAsErrors = false
-        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
