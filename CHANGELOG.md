@@ -1,3 +1,17 @@
+## [3.0.0](https://github.com/angelacorte/carol-experiments/compare/2.9.0...3.0.0) (2026-07-01)
+
+### ⚠ BREAKING CHANGES
+
+* add DSL for easier CBF/CLF definition (#121)
+
+### Features
+
+* add DSL for easier CBF/CLF definition ([#121](https://github.com/angelacorte/carol-experiments/issues/121)) ([033da66](https://github.com/angelacorte/carol-experiments/commit/033da665bcffb5ff7f669919c9cb081c45d34429))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.9.0 [skip ci] ([53ca690](https://github.com/angelacorte/carol-experiments/commit/53ca690bd974bce0d3c6d017e426e40bd1df3697))
+
 ## [2.9.0](https://github.com/angelacorte/carol-experiments/compare/2.8.6...2.9.0) (2026-07-01)
 
 ### Features
