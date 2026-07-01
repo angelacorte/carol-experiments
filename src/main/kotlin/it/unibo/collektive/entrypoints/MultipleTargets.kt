@@ -6,8 +6,7 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
-import it.unibo.collektive.alchemist.device.getObstacle
-import it.unibo.collektive.alchemist.device.getObstacleProviders
+import it.unibo.collektive.alchemist.device.getObstacles
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
@@ -36,7 +35,7 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
         robot,
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
-        localCBF = getObstacleProviders().map(::ObstacleAvoidanceCBF) + MaxSpeedCBF(),
+        localCBF = getObstacles().map(::ObstacleAvoidanceCBF) + MaxSpeedCBF(),
         pairwiseCBF = listOf(CollisionAvoidanceCBF(0.8)),
     )
 }
