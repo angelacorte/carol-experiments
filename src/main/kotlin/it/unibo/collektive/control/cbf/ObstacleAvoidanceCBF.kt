@@ -33,9 +33,9 @@ import it.unibo.collektive.model.Obstacle
  * @property slackWeight penalty for the soft version; `null` → hard constraint
  */
 class ObstacleAvoidanceCBF(
+    private var obstacleProvider: () -> Obstacle,
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
-    private var obstacleProvider: () -> Obstacle,
 ) : CBF() {
 
     override val name: String = "obstacle_avoidance_CBF"
@@ -49,7 +49,7 @@ class ObstacleAvoidanceCBF(
     override fun ControlFunctionScope.formula(): ConstraintFormula {
         val obstaclePosition = vector { obstacleProvider().toDoubleArray() }
         val obstacleRadius = scalar {
-            obstacleProvider().radius + obstacleProvider().margin
+            obstacleProvider().let { obstacle -> obstacle.radius + obstacle.margin }
         }
         val distance = self.position - obstaclePosition
         val h = squaredNorm(distance) - squared(obstacleRadius)

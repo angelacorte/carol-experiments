@@ -6,8 +6,7 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
-import it.unibo.collektive.alchemist.device.getObstacle
-import it.unibo.collektive.alchemist.device.getObstacles
+import it.unibo.collektive.alchemist.device.getObstacleProviders
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
@@ -33,8 +32,7 @@ fun Aggregate<Int>.multipleObstaclesEntrypoint(
     val myTarget = device["TargetID"] as Number
     val robot = getRobot()
     val communicationDistance: Double = device["CommunicationDistance"]
-    val obstacles = getObstacles()
-    val obstaclesCBF = obstacles.map { ObstacleAvoidanceCBF { it } }
+    val obstaclesCBF = getObstacleProviders().map(::ObstacleAvoidanceCBF)
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,
