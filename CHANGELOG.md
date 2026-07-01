@@ -1,3 +1,13 @@
+## [2.9.0](https://github.com/angelacorte/carol-experiments/compare/2.8.6...2.9.0) (2026-07-01)
+
+### Features
+
+* add multiple obstacles simulation ([#159](https://github.com/angelacorte/carol-experiments/issues/159)) ([82a66f5](https://github.com/angelacorte/carol-experiments/commit/82a66f5138ba925de42363d981aff268e8d05c6a))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 2.8.6 [skip ci] ([dd0f671](https://github.com/angelacorte/carol-experiments/commit/dd0f6716e0f0aa82912e1d01ebe77b1a6bccffdf))
+
 ## [2.8.6](https://github.com/angelacorte/carol-experiments/compare/2.8.5...2.8.6) (2026-07-01)
 
 ### Dependency updates
