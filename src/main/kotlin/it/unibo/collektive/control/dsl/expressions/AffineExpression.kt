@@ -49,11 +49,10 @@ operator fun AffineExpression.unaryMinus(): AffineExpression =
 /**
  * Multiplies every coefficient and the constant part by a runtime scalar.
  */
-operator fun RuntimeScalar.times(expression: AffineExpression): AffineExpression =
-    AffineExpression(
-        expression.terms.map { it.copy(coefficient = it.coefficient * this) },
-        expression.constant * this,
-    )
+operator fun RuntimeScalar.times(expression: AffineExpression): AffineExpression = AffineExpression(
+    expression.terms.map { it.copy(coefficient = it.coefficient * this) },
+    expression.constant * this,
+)
 
 /**
  * Multiplies an affine expression by this constant number.

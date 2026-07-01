@@ -30,8 +30,7 @@ class AgentExpression internal constructor(decision: GRBVector, private val devi
 
     val maxSpeed: RuntimeScalar = scalar(Device::maxSpeed)
 
-    private fun scalar(read: (Device) -> Double): RuntimeScalar =
-        RuntimeScalar { runtime -> read(device(runtime)) }
+    private fun scalar(read: (Device) -> Double): RuntimeScalar = RuntimeScalar { runtime -> read(device(runtime)) }
 
     private fun vector(read: (Device) -> DoubleArray): VectorExpression =
         VectorExpression { runtime -> read(device(runtime)) }

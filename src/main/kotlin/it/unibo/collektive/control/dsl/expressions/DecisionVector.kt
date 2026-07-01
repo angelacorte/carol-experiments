@@ -13,11 +13,10 @@ class DecisionVector internal constructor(internal val vector: GRBVector) {
     /** Number of scalar Gurobi variables in this decision vector. */
     val dimensions: Int get() = vector.dimensions
 
-    internal fun asExpression(): DecisionVectorExpression =
-        DecisionVectorExpression(
-            dimensions = dimensions,
-            components = List(dimensions) { index -> listOf(LinearTerm(vector[index], scalar(1.0))) },
-        )
+    internal fun asExpression(): DecisionVectorExpression = DecisionVectorExpression(
+        dimensions = dimensions,
+        components = List(dimensions) { index -> listOf(LinearTerm(vector[index], scalar(1.0))) },
+    )
 }
 
 /**
@@ -53,7 +52,10 @@ private fun DecisionVectorExpression.combine(
     require(dimensions == other.dimensions) {
         "Decision vector dimension mismatch: $dimensions != ${other.dimensions}"
     }
-    return DecisionVectorExpression(dimensions, components.zip(other.components).map { (left, right) ->
-        component(left, right)
-    })
+    return DecisionVectorExpression(
+        dimensions,
+        components.zip(other.components).map { (left, right) ->
+            component(left, right)
+        },
+    )
 }
