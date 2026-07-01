@@ -13,17 +13,15 @@ fun dot(coefficients: VectorExpression, decision: DecisionVector): AffineExpress
  * the current runtime state.
  */
 fun dot(coefficients: VectorExpression, decision: DecisionVectorExpression): AffineExpression {
-    val linearTerms = decision.terms.flatMap { decisionTerm ->
-        val dimension = decisionTerm.vector.dimensions
-        List(dimension) { index ->
-            LinearTerm(
-                variable = decisionTerm.vector.vector[index],
+    val linearTerms = decision.components.flatMapIndexed { index, componentTerms ->
+        componentTerms.map { term ->
+            term.copy(
                 coefficient = RuntimeScalar { runtime ->
                     val values = coefficients.evaluate(runtime)
-                    require(values.size == dimension) {
-                        "Coefficient dimension mismatch: ${values.size} != $dimension"
+                    require(values.size == decision.dimensions) {
+                        "Coefficient dimension mismatch: ${values.size} != ${decision.dimensions}"
                     }
-                    values[index] * decisionTerm.coefficient.evaluate(runtime)
+                    values[index] * term.coefficient.evaluate(runtime)
                 },
             )
         }

@@ -14,86 +14,46 @@ class DecisionVector internal constructor(internal val vector: GRBVector) {
     val dimensions: Int get() = vector.dimensions
 
     internal fun asExpression(): DecisionVectorExpression =
-        DecisionVectorExpression(listOf(DecisionVectorTerm(scalar(1.0), this)))
+        DecisionVectorExpression(
+            dimensions = dimensions,
+            components = List(dimensions) { index -> listOf(LinearTerm(vector[index], scalar(1.0))) },
+        )
 }
 
 /**
- * One scaled decision vector inside a [DecisionVectorExpression].
- */
-internal data class DecisionVectorTerm(val coefficient: RuntimeScalar, val vector: DecisionVector)
-
-/**
- * Linear combination of decision vectors.
+ * Linear vector expression in Gurobi decision variables.
  *
- * This is used for expressions such as `self.u - other.u`.  It is not a Gurobi expression yet; it is
- * an intermediate representation that becomes concrete linear terms once paired with coefficients
- * through [dot].
+ * This is used for expressions such as `self.u - other.u`.  Each component stores the Gurobi
+ * variables and runtime coefficients that contribute to that dimension, so [dot] can translate the
+ * vector directly into an affine expression.
  */
-class DecisionVectorExpression internal constructor(internal val terms: List<DecisionVectorTerm>)
-
-/**
- * Adds two decision vectors as a symbolic vector expression.
- */
-operator fun DecisionVector.plus(other: DecisionVector): DecisionVectorExpression =
-    asExpression() + other.asExpression()
+class DecisionVectorExpression internal constructor(
+    internal val dimensions: Int,
+    internal val components: List<List<LinearTerm>>,
+) {
+    init {
+        require(components.size == dimensions) {
+            "Decision vector expression dimension mismatch: ${components.size} != $dimensions"
+        }
+    }
+}
 
 /**
  * Subtracts another decision vector from this one as a symbolic vector expression.
  */
 operator fun DecisionVector.minus(other: DecisionVector): DecisionVectorExpression =
-    asExpression() - other.asExpression()
+    asExpression().combine(other.asExpression()) { left, right ->
+        left + right.map { it.copy(coefficient = -it.coefficient) }
+    }
 
-/**
- * Negates this decision vector as a symbolic vector expression.
- */
-operator fun DecisionVector.unaryMinus(): DecisionVectorExpression = -asExpression()
-
-/**
- * Adds two symbolic linear combinations of decision vectors.
- */
-operator fun DecisionVectorExpression.plus(other: DecisionVectorExpression): DecisionVectorExpression =
-    DecisionVectorExpression(terms + other.terms)
-
-/**
- * Adds a decision vector to a symbolic linear combination of decision vectors.
- */
-operator fun DecisionVectorExpression.plus(other: DecisionVector): DecisionVectorExpression =
-    this + other.asExpression()
-
-/**
- * Subtracts one symbolic linear combination of decision vectors from another.
- */
-operator fun DecisionVectorExpression.minus(other: DecisionVectorExpression): DecisionVectorExpression = this + (-other)
-
-/**
- * Subtracts a decision vector from a symbolic linear combination of decision vectors.
- */
-operator fun DecisionVectorExpression.minus(other: DecisionVector): DecisionVectorExpression =
-    this - other.asExpression()
-
-/**
- * Negates every coefficient in this symbolic linear combination of decision vectors.
- */
-operator fun DecisionVectorExpression.unaryMinus(): DecisionVectorExpression =
-    DecisionVectorExpression(terms.map { DecisionVectorTerm(-it.coefficient, it.vector) })
-
-/**
- * Scales a symbolic linear combination of decision vectors by a runtime scalar.
- */
-operator fun RuntimeScalar.times(decision: DecisionVectorExpression): DecisionVectorExpression =
-    DecisionVectorExpression(decision.terms.map { it.copy(coefficient = it.coefficient * this) })
-
-/**
- * Scales a symbolic linear combination of decision vectors by a constant number.
- */
-operator fun Number.times(decision: DecisionVectorExpression): DecisionVectorExpression = asRuntimeScalar() * decision
-
-/**
- * Scales a decision vector by a runtime scalar.
- */
-operator fun RuntimeScalar.times(decision: DecisionVector): DecisionVectorExpression = this * decision.asExpression()
-
-/**
- * Scales a decision vector by a constant number.
- */
-operator fun Number.times(decision: DecisionVector): DecisionVectorExpression = asRuntimeScalar() * decision
+private fun DecisionVectorExpression.combine(
+    other: DecisionVectorExpression,
+    component: (List<LinearTerm>, List<LinearTerm>) -> List<LinearTerm>,
+): DecisionVectorExpression {
+    require(dimensions == other.dimensions) {
+        "Decision vector dimension mismatch: $dimensions != ${other.dimensions}"
+    }
+    return DecisionVectorExpression(dimensions, components.zip(other.components).map { (left, right) ->
+        component(left, right)
+    })
+}
