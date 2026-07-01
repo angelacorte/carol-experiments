@@ -4,6 +4,13 @@ import it.unibo.collektive.control.dsl.FormulaRuntime
 import kotlin.math.max
 
 /**
+ * Runtime expression evaluated against the current formula update context.
+ */
+internal fun interface RuntimeExpression<out T> {
+    fun evaluate(runtime: FormulaRuntime): T
+}
+
+/**
  * Scalar value that is evaluated against the current [FormulaRuntime].
  *
  * This type is the scalar building block of the DSL.  It represents both constant numbers and
@@ -11,7 +18,9 @@ import kotlin.math.max
  * radius.  Formula compilation stores these expressions and evaluates them during
  * [it.unibo.collektive.solver.gurobi.InstalledControlConstraint.update].
  */
-class RuntimeScalar internal constructor(internal val evaluate: (FormulaRuntime) -> Double)
+class RuntimeScalar internal constructor(private val expression: RuntimeExpression<Double>) {
+    internal fun evaluate(runtime: FormulaRuntime): Double = expression.evaluate(runtime)
+}
 
 /**
  * Creates a constant runtime scalar.
@@ -54,30 +63,10 @@ operator fun RuntimeScalar.plus(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) + other.evaluate(it) }
 
 /**
- * Adds a constant number to this runtime scalar.
- */
-operator fun RuntimeScalar.plus(other: Number): RuntimeScalar = this + other.asRuntimeScalar()
-
-/**
- * Adds a runtime scalar to this constant number.
- */
-operator fun Number.plus(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() + other
-
-/**
  * Subtracts one runtime scalar from another.
  */
 operator fun RuntimeScalar.minus(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) - other.evaluate(it) }
-
-/**
- * Subtracts a constant number from this runtime scalar.
- */
-operator fun RuntimeScalar.minus(other: Number): RuntimeScalar = this - other.asRuntimeScalar()
-
-/**
- * Subtracts a runtime scalar from this constant number.
- */
-operator fun Number.minus(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() - other
 
 /**
  * Negates this runtime scalar.
@@ -91,11 +80,6 @@ operator fun RuntimeScalar.times(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) * other.evaluate(it) }
 
 /**
- * Multiplies this runtime scalar by a constant number.
- */
-operator fun RuntimeScalar.times(other: Number): RuntimeScalar = this * other.asRuntimeScalar()
-
-/**
  * Multiplies a runtime scalar by this constant number.
  */
 operator fun Number.times(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() * other
@@ -105,8 +89,3 @@ operator fun Number.times(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar
  */
 operator fun RuntimeScalar.div(other: RuntimeScalar): RuntimeScalar =
     RuntimeScalar { evaluate(it) / other.evaluate(it) }
-
-/**
- * Divides this runtime scalar by a constant number.
- */
-operator fun RuntimeScalar.div(other: Number): RuntimeScalar = this / other.asRuntimeScalar()
