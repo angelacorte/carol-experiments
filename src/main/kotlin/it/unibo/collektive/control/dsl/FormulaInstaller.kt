@@ -7,6 +7,7 @@ import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQConstr
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
+import it.unibo.collektive.control.dsl.expressions.AffineExpression
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
@@ -31,7 +32,12 @@ internal fun GRBModel.installFormulaConstraint(
 ): InstalledControlConstraint {
     validateSlackConfiguration(slackPolicy, slackWeight, name)
     val slack = createSlack(slackPolicy, slackWeight, slackName)
-    return when (val formula = ControlFunctionScope(selfDecision, otherDecision, slack).buildFormula()) {
+    val scope = ControlFunctionScope(
+        selfDecision = selfDecision,
+        otherDecision = otherDecision,
+        slack = slack?.let { AffineExpression.variable(it) } ?: AffineExpression.empty(),
+    )
+    return when (val formula = scope.buildFormula()) {
         is LinearConstraintFormula -> compileLinearFormula(name, slack, slackWeight, formula)
         is QuadraticConstraintFormula -> compileQuadraticFormula(name, slack, slackWeight, formula)
     }
@@ -81,7 +87,7 @@ private fun GRBModel.compileLinearFormula(
     val leftHandSideExpression = GRBLinExpr().apply {
         variables.forEach { addTerm(0.0, it) }
     }
-    val constraint = addConstr(leftHandSideExpression, formula.sense.gurobiSense, 0.0, name)
+    val constraint = addConstr(leftHandSideExpression, formula.gurobiSense, 0.0, name)
     return CompiledLinearFormula(slack, slackWeight, formula, variables, constraint)
 }
 
@@ -126,7 +132,7 @@ private fun GRBModel.compileQuadraticFormula(
     val leftHandSideExpression = GRBQuadExpr().apply {
         formula.leftHandSide.terms.forEach { addTerm(it.coefficient, it.first, it.second) }
     }
-    val constraint = addQConstr(leftHandSideExpression, formula.sense.gurobiSense, 0.0, name)
+    val constraint = addQConstr(leftHandSideExpression, formula.gurobiSense, 0.0, name)
     return CompiledQuadraticFormula(slack, slackWeight, formula, constraint)
 }
 
