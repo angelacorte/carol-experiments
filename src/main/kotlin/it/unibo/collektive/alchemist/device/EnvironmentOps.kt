@@ -60,16 +60,15 @@ fun getRobot(): Device = position.coordinates().let {
  * current position, radius, and margin every time it is invoked.
  */
 context(device: CollektiveDevice<*>)
-fun getObstacles(): List<() -> Obstacle> =
-    device.environment.nodes.filter { it.contains(SimpleMolecule("Obstacle")) }
-        .map { obstacle ->
-            {
-                val obstaclePos = device.environment.getPosition(obstacle).coordinates
-                val radius = obstacle.getConcentration(SimpleMolecule("SafeRadius")) as Double
-                val margin = obstacle.getConcentration(SimpleMolecule("SafeMargin")) as Double
-                Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
-            }
+fun getObstacles(): List<() -> Obstacle> = device.environment.nodes.filter { it.contains(SimpleMolecule("Obstacle")) }
+    .map { obstacle ->
+        {
+            val obstaclePos = device.environment.getPosition(obstacle).coordinates
+            val radius = obstacle.getConcentration(SimpleMolecule("SafeRadius")) as Double
+            val margin = obstacle.getConcentration(SimpleMolecule("SafeMargin")) as Double
+            Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
         }
+    }
 
 /**
  * Applies 2the computed control [velocity][control] to the robot by moving its node inside the environment.
