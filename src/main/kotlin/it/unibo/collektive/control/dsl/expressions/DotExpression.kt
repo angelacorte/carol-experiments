@@ -1,27 +1,23 @@
 package it.unibo.collektive.control.dsl.expressions
 
 /**
- * Builds an affine dot product between runtime coefficients and one decision vector.
- */
-fun dot(coefficients: VectorExpression, decision: DecisionVector): AffineExpression =
-    dot(coefficients, decision.asExpression())
-
-/**
- * Builds an affine dot product between runtime coefficients and a linear combination of decisions.
+ * Builds an affine dot product between runtime coefficients and a decision expression.
  *
- * The resulting expression is affine in Gurobi variables, while the coefficients can still depend on
- * the current runtime state.
+ * [decision] may be a raw decision vector (`self.u`) or any static combination of decision vectors
+ * (`self.u - other.u`): [DecisionExpression] represents both uniformly. The resulting expression is affine
+ * in Gurobi variables, while [coefficients] can still depend on the current runtime state.
  */
-fun dot(coefficients: VectorExpression, decision: DecisionVectorExpression): AffineExpression {
+fun dot(coefficients: VectorExpression, decision: DecisionExpression): AffineExpression {
     val linearTerms = decision.components.flatMapIndexed { index, componentTerms ->
         componentTerms.map { term ->
-            term.copy(
-                coefficient = RuntimeScalar { runtime ->
+            LinearTerm(
+                term.variable,
+                RuntimeScalar { runtime ->
                     val values = coefficients.evaluate(runtime)
                     require(values.size == decision.dimensions) {
                         "Coefficient dimension mismatch: ${values.size} != ${decision.dimensions}"
                     }
-                    values[index] * term.coefficient.evaluate(runtime)
+                    values[index] * term.coefficient
                 },
             )
         }
