@@ -58,6 +58,8 @@ class SolverProperty<T>(override val settings: QpSettings, override val node: No
         if (!isPairwiseModelAvailable) {
             val model = GRBModel(env).also { if (settings.logEnabled) it.setupLogger() }
             pairwise = PairwiseQP.create(model, device, otherDevice, pairwiseCBFs)
+        } else {
+            pairwise.syncControlFunctions(pairwiseCBFs)
         }
     }
 
