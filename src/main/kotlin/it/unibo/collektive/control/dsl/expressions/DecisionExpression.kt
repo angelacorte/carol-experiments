@@ -32,7 +32,10 @@ internal fun GRBVector.asDecisionExpr(): DecisionExpression = DecisionExpression
 )
 
 /** Adds two decision expressions dimension by dimension. */
-operator fun DecisionExpression.plus(other: DecisionExpression): DecisionExpression = combine(other) { left, right -> left + right }
+operator fun DecisionExpression.plus(other: DecisionExpression): DecisionExpression = combine(other) { left, right ->
+    left +
+        right
+}
 
 /** Subtracts one decision expression from another dimension by dimension. */
 operator fun DecisionExpression.minus(other: DecisionExpression): DecisionExpression =
