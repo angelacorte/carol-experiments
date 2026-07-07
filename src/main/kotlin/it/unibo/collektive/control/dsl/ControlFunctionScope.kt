@@ -1,9 +1,10 @@
 package it.unibo.collektive.control.dsl
 
 import it.unibo.collektive.control.dsl.expressions.AffineExpression
-import it.unibo.collektive.control.dsl.expressions.DecisionVector
+import it.unibo.collektive.control.dsl.expressions.DecisionExpression
 import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
 import it.unibo.collektive.control.dsl.expressions.VectorExpression
+import it.unibo.collektive.control.dsl.expressions.asDecisionExpr
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.GRBVector
@@ -16,13 +17,13 @@ import it.unibo.collektive.solver.gurobi.GRBVector
  * the value available during installation; instead, it creates an expression evaluated during each
  * constraint update.
  *
- * @property u decision vector associated with this endpoint.
+ * @property u decision expression associated with this endpoint.
  * @property position current endpoint position as a runtime vector.
  * @property safeMargin current safety radius contribution.
  * @property maxSpeed current speed bound.
  */
 class AgentExpression internal constructor(decision: GRBVector, private val device: (FormulaRuntime) -> Device) {
-    val u: DecisionVector = DecisionVector(decision)
+    val u: DecisionExpression = decision.asDecisionExpr()
 
     val position: VectorExpression = vector { it.position.toDoubleArray() }
 
