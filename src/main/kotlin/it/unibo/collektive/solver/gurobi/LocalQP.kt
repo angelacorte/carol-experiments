@@ -32,17 +32,12 @@ class LocalQP private constructor(
     /**
      * Synchronizes the already-installed control functions with the latest runtime instances.
      *
-     * The number and ordering of functions must match the topology used when the model was created.
+     * Matching is done by [it.unibo.collektive.control.ControlFunction.name] rather than by list
+     * position -- see [syncByName] for the rationale and the failure modes it rules out.
      */
     fun syncControlFunctions(localCLFs: List<CLF>, localCBFs: List<CBF>) {
-        require(this.localCLFs.size == localCLFs.size) {
-            "Expected ${this.localCLFs.size} local CLFs, got ${localCLFs.size}"
-        }
-        require(this.localCBFs.size == localCBFs.size) {
-            "Expected ${this.localCBFs.size} local CBFs, got ${localCBFs.size}"
-        }
-        this.localCLFs.zip(localCLFs).forEach { (installed, current) -> installed.syncFrom(current) }
-        this.localCBFs.zip(localCBFs).forEach { (installed, current) -> installed.syncFrom(current) }
+        syncByName(this.localCLFs, localCLFs, "local CLFs")
+        syncByName(this.localCBFs, localCBFs, "local CBFs")
     }
 
     /**
@@ -62,18 +57,22 @@ class LocalQP private constructor(
         settings: QpSettings,
         deltaTime: Double,
     ): SpeedControl2D {
-        for (i in u.variables.indices) {
-            u[i].set(GRB.DoubleAttr.LB, -device.maxSpeed)
-            u[i].set(GRB.DoubleAttr.UB, device.maxSpeed)
-            u[i].set(GRB.DoubleAttr.Start, device.control.toDoubleArray()[i]) // warm start
-        }
+        u.applyBoundsAndWarmStart(device.maxSpeed, device.control.toDoubleArray())
         constraints.forEach { constraint ->
             constraint.update(model, device, settings = settings, deltaTime = deltaTime)
         }
         model.setObjective(buildObjective(uNominal, duals, settings), GRB.MINIMIZE)
-        model.update()
-        model.optimize()
-        return extractSolution(device)
+        model.optimizeWithDiagnostics("localModel.ilp")
+        return when {
+            model.get(GRB.IntAttr.SolCount) > 0 -> u.readSpeedControl()
+            else -> {
+                println(
+                    "Local QP: no solution found (status ${model.get(GRB.IntAttr.Status)}), " +
+                        "returning previous control.",
+                )
+                device.control
+            }
+        }
     }
 
     private fun buildObjective( // todo this should be taken from outside, can be different by different simulations
@@ -82,44 +81,14 @@ class LocalQP private constructor(
         settings: QpSettings,
     ): GRBQuadExpr = GRBQuadExpr().apply {
         addRhoNorm2Sq(u, uNominal)
-        constraints.forEach { constr ->
-            constr.slack?.let { slackConstraint ->
-                constr.slackWeight?.let { slackWeight ->
-                    addTerm(slackWeight, slackConstraint, slackConstraint)
-                }
-            }
-        }
+        addSlackPenalties(constraints)
+        // NOTE: `slack` is not referenced by any installed constraint, so this term is currently
+        // inert (the optimizer always drives it to 0). Left in place on purpose.
         addTerm(settings.rhoSlack, slack, slack)
         duals.forEach { (_, value) ->
             val suggested = value.suggestedControl.zi.toDoubleArray()
             val residual = value.localDualUpdate.yi.toDoubleArray()
             addRhoNorm2Sq(u, suggested - residual, settings.rhoADMM / 2.0)
-        }
-    }
-
-    private fun extractSolution(device: Device): SpeedControl2D {
-        val status = model.get(GRB.IntAttr.Status)
-        if (status == GRB.INFEASIBLE) {
-            model.writeIIS("localModel.ilp")
-            for (constr in model.constrs) {
-                if (constr.get(GRB.IntAttr.IISConstr) == 1) {
-                    println("Local IIS constraint: ${constr.get(GRB.StringAttr.ConstrName)}")
-                }
-            }
-        }
-        if (status == GRB.INF_OR_UNBD) {
-            model.set(GRB.IntParam.DualReductions, 0)
-            model.reset()
-            model.optimize()
-        }
-        return when {
-            model.get(
-                GRB.IntAttr.SolCount,
-            ) > 0 -> SpeedControl2D(u[0].get(GRB.DoubleAttr.X), u[1].get(GRB.DoubleAttr.X))
-            else -> {
-                println("Local QP: no solution found (status $status), returning previous control.")
-                device.control
-            }
         }
     }
 
@@ -146,7 +115,7 @@ class LocalQP private constructor(
             return LocalQP(
                 model = model,
                 u = u,
-                slack,
+                slack = slack,
                 localCLFs = localCLFs,
                 localCBFs = localCBFs,
                 constraints = installed,
