@@ -32,7 +32,9 @@ fun Aggregate<Int>.multipleObstaclesEntrypoint(
     val myTarget = device["TargetID"] as Number
     val robot = getRobot()
     val communicationDistance: Double = device["CommunicationDistance"]
-    val obstaclesCBF = getObstacles().map(::ObstacleAvoidanceCBF)
+    val obstaclesCBF = getObstacles().mapIndexed { index, obstacle ->
+        ObstacleAvoidanceCBF(obstacle, identifier = index.toString())
+    }
     admmEntrypoint(
         device["ControlPeriodMS"] as? Double ?: 100.0,
         robot,

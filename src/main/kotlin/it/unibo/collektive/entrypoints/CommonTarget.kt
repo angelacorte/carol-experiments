@@ -36,7 +36,9 @@ fun Aggregate<Int>.commonTargetEntrypoint(
         robot,
         uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
-        localCBF = getObstacles().map(::ObstacleAvoidanceCBF) + MaxSpeedCBF(),
+        localCBF = getObstacles().mapIndexed { index, obstacle ->
+            ObstacleAvoidanceCBF(obstacle, identifier = index.toString())
+        } + MaxSpeedCBF(),
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),

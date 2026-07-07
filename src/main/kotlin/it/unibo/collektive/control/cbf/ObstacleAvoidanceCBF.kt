@@ -29,6 +29,7 @@ import it.unibo.collektive.model.Obstacle
  * via [GRBModel.chgCoeff].
  *
  * @property obstacleProvider supplies the current obstacle to avoid
+ * @property stableName stable identifier for this CBF instance, independent from obstacle motion
  * @property eta        decay-rate parameter
  * @property slackWeight penalty for the soft version; `null` → hard constraint
  */
@@ -36,9 +37,13 @@ class ObstacleAvoidanceCBF(
     private var obstacleProvider: () -> Obstacle,
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
+    identifier: String? = null,
 ) : CBF() {
 
-    override val name: String = "obstacle_avoidance_CBF"
+    private val obstacleIdentifier: String =
+        identifier ?: obstacleProvider().let { obstacle -> "(${obstacle.x}, ${obstacle.y})" }
+
+    override val name: String = "obstacle_avoidance_CBF_$obstacleIdentifier"
 
     override fun syncFrom(other: ControlFunction) {
         if (other is ObstacleAvoidanceCBF) {

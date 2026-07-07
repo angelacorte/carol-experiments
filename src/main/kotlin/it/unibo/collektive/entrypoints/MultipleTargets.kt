@@ -35,7 +35,9 @@ fun Aggregate<Int>.multipleTargetEntrypoint(
         robot,
         localCLF = listOf(GoToTargetCLF { getTarget(device["TargetID"] as Number) }),
         uNominal = GoToTargetNominal { getTarget(device["TargetID"] as Number) }.compute(robot).toDoubleArray(),
-        localCBF = getObstacles().map(::ObstacleAvoidanceCBF) + MaxSpeedCBF(),
+        localCBF = getObstacles().mapIndexed { index, obstacle ->
+            ObstacleAvoidanceCBF(obstacle, identifier = index.toString())
+        } + MaxSpeedCBF(),
         pairwiseCBF = listOf(CollisionAvoidanceCBF(0.8)),
     )
 }
