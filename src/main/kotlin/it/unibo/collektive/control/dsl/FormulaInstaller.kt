@@ -8,6 +8,8 @@ import com.gurobi.gurobi.GRBQConstr
 import com.gurobi.gurobi.GRBQuadExpr
 import com.gurobi.gurobi.GRBVar
 import it.unibo.collektive.control.dsl.expressions.AffineExpression
+import it.unibo.collektive.control.dsl.expressions.LinearTerm
+import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
@@ -20,18 +22,27 @@ import it.unibo.collektive.solver.gurobi.QpSettings
  * optional slack variable, evaluates the formula once to discover its variable structure, installs
  * the matching linear or quadratic constraint, and returns an [InstalledControlConstraint] that
  * refreshes numerical coefficients/RHS values on every solver iteration.
+ *
+ * Slack handling is derived directly from [slackWeight]: a slack variable exists if and only if a
+ * weight is declared.  [requiresSlack] additionally forces a weight to be present (CLFs), and
+ * quadratic formulas reject slack because `GRBQConstr` cannot host it on the left-hand side.
  */
 internal fun GRBModel.installFormulaConstraint(
     name: String,
     slackName: String = name,
     selfDecision: GRBVector,
     otherDecision: GRBVector?,
-    slackPolicy: SlackPolicy,
+    requiresSlack: Boolean,
     slackWeight: Double?,
     buildFormula: ControlFunctionScope.() -> ConstraintFormula,
 ): InstalledControlConstraint {
-    validateSlackConfiguration(slackPolicy, slackWeight, name)
-    val slack = createSlack(slackPolicy, slackWeight, slackName)
+    require(slackWeight == null || (slackWeight.isFinite() && slackWeight > 0.0)) {
+        "$name declares slackWeight=$slackWeight; slack weights must be finite and positive"
+    }
+    require(!requiresSlack || slackWeight != null) {
+        "$name requires a slack variable and must declare a finite positive slackWeight"
+    }
+    val slack = slackWeight?.let { addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$slackName") }
     val scope = ControlFunctionScope(
         selfDecision = selfDecision,
         otherDecision = otherDecision,
@@ -39,39 +50,11 @@ internal fun GRBModel.installFormulaConstraint(
     )
     return when (val formula = scope.buildFormula()) {
         is LinearConstraintFormula -> compileLinearFormula(name, slack, slackWeight, formula)
-        is QuadraticConstraintFormula -> compileQuadraticFormula(name, slack, slackWeight, formula)
-    }
-}
-
-/**
- * Fails fast when a slack configuration would silently create an unpenalized or ignored slack.
- */
-private fun validateSlackConfiguration(policy: SlackPolicy, slackWeight: Double?, name: String) {
-    when (policy) {
-        SlackPolicy.None -> require(slackWeight == null) {
-            "$name declares slackWeight=$slackWeight but its slack policy is None"
-        }
-        SlackPolicy.Optional -> require(slackWeight == null || slackWeight.isValidPenaltyWeight()) {
-            "$name declares slackWeight=$slackWeight; slack weights must be finite and positive"
-        }
-        SlackPolicy.Required -> require(slackWeight != null && slackWeight.isValidPenaltyWeight()) {
-            "$name requires a slack variable and must declare a finite positive slackWeight"
+        is QuadraticConstraintFormula -> {
+            require(slack == null) { "$name: slack is not supported on quadratic constraints" }
+            compileQuadraticFormula(name, formula)
         }
     }
-}
-
-/**
- * Returns whether this value can be used as a meaningful quadratic penalty for a slack variable.
- */
-private fun Double.isValidPenaltyWeight(): Boolean = isFinite() && this > 0.0
-
-/**
- * Creates the slack variable requested by [SlackPolicy].
- */
-private fun GRBModel.createSlack(policy: SlackPolicy, slackWeight: Double?, name: String): GRBVar? = when (policy) {
-    SlackPolicy.None -> null
-    SlackPolicy.Optional -> slackWeight?.let { addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name") }
-    SlackPolicy.Required -> addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_$name")
 }
 
 /**
@@ -83,25 +66,26 @@ private fun GRBModel.compileLinearFormula(
     slackWeight: Double?,
     formula: LinearConstraintFormula,
 ): InstalledControlConstraint {
-    val variables = formula.leftHandSide.terms.map { it.variable }.distinct()
+    val coefficientsByVariable = formula.leftHandSide.terms.groupBy(LinearTerm::variable, LinearTerm::coefficient)
     val leftHandSideExpression = GRBLinExpr().apply {
-        variables.forEach { addTerm(0.0, it) }
+        coefficientsByVariable.keys.forEach { addTerm(0.0, it) }
     }
     val constraint = addConstr(leftHandSideExpression, formula.gurobiSense, 0.0, name)
-    return CompiledLinearFormula(slack, slackWeight, formula, variables, constraint)
+    return CompiledLinearFormula(slack, slackWeight, formula, coefficientsByVariable, constraint)
 }
 
 /**
  * Runtime handle for a compiled affine formula.
  *
- * The installed `GRBConstr` keeps the same variables for the lifetime of the model.  On update this
- * handle recomputes the RHS and every dynamic coefficient from [FormulaRuntime].
+ * The installed `GRBConstr` keeps the same variables for the lifetime of the model.  The grouping
+ * of runtime coefficients by variable is computed once at installation; on update each group is
+ * re-evaluated against the current [FormulaRuntime] and pushed in-place with [GRBModel.chgCoeff].
  */
 private class CompiledLinearFormula(
     override val slack: GRBVar?,
     override val slackWeight: Double?,
     private val formula: LinearConstraintFormula,
-    private val variables: List<GRBVar>,
+    private val coefficientsByVariable: Map<GRBVar, List<RuntimeScalar>>,
     private val constraint: GRBConstr,
 ) : InstalledControlConstraint {
     override fun update(model: GRBModel, self: Device, otherDevice: Device?, settings: QpSettings, deltaTime: Double) {
@@ -110,12 +94,8 @@ private class CompiledLinearFormula(
             GRB.DoubleAttr.RHS,
             formula.rightHandSide.evaluate(runtime) - formula.leftHandSide.constant.evaluate(runtime),
         )
-        val coefficients = variables.associateWithTo(LinkedHashMap()) { 0.0 }
-        formula.leftHandSide.terms.forEach { term ->
-            coefficients[term.variable] = coefficients.getValue(term.variable) + term.coefficient.evaluate(runtime)
-        }
-        coefficients.forEach { (variable, coefficient) ->
-            model.chgCoeff(constraint, variable, coefficient)
+        coefficientsByVariable.forEach { (variable, coefficients) ->
+            model.chgCoeff(constraint, variable, coefficients.sumOf { it.evaluate(runtime) })
         }
     }
 }
@@ -125,15 +105,13 @@ private class CompiledLinearFormula(
  */
 private fun GRBModel.compileQuadraticFormula(
     name: String,
-    slack: GRBVar?,
-    slackWeight: Double?,
     formula: QuadraticConstraintFormula,
 ): InstalledControlConstraint {
     val leftHandSideExpression = GRBQuadExpr().apply {
         formula.leftHandSide.terms.forEach { addTerm(it.coefficient, it.first, it.second) }
     }
     val constraint = addQConstr(leftHandSideExpression, formula.gurobiSense, 0.0, name)
-    return CompiledQuadraticFormula(slack, slackWeight, formula, constraint)
+    return CompiledQuadraticFormula(formula, constraint)
 }
 
 /**
@@ -143,11 +121,13 @@ private fun GRBModel.compileQuadraticFormula(
  * constraint RHS, which is enough for the currently supported norm constraints.
  */
 private class CompiledQuadraticFormula(
-    override val slack: GRBVar?,
-    override val slackWeight: Double?,
     private val formula: QuadraticConstraintFormula,
     private val constraint: GRBQConstr,
 ) : InstalledControlConstraint {
+    override val slack: GRBVar? = null
+
+    override val slackWeight: Double? = null
+
     override fun update(model: GRBModel, self: Device, otherDevice: Device?, settings: QpSettings, deltaTime: Double) {
         val runtime = FormulaRuntime(self, otherDevice, settings, deltaTime)
         constraint.set(GRB.DoubleAttr.QCRHS, formula.rightHandSide.evaluate(runtime))

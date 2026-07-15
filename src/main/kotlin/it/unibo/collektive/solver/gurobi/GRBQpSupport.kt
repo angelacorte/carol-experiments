@@ -23,7 +23,7 @@ internal fun GRBVector.applyBoundsAndWarmStart(maxSpeed: Double, warmStart: Doub
 
 /**
  * Adds the quadratic slack penalty declared by each installed constraint that has one, skipping
- * constraints installed with [it.unibo.collektive.control.dsl.SlackPolicy.None] or without a weight.
+ * constraints installed without a slack weight (hard constraints).
  */
 internal fun GRBQuadExpr.addSlackPenalties(constraints: List<InstalledControlConstraint>) {
     constraints.forEach { constraint ->

@@ -21,21 +21,26 @@ override fun ControlFunctionScope.formula(): ConstraintFormula {
 }
 ```
 
-without rebuilding the Gurobi model at every step.
+without rebuilding the Gurobi model at every step, and **without importing anything from the DSL
+packages**: the whole formula vocabulary is exposed either as members of the expression types or as
+members of `ControlFunctionScope`.
 
 ## Main files
 
-- `ControlFunctionScope.kt`: exposes what a formula can use: `self`, `other`, `timeStep`,
-  `slack`, `scalar { ... }`, and `vector { ... }`.
-- `ConstraintFormula.kt`: defines linear/quadratic formulas and the infix operators used by the
-  current formulas: linear `lessThanOrEqualTo` / `greaterThanOrEqualTo` and quadratic
-  `lessThanOrEqualTo`.
+- `ControlFunctionScope.kt`: the single entry point for formulas. It exposes the endpoints (`self`,
+  `other`), `timeStep`, `slack`, the lifting functions `scalar { ... }` / `vector { ... }`, and the
+  whole formula vocabulary: `dot`, `squaredNorm`, `squared`, `max`, numeric multipliers
+  (`2.0 * ...`, `eta / timeStep`), and the infix constraint builders `lessThanOrEqualTo` /
+  `greaterThanOrEqualTo`.
+- `ConstraintFormula.kt`: defines the linear/quadratic formula types produced by the constraint
+  builders.
 - `FormulaInstaller.kt`: compiles a formula into a reusable Gurobi constraint and produces an
-  `InstalledControlConstraint`.
+  `InstalledControlConstraint`. It also owns the slack rules (see below).
 - `FormulaRuntime.kt`: contains the values available while formulas are updated: local device,
   optional neighbor, QP settings, and `deltaTime`.
 - `expressions/`: contains the small symbolic types used by the DSL (`RuntimeScalar`,
-  `VectorExpression`, `DecisionVector`, `AffineExpression`, `QuadraticExpression`).
+  `VectorExpression`, `DecisionExpression`, `AffineExpression`, `QuadraticExpression`). Their
+  arithmetic operators (`+`, `-`, `*`, `/`, unary `-`) are member functions.
 
 ## How it works
 
@@ -52,8 +57,10 @@ that are evaluated later, inside `InstalledControlConstraint.update`.
 For linear constraints:
 
 - the left-hand side is an `AffineExpression`;
-- the Gurobi variables present on the left-hand side are discovered during installation;
-- at runtime, the RHS is updated and `model.chgCoeff(...)` is called on dynamic coefficients.
+- the Gurobi variables present on the left-hand side are discovered during installation, and the
+  grouping of runtime coefficients by variable is precomputed once;
+- at runtime, the RHS is updated and `model.chgCoeff(...)` is called on each variable with the sum
+  of its re-evaluated coefficients.
 
 For quadratic constraints:
 
@@ -75,9 +82,16 @@ Inside `formula()`, the following values are available:
 - `self.safeMargin` / `other.safeMargin`: runtime margins.
 - `self.maxSpeed` / `other.maxSpeed`: runtime maximum speeds.
 - `timeStep`: control step duration.
-- `slack`: slack variable as an affine expression; it is empty if the policy does not create slack.
+- `slack`: slack variable as an affine expression; it is empty if no `slackWeight` is declared.
 - `scalar { ... }`: lifts a dynamic `Double` value into the DSL.
 - `vector { ... }`: lifts a dynamic `DoubleArray` value into the DSL.
+- `dot(coefficients, decision)`: affine dot product between a runtime vector and decision variables.
+- `squaredNorm(...)`: squared norm of a runtime vector (scalar) or of a decision expression
+  (quadratic).
+- `squared(...)`, `max(...)`: scalar helpers.
+- `Number * RuntimeScalar`, `Number * AffineExpression`, `Number / RuntimeScalar`: numeric literal
+  multipliers.
+- `lessThanOrEqualTo` / `greaterThanOrEqualTo`: infix constraint builders.
 
 `other` is lazy: a local formula can ignore it; a pairwise formula fails early if it is installed
 without a decision vector or without a neighbor device.
@@ -122,7 +136,7 @@ For a new CLF:
 1. extend `CLF`;
 2. define `convergenceRate` and `slackWeight`;
 3. implement `ControlFunctionScope.formula()`;
-4. remember that CLFs use required slack by default.
+4. remember that CLFs always require a finite positive `slackWeight`.
 
 Example:
 
@@ -154,28 +168,28 @@ solver needs to be updated with providers coming from a new application-level in
 
 ## Slack
 
-Slack is managed by `SlackPolicy`:
+Slack is derived directly from `slackWeight` — there is no separate policy type:
 
-- `None`: does not create a slack variable; `slack` in the formula is an empty affine expression.
-- `Optional`: creates slack only if `slackWeight` is not null.
-- `Required`: always creates slack and requires a positive, finite `slackWeight`.
+- `slackWeight == null`: no slack variable; `slack` in the formula is an empty affine expression
+  and the constraint is hard;
+- `slackWeight != null`: a slack variable is created and penalized in the objective with the given
+  weight; the weight must be finite and positive;
+- CLFs additionally *require* a non-null `slackWeight` (enforced at installation);
+- quadratic constraints reject slack: `GRBQConstr` cannot host a slack term on the LHS.
 
-CBFs use `None` or `Optional` depending on `slackWeight`. CLFs use `Required` by default.
-
-Do not set a `slackWeight` if the policy is `None`: `FormulaInstaller` validates this configuration
-and fails early.
+`FormulaInstaller` validates all of this and fails early at installation time.
 
 ## Available expressions
 
 The DSL exposes only the operators needed by the current formulas:
 
-- runtime scalars: `+`, `-`, unary `-`, `*`, `/`, `Number * RuntimeScalar`,
-  `Number / RuntimeScalar`, `squared(...)`, `max(...)`;
-- runtime vectors: subtraction and `squaredNorm(...)`;
-- decision vectors: `self.u - other.u`;
-- affine expressions: `+`, `-`, unary `-`, `RuntimeScalar * AffineExpression`,
-  `Number * AffineExpression`;
-- quadratic expressions: `squaredNorm(self.u) lessThanOrEqualTo ...`.
+- runtime scalars (members of `RuntimeScalar`): `+`, `-`, unary `-`, `*`, `/`, and
+  `RuntimeScalar * AffineExpression`;
+- runtime vectors (member of `VectorExpression`): subtraction;
+- decision vectors (members of `DecisionExpression`): `+`, `-`, unary `-` (e.g. `self.u - other.u`);
+- affine expressions (members of `AffineExpression`): `+`, `-`, unary `-`;
+- scope members: `dot`, `squaredNorm`, `squared`, `max`, `Number * ...`, `Number / ...`, and the
+  infix constraint builders.
 
 If a new operator is needed, add it only when a real formula requires it. The package is
 intentionally small to avoid unused symmetric overloads.
@@ -184,10 +198,13 @@ intentionally small to avoid unused symmetric overloads.
 
 Before extending the DSL, identify which expression type should be produced:
 
-- dynamic scalar value: add functions on `RuntimeScalar`;
-- dynamic vector value: add functions on `VectorExpression`;
+- dynamic scalar value: add members on `RuntimeScalar` or helpers on `ControlFunctionScope`;
+- dynamic vector value: add members on `VectorExpression`;
 - linear coefficient of Gurobi variables: use or extend `AffineExpression`;
 - fixed quadratic structure: use or extend `QuadraticExpression`.
+
+Prefer adding vocabulary as members of `ControlFunctionScope` (or of the expression types): this
+keeps formulas import-free and makes the whole vocabulary discoverable from the scope.
 
 Rule of thumb: a DSL function must not read dynamic values during installation. Instead, it should
 store a function that reads from `FormulaRuntime` during the update. `FormulaRuntime` contains the
@@ -211,9 +228,7 @@ extended.
 ## Checklist for a new formula
 
 - Does the formula use `self` and `other` only in the correct context?
-- Are time-varying values lifted with `RuntimeScalar`, `VectorExpression`, `scalar { ... }`, or
-  `vector { ... }`?
+- Are time-varying values lifted with `scalar { ... }` or `vector { ... }`?
 - Is the left-hand side affine or quadratic according to what Gurobi needs to install?
-- Is the slack policy consistent with `slackWeight`?
+- Is `slackWeight` consistent with the constraint kind (required for CLFs, forbidden on quadratic)?
 - If there are dynamic providers, does `syncFrom` update the installed instance?
-- Does the syntax compile without adding unnecessary generic operators?
