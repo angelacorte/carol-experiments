@@ -4,7 +4,6 @@ import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.installFormulaConstraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
@@ -14,6 +13,9 @@ import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
  *
  * Subclasses define a symbolic [formula].  The base class installs that formula into Gurobi once and
  * returns an [InstalledControlConstraint] that refreshes only numerical coefficients and RHS values at runtime.
+ *
+ * CLFs always require a slack variable (a finite positive [slackWeight]) because goal-reaching
+ * constraints may otherwise become infeasible under hard safety constraints.
  *
  * Note that CLF instances may carry dynamic goal information (e.g. a target position that moves).
  * Override [ControlFunction.syncFrom] to keep those runtime providers in sync without rebuilding the
@@ -32,14 +34,6 @@ abstract class CLF : ControlFunction {
     protected open val constraintName: String get() = "${name}_CLF"
 
     /**
-     * Slack creation strategy used when compiling this CLF formula.
-     *
-     * CLFs default to a required slack because goal-reaching constraints may otherwise become
-     * infeasible under hard safety constraints.
-     */
-    protected open val slackPolicy: SlackPolicy get() = SlackPolicy.Required
-
-    /**
      * Mathematical formula enforced by this CLF.
      *
      * The formula is built once during model installation.  Any state-dependent value must be
@@ -56,7 +50,7 @@ abstract class CLF : ControlFunction {
         slackName = name,
         selfDecision = selfDecision,
         otherDecision = null,
-        slackPolicy = slackPolicy,
+        requiresSlack = true,
         slackWeight = slackWeight,
     ) {
         formula()
