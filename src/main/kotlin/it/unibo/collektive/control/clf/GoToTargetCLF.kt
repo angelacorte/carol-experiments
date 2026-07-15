@@ -3,12 +3,6 @@ package it.unibo.collektive.control.clf
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.expressions.dot
-import it.unibo.collektive.control.dsl.expressions.minus
-import it.unibo.collektive.control.dsl.expressions.squared
-import it.unibo.collektive.control.dsl.expressions.squaredNorm
-import it.unibo.collektive.control.dsl.expressions.times
-import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Target
 
