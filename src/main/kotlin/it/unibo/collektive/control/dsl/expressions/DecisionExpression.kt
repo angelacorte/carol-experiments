@@ -20,8 +20,7 @@ class DecisionExpression internal constructor(internal val components: List<List
     val dimensions: Int get() = components.size
 
     /** Adds two decision expressions dimension by dimension. */
-    operator fun plus(other: DecisionExpression): DecisionExpression =
-        combine(other) { left, right -> left + right }
+    operator fun plus(other: DecisionExpression): DecisionExpression = combine(other) { left, right -> left + right }
 
     /** Subtracts one decision expression from another dimension by dimension. */
     operator fun minus(other: DecisionExpression): DecisionExpression =
