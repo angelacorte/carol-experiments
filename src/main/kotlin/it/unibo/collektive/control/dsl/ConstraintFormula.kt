@@ -1,6 +1,5 @@
 package it.unibo.collektive.control.dsl
 
-import com.gurobi.gurobi.GRB
 import it.unibo.collektive.control.dsl.expressions.AffineExpression
 import it.unibo.collektive.control.dsl.expressions.QuadraticExpression
 import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
@@ -11,6 +10,9 @@ import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
  * The left-hand side is represented by concrete subtypes because linear and quadratic constraints
  * are installed through different Gurobi APIs.  The right-hand side is always a runtime scalar so it
  * can be recomputed without rebuilding the model.
+ *
+ * Formulas are built with the infix constraint builders exposed by [ControlFunctionScope]
+ * (`lessThanOrEqualTo` / `greaterThanOrEqualTo`).
  */
 sealed interface ConstraintFormula {
     /** Gurobi direction of the inequality represented by this formula. */
@@ -53,21 +55,3 @@ class QuadraticConstraintFormula internal constructor(
     /** Runtime scalar installed as the right-hand side of the quadratic inequality. */
     override val rightHandSide: RuntimeScalar,
 ) : ConstraintFormula
-
-/**
- * Builds a linear formula `this <= rightHandSide`.
- */
-infix fun AffineExpression.lessThanOrEqualTo(rightHandSide: RuntimeScalar): ConstraintFormula =
-    LinearConstraintFormula(this, GRB.LESS_EQUAL, rightHandSide)
-
-/**
- * Builds a linear formula `this >= rightHandSide`.
- */
-infix fun AffineExpression.greaterThanOrEqualTo(rightHandSide: RuntimeScalar): ConstraintFormula =
-    LinearConstraintFormula(this, GRB.GREATER_EQUAL, rightHandSide)
-
-/**
- * Builds a quadratic formula `this <= rightHandSide`.
- */
-infix fun QuadraticExpression.lessThanOrEqualTo(rightHandSide: RuntimeScalar): ConstraintFormula =
-    QuadraticConstraintFormula(this, GRB.LESS_EQUAL, rightHandSide)

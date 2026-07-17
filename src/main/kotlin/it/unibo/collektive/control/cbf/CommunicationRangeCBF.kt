@@ -2,16 +2,6 @@ package it.unibo.collektive.control.cbf
 
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.expressions.div
-import it.unibo.collektive.control.dsl.expressions.dot
-import it.unibo.collektive.control.dsl.expressions.max
-import it.unibo.collektive.control.dsl.expressions.minus
-import it.unibo.collektive.control.dsl.expressions.plus
-import it.unibo.collektive.control.dsl.expressions.squared
-import it.unibo.collektive.control.dsl.expressions.squaredNorm
-import it.unibo.collektive.control.dsl.expressions.times
-import it.unibo.collektive.control.dsl.expressions.unaryMinus
-import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
 
 /**
  * Communication-range barrier: keeps two robots within [range] of each other.

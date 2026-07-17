@@ -52,7 +52,9 @@ fun Aggregate<Int>.followLeaderEntrypoint(
         robot,
         uNominal = GoToTargetNominal { targetSelectionStrategy }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { targetSelectionStrategy }),
-        localCBF = getObstacles().map(::ObstacleAvoidanceCBF) + MaxSpeedCBF(),
+        localCBF = getObstacles().mapIndexed { index, obstacle ->
+            ObstacleAvoidanceCBF(obstacle, identifier = index.toString())
+        } + MaxSpeedCBF(),
         pairwiseCBF = listOf(
             CollisionAvoidanceCBF(0.8),
             CommunicationRangeCBF(communicationDistance, 0.3, slackWeight = 0.5),

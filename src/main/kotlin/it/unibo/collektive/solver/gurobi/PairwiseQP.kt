@@ -10,7 +10,6 @@ import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
-import it.unibo.collektive.model.SpeedControl2D
 
 /**
  * Reusable Gurobi model for the pairwise QP solved on a shared edge during ADMM.
@@ -20,6 +19,7 @@ class PairwiseQP private constructor(
     private val slack: GRBVar,
     private val zi: GRBVector,
     private val zj: GRBVector,
+    private val pairwiseCBFs: List<CBF>,
     private val constraints: List<InstalledControlConstraint>,
 ) {
 
@@ -27,6 +27,23 @@ class PairwiseQP private constructor(
      * Releases the underlying Gurobi model resources.
      */
     fun dispose() = model.dispose()
+
+    /**
+     * Synchronizes the already-installed pairwise control functions with the latest runtime instances.
+     *
+     * The pairwise model is created once per edge and never rebuilt for the lifetime of that edge
+     * (see [Solver.setupPairwiseModel]). If a pairwise CBF captures an external, time-varying
+     * provider -- the same way [it.unibo.collektive.control.cbf.ObstacleAvoidanceCBF] captures an
+     * `obstacleProvider` on the local model -- that provider would otherwise stay frozen at
+     * edge-creation time. Call this every control period, mirroring [LocalQP.syncControlFunctions],
+     * so such providers keep receiving fresh instances instead of going stale.
+     *
+     * Matching is done by [it.unibo.collektive.control.ControlFunction.name]; see [syncByName] for
+     * the rationale and the failure modes it rules out.
+     */
+    fun syncControlFunctions(pairwiseCBFs: List<CBF>) {
+        syncByName(this.pairwiseCBFs, pairwiseCBFs, "pairwise CBFs")
+    }
 
     /**
      * Updates and solves the pairwise edge model for the current local and neighbor states.
@@ -45,21 +62,21 @@ class PairwiseQP private constructor(
         settings: QpSettings,
         deltaTime: Double,
     ): SuggestedControl {
-        val robotArray = device.control.toDoubleArray()
-        val otherArray = other.control.toDoubleArray()
-        for (i in zi.variables.indices) {
-            zi[i].set(GRB.DoubleAttr.LB, -device.maxSpeed)
-            zi[i].set(GRB.DoubleAttr.UB, device.maxSpeed)
-            zi[i].set(GRB.DoubleAttr.Start, robotArray[i]) // warm start
-            zj[i].set(GRB.DoubleAttr.LB, -other.maxSpeed)
-            zj[i].set(GRB.DoubleAttr.UB, other.maxSpeed)
-            zj[i].set(GRB.DoubleAttr.Start, otherArray[i]) // warm start
-        }
+        zi.applyBoundsAndWarmStart(device.maxSpeed, device.control.toDoubleArray())
+        zj.applyBoundsAndWarmStart(other.maxSpeed, other.control.toDoubleArray())
         constraints.forEach { constraint -> constraint.update(model, device, other, settings, deltaTime) }
         model.setObjective(buildObjective(device, other, incidentDuals, settings), GRB.MINIMIZE)
-        model.update()
-        model.optimize()
-        return extractSolution(device, other)
+        model.optimizeWithDiagnostics("commonModel.ilp")
+        return when {
+            model.get(GRB.IntAttr.SolCount) > 0 -> SuggestedControl(zi.readSpeedControl(), zj.readSpeedControl())
+            else -> {
+                println(
+                    "Pairwise QP: no solution found (status ${model.get(GRB.IntAttr.Status)}), " +
+                        "returning current controls.",
+                )
+                SuggestedControl(device.control, other.control)
+            }
+        }
     }
 
     private fun buildObjective(
@@ -72,41 +89,8 @@ class PairwiseQP private constructor(
         // (ρ/2)‖z_i − (u_i + y_i)‖²  +  (ρ/2)‖z_j − (u_j + y_j)‖²
         addRhoNorm2Sq(zi, (device.control + incidentDuals.yi).toDoubleArray(), rho)
         addRhoNorm2Sq(zj, (other.control + incidentDuals.yj).toDoubleArray(), rho)
-        constraints.forEach { constr ->
-            constr.slack?.let { slackConstraint ->
-                constr.slackWeight?.let { slackWeight ->
-                    addTerm(slackWeight, slackConstraint, slackConstraint)
-                }
-            }
-        }
+        addSlackPenalties(constraints)
         addTerm(settings.rhoSlack, slack, slack)
-    }
-
-    private fun extractSolution(device: Device, other: Device): SuggestedControl {
-        val status = model.get(GRB.IntAttr.Status)
-        if (status == GRB.INFEASIBLE) {
-            model.writeIIS("commonModel.ilp")
-            for (c in model.constrs) {
-                if (c.get(GRB.IntAttr.IISConstr) == 1) {
-                    println("Pairwise IIS constraint: ${c.get(GRB.StringAttr.ConstrName)}")
-                }
-            }
-        }
-        if (status == GRB.INF_OR_UNBD) {
-            model.set(GRB.IntParam.DualReductions, 0)
-            model.reset()
-            model.optimize()
-        }
-        return when {
-            model.get(GRB.IntAttr.SolCount) > 0 -> SuggestedControl(
-                SpeedControl2D(zi[0].get(GRB.DoubleAttr.X), zi[1].get(GRB.DoubleAttr.X)),
-                SpeedControl2D(zj[0].get(GRB.DoubleAttr.X), zj[1].get(GRB.DoubleAttr.X)),
-            )
-            else -> {
-                println("Pairwise QP: no solution found (status $status), returning current controls.")
-                SuggestedControl(device.control, other.control)
-            }
-        }
     }
 
     /**
@@ -127,15 +111,16 @@ class PairwiseQP private constructor(
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_pairwiseQP")
             val zi = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "z_ij^i")
             val zj = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")
-            val constrs = mutableListOf<InstalledControlConstraint>()
-            pairwiseCBFs.forEach { cbf -> constrs += cbf.install(model, zi, zj) }
+            val constraints = mutableListOf<InstalledControlConstraint>()
+            pairwiseCBFs.forEach { cbf -> constraints += cbf.install(model, zi, zj) }
             model.update()
             return PairwiseQP(
                 model = model,
-                slack,
+                slack = slack,
                 zi = zi,
                 zj = zj,
-                constraints = constrs,
+                pairwiseCBFs = pairwiseCBFs,
+                constraints = constraints,
             )
         }
     }

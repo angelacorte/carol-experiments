@@ -3,20 +3,11 @@ package it.unibo.collektive.control.cbf
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.expressions.div
-import it.unibo.collektive.control.dsl.expressions.dot
-import it.unibo.collektive.control.dsl.expressions.minus
-import it.unibo.collektive.control.dsl.expressions.plus
-import it.unibo.collektive.control.dsl.expressions.squared
-import it.unibo.collektive.control.dsl.expressions.squaredNorm
-import it.unibo.collektive.control.dsl.expressions.times
-import it.unibo.collektive.control.dsl.expressions.unaryMinus
-import it.unibo.collektive.control.dsl.greaterThanOrEqualTo
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Obstacle
 
 /**
- * Static obstacle-avoidance barrier under ZOH dynamics.
+ * Obstacle-avoidance barrier under ZOH dynamics.
  *
  * Discrete-time CBF constraint (installed once, updated every iteration):
  * ```
@@ -36,9 +27,13 @@ class ObstacleAvoidanceCBF(
     private var obstacleProvider: () -> Obstacle,
     override val eta: Double = 0.5,
     override val slackWeight: Double? = null,
+    identifier: String? = null,
 ) : CBF() {
 
-    override val name: String = "obstacle_avoidance_CBF"
+    private val obstacleIdentifier: String =
+        identifier ?: obstacleProvider().let { obstacle -> "(${obstacle.x}, ${obstacle.y})" }
+
+    override val name: String = "obstacle_avoidance_CBF_$obstacleIdentifier"
 
     override fun syncFrom(other: ControlFunction) {
         if (other is ObstacleAvoidanceCBF) {

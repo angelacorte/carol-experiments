@@ -4,7 +4,6 @@ import com.gurobi.gurobi.GRBModel
 import it.unibo.collektive.control.ControlFunction
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.SlackPolicy
 import it.unibo.collektive.control.dsl.installFormulaConstraint
 import it.unibo.collektive.solver.gurobi.GRBVector
 import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
@@ -14,6 +13,9 @@ import it.unibo.collektive.solver.gurobi.InstalledControlConstraint
  *
  * Subclasses define a symbolic [formula].  The base class installs that formula into Gurobi once and
  * returns an [InstalledControlConstraint] that refreshes only numerical coefficients and RHS values at runtime.
+ *
+ * Slack is optional for CBFs: declaring a finite positive [slackWeight] creates a penalized slack
+ * variable (soft constraint), while `null` installs the formula as a hard constraint.
  */
 abstract class CBF : ControlFunction {
 
@@ -29,12 +31,6 @@ abstract class CBF : ControlFunction {
      * legacy solver/debug name independently of the control function name.
      */
     protected open val constraintName: String get() = name
-
-    /**
-     * Slack creation strategy used when compiling this CBF formula.
-     */
-    protected open val slackPolicy: SlackPolicy
-        get() = if (slackWeight == null) SlackPolicy.None else SlackPolicy.Optional
 
     /**
      * Mathematical formula enforced by this CBF.
@@ -53,7 +49,7 @@ abstract class CBF : ControlFunction {
         slackName = name,
         selfDecision = selfDecision,
         otherDecision = otherDecision,
-        slackPolicy = slackPolicy,
+        requiresSlack = false,
         slackWeight = slackWeight,
     ) {
         formula()

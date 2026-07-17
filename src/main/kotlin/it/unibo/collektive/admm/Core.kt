@@ -82,13 +82,10 @@ internal inline fun <reified ID : Comparable<ID>> Aggregate<ID>.admm(
                 previousDuals[neighborID]?.localDualUpdate ?: LocalDualUpdate()
             when {
                 isOwnerOf(neighborID) -> {
-                    if (!solver.isPairwiseModelAvailable) {
-                        solver.setupPairwiseModel(
-                            deviceUpdated,
-                            neighborInfo,
-                            pairwiseCBF,
-                        )
-                    }
+                    // setupPairwiseModel creates the edge model on the first call and
+                    // synchronizes its installed control functions (e.g. dynamic providers) on
+                    // every subsequent call -- see Solver.setupPairwiseModel.
+                    solver.setupPairwiseModel(deviceUpdated, neighborInfo, pairwiseCBF)
                     val (zi, zj) = solver.updateAndSolvePairwise(
                         deviceUpdated,
                         neighborInfo,
@@ -158,7 +155,10 @@ fun <ID : Comparable<ID>> Aggregate<ID>.coreADMM(
             .filterNot { it.key == localId }
             .mapValues { (neighborId, neighbor) ->
                 val incidentDuals = duals[neighborId]?.localDualUpdate ?: LocalDualUpdate()
-                if (!solver.isPairwiseModelAvailable) solver.setupPairwiseModel(device, neighbor, pairwiseCBF)
+                // setupPairwiseModel creates the edge model on the first call and synchronizes
+                // its installed control functions (e.g. dynamic providers) on every subsequent
+                // call -- see Solver.setupPairwiseModel.
+                solver.setupPairwiseModel(device, neighbor, pairwiseCBF)
                 val (zi, zj) = solver.updateAndSolvePairwise(deviceUpdated, neighbor, incidentDuals, deltaTime)
                 val newIncidentDuals = LocalDualUpdate(
                     incidentDuals.yi + control - zi, // y_ij^i,t+1

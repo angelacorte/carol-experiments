@@ -2,10 +2,6 @@ package it.unibo.collektive.control.cbf
 
 import it.unibo.collektive.control.dsl.ConstraintFormula
 import it.unibo.collektive.control.dsl.ControlFunctionScope
-import it.unibo.collektive.control.dsl.SlackPolicy
-import it.unibo.collektive.control.dsl.expressions.squared
-import it.unibo.collektive.control.dsl.expressions.squaredNorm
-import it.unibo.collektive.control.dsl.lessThanOrEqualTo
 
 /**
  * Maximum-speed constraint enforced as a quadratic barrier.
@@ -29,8 +25,6 @@ class MaxSpeedCBF(override val eta: Double = 1.0, override val slackWeight: Doub
     override val name: String = "max_speed"
 
     override val constraintName: String = "u_norm_sq"
-
-    override val slackPolicy: SlackPolicy = SlackPolicy.None
 
     override fun ControlFunctionScope.formula(): ConstraintFormula =
         squaredNorm(self.u) lessThanOrEqualTo squared(self.maxSpeed)

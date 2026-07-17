@@ -1,9 +1,15 @@
 package it.unibo.collektive.control.dsl
 
+import com.gurobi.gurobi.GRB
 import it.unibo.collektive.control.dsl.expressions.AffineExpression
-import it.unibo.collektive.control.dsl.expressions.DecisionVector
+import it.unibo.collektive.control.dsl.expressions.DecisionExpression
+import it.unibo.collektive.control.dsl.expressions.LinearTerm
+import it.unibo.collektive.control.dsl.expressions.QuadraticExpression
+import it.unibo.collektive.control.dsl.expressions.QuadraticTerm
 import it.unibo.collektive.control.dsl.expressions.RuntimeScalar
 import it.unibo.collektive.control.dsl.expressions.VectorExpression
+import it.unibo.collektive.control.dsl.expressions.asDecisionExpr
+import it.unibo.collektive.control.dsl.expressions.asRuntimeScalar
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.solver.gurobi.GRBVector
@@ -16,13 +22,13 @@ import it.unibo.collektive.solver.gurobi.GRBVector
  * the value available during installation; instead, it creates an expression evaluated during each
  * constraint update.
  *
- * @property u decision vector associated with this endpoint.
+ * @property u decision expression associated with this endpoint.
  * @property position current endpoint position as a runtime vector.
  * @property safeMargin current safety radius contribution.
  * @property maxSpeed current speed bound.
  */
 class AgentExpression internal constructor(decision: GRBVector, private val device: (FormulaRuntime) -> Device) {
-    val u: DecisionVector = DecisionVector(decision)
+    val u: DecisionExpression = decision.asDecisionExpr()
 
     val position: VectorExpression = vector { it.position.toDoubleArray() }
 
@@ -44,9 +50,14 @@ class AgentExpression internal constructor(decision: GRBVector, private val devi
  * term through [slack].  Custom state-dependent values can be lifted into the DSL with [scalar] and
  * [vector].
  *
+ * The scope is also the single entry point for the formula vocabulary: numeric multipliers
+ * (`2.0 * ...`), [dot], [squaredNorm], [squared], [max], and the infix constraint builders
+ * [lessThanOrEqualTo] / [greaterThanOrEqualTo] are all members, so formulas need no DSL imports.
+ *
  * [other] is lazy on purpose: local formulas can ignore it, while pairwise formulas fail early if
  * they are accidentally installed without a neighbor decision vector.
  */
+@Suppress("TooManyFunctions") // The scope deliberately owns the whole formula vocabulary, see the KDoc above.
 class ControlFunctionScope internal constructor(
     selfDecision: GRBVector,
     otherDecision: GRBVector?,
@@ -79,4 +90,80 @@ class ControlFunctionScope internal constructor(
      */
     fun vector(block: FormulaRuntime.() -> DoubleArray): VectorExpression =
         VectorExpression { runtime -> runtime.block() }
+
+    /** Multiplies a runtime scalar by this constant number. */
+    operator fun Number.times(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() * other
+
+    /** Multiplies an affine expression by this constant number. */
+    operator fun Number.times(affine: AffineExpression): AffineExpression = asRuntimeScalar() * affine
+
+    /** Divides a constant number by a runtime scalar. */
+    operator fun Number.div(other: RuntimeScalar): RuntimeScalar = asRuntimeScalar() / other
+
+    /** Squares a constant number and lifts it into the runtime scalar domain. */
+    fun squared(value: Number): RuntimeScalar = (value.toDouble() * value.toDouble()).asRuntimeScalar()
+
+    /** Squares a runtime scalar without evaluating it immediately. */
+    fun squared(value: RuntimeScalar): RuntimeScalar = value * value
+
+    /** Runtime maximum between two scalar expressions. */
+    fun max(left: RuntimeScalar, right: RuntimeScalar): RuntimeScalar =
+        RuntimeScalar { kotlin.math.max(left.evaluate(it), right.evaluate(it)) }
+
+    /**
+     * Builds an affine dot product between runtime coefficients and a decision expression.
+     *
+     * [decision] may be a raw decision vector (`self.u`) or any static combination of decision
+     * vectors (`self.u - other.u`).  The resulting expression is affine in Gurobi variables, while
+     * [coefficients] can still depend on the current runtime state.
+     */
+    fun dot(coefficients: VectorExpression, decision: DecisionExpression): AffineExpression = AffineExpression(
+        decision.components.flatMapIndexed { index, componentTerms ->
+            componentTerms.map { (variable, coefficient) ->
+                LinearTerm(
+                    variable,
+                    RuntimeScalar { runtime ->
+                        val values = coefficients.evaluate(runtime)
+                        require(values.size == decision.dimensions) {
+                            "Coefficient dimension mismatch: ${values.size} != ${decision.dimensions}"
+                        }
+                        values[index] * coefficient
+                    },
+                )
+            }
+        },
+    )
+
+    /** Squared Euclidean norm of a runtime vector. */
+    fun squaredNorm(vector: VectorExpression): RuntimeScalar =
+        RuntimeScalar { runtime -> vector.evaluate(runtime).sumOf { it * it } }
+
+    /**
+     * Squared Euclidean norm of a decision expression.
+     *
+     * Works for a raw decision vector (`self.u`) as well as for any static linear combination of
+     * decision vectors (e.g. `self.u - other.u`): each dimension `sum_k c_k * x_k` is expanded into
+     * its full quadratic form `sum_{k,l} c_k * c_l * x_k * x_l`.
+     */
+    fun squaredNorm(decision: DecisionExpression): QuadraticExpression = QuadraticExpression(
+        decision.components.flatMap { component ->
+            component.flatMap { (variableI, coefficientI) ->
+                component.map { (variableJ, coefficientJ) ->
+                    QuadraticTerm(coefficientI * coefficientJ, variableI, variableJ)
+                }
+            }
+        },
+    )
+
+    /** Builds a linear formula `this <= rightHandSide`. */
+    infix fun AffineExpression.lessThanOrEqualTo(rightHandSide: RuntimeScalar): ConstraintFormula =
+        LinearConstraintFormula(this, GRB.LESS_EQUAL, rightHandSide)
+
+    /** Builds a linear formula `this >= rightHandSide`. */
+    infix fun AffineExpression.greaterThanOrEqualTo(rightHandSide: RuntimeScalar): ConstraintFormula =
+        LinearConstraintFormula(this, GRB.GREATER_EQUAL, rightHandSide)
+
+    /** Builds a quadratic formula `this <= rightHandSide`. */
+    infix fun QuadraticExpression.lessThanOrEqualTo(rightHandSide: RuntimeScalar): ConstraintFormula =
+        QuadraticConstraintFormula(this, GRB.LESS_EQUAL, rightHandSide)
 }

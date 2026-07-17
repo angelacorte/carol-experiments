@@ -19,7 +19,7 @@ import it.unibo.collektive.solver.gurobi.QpSettings
  * - returning controls in the domain model format.
  *
  * Typical usage sequence:
- * 1. Configure local and pairwise models through setup methods.
+ * 1. Configure local and pairwise models through setup methods, called every control period.
  * 2. At each control step, call update-and-solve methods with fresh state and ADMM duals.
  */
 interface Solver {
@@ -49,7 +49,17 @@ interface Solver {
     fun setupLocalModel(device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>)
 
     /**
-     * Creates the pairwise QP used to negotiate controls on an edge, if it is not available yet.
+     * Creates the pairwise QP used to negotiate controls on an edge, if it is not available yet, or
+     * synchronizes the installed pairwise control functions otherwise.
+     *
+     * The pairwise Gurobi model itself is built exactly once for the lifetime of the edge: only
+     * [it.unibo.collektive.control.ControlFunction.syncFrom] is invoked on subsequent calls, exactly
+     * like [setupLocalModel]. This matters whenever a pairwise CBF captures an external, time-varying
+     * provider (the way an obstacle- or target-tracking CBF does on the local model): without this
+     * call happening every control period, such a provider would stay frozen at edge-creation time.
+     *
+     * Callers should therefore invoke this unconditionally every control period -- do not gate it
+     * behind [isPairwiseModelAvailable]; the implementation already does that internally.
      *
      * @param device local device involved in the pairwise optimization.
      * @param otherDevice neighbor device involved in the pairwise optimization.
