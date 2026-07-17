@@ -57,6 +57,7 @@ class AgentExpression internal constructor(decision: GRBVector, private val devi
  * [other] is lazy on purpose: local formulas can ignore it, while pairwise formulas fail early if
  * they are accidentally installed without a neighbor decision vector.
  */
+@Suppress("TooManyFunctions") // The scope deliberately owns the whole formula vocabulary, see the KDoc above.
 class ControlFunctionScope internal constructor(
     selfDecision: GRBVector,
     otherDecision: GRBVector?,
