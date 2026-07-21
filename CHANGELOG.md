@@ -1,3 +1,26 @@
+## [3.0.1](https://github.com/angelacorte/carol-experiments/compare/3.0.0...3.0.1) (2026-07-21)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.3.1 ([5eef7ba](https://github.com/angelacorte/carol-experiments/commit/5eef7bab1c13c1e3ffe55867eac7da1e196c2295))
+* **deps:** update dependency xarray to v2026.7.0 ([2c122a6](https://github.com/angelacorte/carol-experiments/commit/2c122a69a8d30312e84aaea3e2afea16e82bb400))
+* **deps:** update plugin gitsemver to v7.0.23 ([d92157d](https://github.com/angelacorte/carol-experiments/commit/d92157d9dc715e839d06dc8b5a4689d7ee85f27c))
+
+### Build and continuous integration
+
+* **deps:** update actions/checkout action to v7.0.1 ([40ac701](https://github.com/angelacorte/carol-experiments/commit/40ac701737339497ef4319d18fae268e1172a525))
+* **deps:** update actions/setup-node action to v6.5.0 ([66e50ed](https://github.com/angelacorte/carol-experiments/commit/66e50ed34024fcd1b53cd93e03f6456987576a89))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.40 ([d1039df](https://github.com/angelacorte/carol-experiments/commit/d1039df1f548dfda8aeb59236a9b099a54f121e9))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.41 ([7b84ff3](https://github.com/angelacorte/carol-experiments/commit/7b84ff34d6b9dc1793dcf5d1c977929bbac47779))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.0 [skip ci] ([6d1319b](https://github.com/angelacorte/carol-experiments/commit/6d1319b2cfe2c00bb6d5ec92a6daa59289d18036))
+
+### Refactoring
+
+* **control-dsl:** simplify logic and avoid repetitions ([#160](https://github.com/angelacorte/carol-experiments/issues/160)) ([1e07736](https://github.com/angelacorte/carol-experiments/commit/1e077364a270f953ea0c9911380bcb1d69fcc143))
+
 ## [3.0.0](https://github.com/angelacorte/carol-experiments/compare/2.9.0...3.0.0) (2026-07-01)
 
 ### ⚠ BREAKING CHANGES
