@@ -1,3 +1,14 @@
+## [3.0.2](https://github.com/angelacorte/carol-experiments/compare/3.0.1...3.0.2) (2026-07-31)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v28.3.2 ([7240664](https://github.com/angelacorte/carol-experiments/commit/7240664ec2dcc1117b3df8e17f86edc4ce5a363a))
+* **deps:** update dependency matplotlib to v3.11.1 ([481251f](https://github.com/angelacorte/carol-experiments/commit/481251fa77fb50fa4fb47048ef6aa792c3ce198e))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.1 [skip ci] ([4d12cb0](https://github.com/angelacorte/carol-experiments/commit/4d12cb0b448ab4c361d9e94c594175d35c2dedee))
+
 ## [3.0.1](https://github.com/angelacorte/carol-experiments/compare/3.0.0...3.0.1) (2026-07-21)
 
 ### Dependency updates
