@@ -1,3 +1,24 @@
+## [3.0.3](https://github.com/angelacorte/carol-experiments/compare/3.0.2...3.0.3) (2026-08-11)
+
+### Dependency updates
+
+* **core-deps:** update dependency org.jetbrains.kotlin.jvm to v2.4.10 ([6780f1b](https://github.com/angelacorte/carol-experiments/commit/6780f1b90697e52726a2081979d92da042eee54b))
+* **deps:** update gradle to v9.7.0 ([04d090e](https://github.com/angelacorte/carol-experiments/commit/04d090e5983748d9493cb0b28e4f56c518c6aa9c))
+* **deps:** update node.js to 24.19 ([55437a7](https://github.com/angelacorte/carol-experiments/commit/55437a7313a8b1447e7d57840d3a622c7ff46826))
+* **deps:** update plugin multijvmtesting to v4.5.4 ([adeeec9](https://github.com/angelacorte/carol-experiments/commit/adeeec98e0653f977b7ff797e7cfbcb5b44a630f))
+* **deps:** update plugin multijvmtesting to v4.5.5 ([aa88014](https://github.com/angelacorte/carol-experiments/commit/aa88014d16d302138d1dcaf13a9b1af023872dd9))
+* **deps:** update plugin tasktree to v4.0.2 ([e80ba02](https://github.com/angelacorte/carol-experiments/commit/e80ba029b8a39afe7419af9dae3f34c3ad135850))
+* **deps:** update python docker tag to v3.14.7 ([0c9eebf](https://github.com/angelacorte/carol-experiments/commit/0c9eebfa8c97a8ad3ff36f378dc4c5dcc86cfc60))
+
+### Build and continuous integration
+
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.42 ([db2ee0b](https://github.com/angelacorte/carol-experiments/commit/db2ee0b1f7793e0ba14d940a6722dafbd0e6b755))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.43 ([be8b474](https://github.com/angelacorte/carol-experiments/commit/be8b4744b556fd7ac3cd94a2d1e7bd3855dcc06b))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.2 [skip ci] ([0e6b40a](https://github.com/angelacorte/carol-experiments/commit/0e6b40a7ba87bbe6a6b3797697146df9ee354081))
+
 ## [3.0.2](https://github.com/angelacorte/carol-experiments/compare/3.0.1...3.0.2) (2026-07-31)
 
 ### Dependency updates
