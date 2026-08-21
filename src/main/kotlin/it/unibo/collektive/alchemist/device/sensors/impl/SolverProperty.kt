@@ -113,11 +113,11 @@ class SolverProperty<T, P : Position<P>>(
         node.setConcentration(molecule, count as T)
     }
 
-    private fun disposeAll() {
-        if (isLocalModelAvailable) local.dispose()
-        if (isPairwiseModelAvailable) pairwise.dispose()
-        env.dispose()
-    }
+//    private fun disposeAll() {
+//        if (isLocalModelAvailable) local.dispose()
+//        if (isPairwiseModelAvailable) pairwise.dispose()
+//        env.dispose()
+//    }
 
     /**
      * Names of the molecules exporting solver health counters.
