@@ -195,7 +195,7 @@ private inline fun <reified ID : Comparable<ID>> Aggregate<ID>.residualUpdate(
     return Residuals(primalResidualGlobal, dualResidualGlobal)
 }
 
-private fun confidence(primalResidual: Double, dualResidual: Double, tolerance: Tolerance): Double {
+internal fun confidence(primalResidual: Double, dualResidual: Double, tolerance: Tolerance): Double {
     val error = max(primalResidual / tolerance.primal, dualResidual / tolerance.dual)
     return if (error <= 1.0) 1.0 else 1.0 / error
 }

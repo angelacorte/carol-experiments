@@ -3,6 +3,7 @@
 package it.unibo.collektive.alchemist.device
 
 import it.unibo.alchemist.collektive.device.CollektiveDevice
+import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
@@ -50,7 +51,7 @@ fun getTarget(targetId: Number): Target =
 context(position: LocationSensor, env: EnvironmentVariables)
 fun getRobot(): Device = position.coordinates().let {
     val velocity = env.getOrDefault("Control", SpeedControl2D(0.0, 0.0))
-    Device(it.x, it.y, env["SafeMargin"], velocity, env["MaxSpeed"])
+    Device(it.x, it.y, env.requiredDouble("SafeMargin"), velocity, env.requiredDouble("MaxSpeed"))
 }
 
 /**
@@ -64,11 +65,19 @@ fun getObstacles(): List<() -> Obstacle> = device.environment.nodes.filter { it.
     .map { obstacle ->
         {
             val obstaclePos = device.environment.getPosition(obstacle).coordinates
-            val radius = obstacle.getConcentration(SimpleMolecule("SafeRadius")) as Double
-            val margin = obstacle.getConcentration(SimpleMolecule("SafeMargin")) as Double
+            val radius = obstacle.requiredDouble("SafeRadius")
+            val margin = obstacle.requiredDouble("SafeMargin")
             Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
         }
     }
+
+private fun Node<*>.requiredDouble(molecule: String): Double {
+    val concentration = getConcentration(SimpleMolecule(molecule))
+    require(concentration is Number) {
+        "Node $id should carry a numeric '$molecule' molecule, but its concentration is '$concentration'"
+    }
+    return concentration.toDouble()
+}
 
 /**
  * Applies 2the computed control [velocity][control] to the robot by moving its node inside the environment.

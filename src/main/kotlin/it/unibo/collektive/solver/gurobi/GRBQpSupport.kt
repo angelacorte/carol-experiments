@@ -4,6 +4,10 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import it.unibo.collektive.model.SpeedControl2D
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+private val logger: Logger = LoggerFactory.getLogger("it.unibo.collektive.solver.gurobi.GRBQpSupport")
 
 /**
  * Sets the lower bound, upper bound, and warm-start value for every scalar component of [this],
@@ -46,7 +50,7 @@ internal fun GRBModel.optimizeWithDiagnostics(iisFileName: String) {
     if (get(GRB.IntAttr.Status) == GRB.INFEASIBLE) {
         writeIIS(iisFileName)
         constrs.filter { it.get(GRB.IntAttr.IISConstr) == 1 }
-            .forEach { println("IIS constraint: ${it.get(GRB.StringAttr.ConstrName)}") }
+            .forEach { logger.warn("IIS constraint: {}", it.get(GRB.StringAttr.ConstrName)) }
     }
     if (get(GRB.IntAttr.Status) == GRB.INF_OR_UNBD) {
         set(GRB.IntParam.DualReductions, 0)

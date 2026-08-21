@@ -23,11 +23,21 @@ sourceSets {
             implementation(libs.caffeine)
             implementation(libs.bundles.collektive)
             implementation(libs.gurobi)
+            implementation(libs.slf4j)
         }
         resources {
             srcDir("src/main/yaml")
         }
     }
+}
+
+dependencies {
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 multiJvm {

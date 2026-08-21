@@ -4,6 +4,8 @@ alchemist = "43.1.5"
 caffeine = "3.2.4"
 collektive = "28.3.2"
 gurobi = "13.0.2"
+junit = "6.1.2"
+slf4j = "2.0.18"
 
 [libraries]
 alchemist = { module = "it.unibo.alchemist:alchemist", version.ref = "alchemist" }
@@ -15,6 +17,9 @@ collektive = { module = "it.unibo.collektive:collektive-dsl", version.ref = "col
 collektive-incarnation = { module = "it.unibo.collektive:alchemist-incarnation-collektive", version.ref = "collektive" }
 collektive-stdlib = { module = "it.unibo.collektive:collektive-stdlib", version.ref = "collektive" }
 gurobi = { module = "com.gurobi:gurobi", version.ref = "gurobi" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
+slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 [bundles]
 alchemist = [
