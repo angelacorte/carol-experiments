@@ -6,11 +6,14 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
+import it.unibo.collektive.alchemist.device.communicationDistance
+import it.unibo.collektive.alchemist.device.controlPeriodMillis
 import it.unibo.collektive.alchemist.device.getObstacles
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 import it.unibo.collektive.alchemist.device.sensors.TimeSensor
+import it.unibo.collektive.alchemist.device.targetId
 import it.unibo.collektive.control.GoToTargetNominal
 import it.unibo.collektive.control.cbf.CollisionAvoidanceCBF
 import it.unibo.collektive.control.cbf.CommunicationRangeCBF
@@ -29,14 +32,14 @@ fun Aggregate<Int>.multipleObstaclesEntrypoint(
     device: CollektiveDevice<Euclidean2DPosition>,
     solver: Solver,
 ) = context(position, device, timeSensor, solver) {
-    val myTarget = device["TargetID"] as Number
+    val myTarget = device.targetId
     val robot = getRobot()
-    val communicationDistance: Double = device["CommunicationDistance"]
+    val communicationDistance = device.communicationDistance
     val obstaclesCBF = getObstacles().mapIndexed { index, obstacle ->
         ObstacleAvoidanceCBF(obstacle, identifier = index.toString())
     }
     admmEntrypoint(
-        device["ControlPeriodMS"] as? Double ?: 100.0,
+        device.controlPeriodMillis,
         robot,
         uNominal = GoToTargetNominal { getTarget(myTarget) }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { getTarget(myTarget) }),

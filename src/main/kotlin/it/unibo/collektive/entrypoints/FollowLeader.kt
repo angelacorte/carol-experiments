@@ -6,11 +6,14 @@ import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.admm.admmEntrypoint
 import it.unibo.collektive.aggregate.api.Aggregate
+import it.unibo.collektive.alchemist.device.communicationDistance
+import it.unibo.collektive.alchemist.device.controlPeriodMillis
 import it.unibo.collektive.alchemist.device.getObstacles
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 import it.unibo.collektive.alchemist.device.sensors.TimeSensor
+import it.unibo.collektive.alchemist.device.targetId
 import it.unibo.collektive.control.GoToTargetNominal
 import it.unibo.collektive.control.cbf.CollisionAvoidanceCBF
 import it.unibo.collektive.control.cbf.CommunicationRangeCBF
@@ -34,7 +37,7 @@ fun Aggregate<Int>.followLeaderEntrypoint(
     solver: Solver,
 ) = context(position, device, timeSensor, solver) {
     val robot = getRobot()
-    val communicationDistance: Double = device["CommunicationDistance"]
+    val communicationDistance = device.communicationDistance
 
     val leaderID = boundedElection(strength = localId, bound = communicationDistance.toInt())
     val isLeader = (leaderID == localId).also { device["isLeader"] = it }
@@ -43,12 +46,12 @@ fun Aggregate<Int>.followLeaderEntrypoint(
         .let { coordinate -> Target(coordinate.x, coordinate.y, leaderID) }
 
     val targetSelectionStrategy = when {
-        isLeader -> getTarget(device["TargetID"] as Number)
+        isLeader -> getTarget(device.targetId)
         else -> leaderAsTarget
     }
 
     admmEntrypoint(
-        device["ControlPeriodMS"] as? Double ?: 100.0,
+        device.controlPeriodMillis,
         robot,
         uNominal = GoToTargetNominal { targetSelectionStrategy }.compute(robot).toDoubleArray(),
         localCLF = listOf(GoToTargetCLF { targetSelectionStrategy }),
