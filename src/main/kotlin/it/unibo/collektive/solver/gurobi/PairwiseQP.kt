@@ -10,6 +10,8 @@ import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.mathutils.plus
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Reusable Gurobi model for the pairwise QP solved on a shared edge during ADMM.
@@ -21,6 +23,7 @@ class PairwiseQP private constructor(
     private val zj: GRBVector,
     private val pairwiseCBFs: List<CBF>,
     private val constraints: List<InstalledControlConstraint>,
+    private val onNoSolution: QpNoSolutionListener,
 ) {
 
     /**
@@ -70,10 +73,9 @@ class PairwiseQP private constructor(
         return when {
             model.get(GRB.IntAttr.SolCount) > 0 -> SuggestedControl(zi.readSpeedControl(), zj.readSpeedControl())
             else -> {
-                println(
-                    "Pairwise QP: no solution found (status ${model.get(GRB.IntAttr.Status)}), " +
-                        "returning current controls.",
-                )
+                val status = model.get(GRB.IntAttr.Status)
+                logger.warn("Pairwise QP: no solution found (status {}), returning current controls.", status)
+                onNoSolution.onNoSolution(status)
                 SuggestedControl(device.control, other.control)
             }
         }
@@ -97,6 +99,7 @@ class PairwiseQP private constructor(
      * Factory methods for creating a fully installed pairwise QP model.
      */
     companion object {
+        private val logger: Logger = LoggerFactory.getLogger(PairwiseQP::class.java)
 
         /**
          * Builds a pairwise QP model with all requested edge constraints already installed.
@@ -105,9 +108,16 @@ class PairwiseQP private constructor(
          * @param device local device used to size the first decision vector.
          * @param other neighbor device used to size the second decision vector.
          * @param pairwiseCBFs pairwise barrier functions to install on the model.
+         * @param onNoSolution callback notified whenever a solve produces no solution.
          * @return the reusable pairwise QP wrapper.
          */
-        fun create(model: GRBModel, device: Device, other: Device, pairwiseCBFs: List<CBF>): PairwiseQP {
+        fun create(
+            model: GRBModel,
+            device: Device,
+            other: Device,
+            pairwiseCBFs: List<CBF>,
+            onNoSolution: QpNoSolutionListener = QpNoSolutionListener.IGNORE,
+        ): PairwiseQP {
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_pairwiseQP")
             val zi = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "z_ij^i")
             val zj = model.addVecVar(other.position.dimension, -other.maxSpeed, other.maxSpeed, "z_ij^j")
@@ -121,6 +131,7 @@ class PairwiseQP private constructor(
                 zj = zj,
                 pairwiseCBFs = pairwiseCBFs,
                 constraints = constraints,
+                onNoSolution = onNoSolution,
             )
         }
     }

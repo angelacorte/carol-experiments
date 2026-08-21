@@ -11,6 +11,8 @@ import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.toDoubleArray
 import it.unibo.collektive.model.Device
 import it.unibo.collektive.model.SpeedControl2D
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Reusable Gurobi model for the single-device QP solved during each ADMM iteration.
@@ -22,6 +24,7 @@ class LocalQP private constructor(
     private val localCLFs: List<CLF>,
     private val localCBFs: List<CBF>,
     private val constraints: List<InstalledControlConstraint>,
+    private val onNoSolution: QpNoSolutionListener,
 ) {
 
     /**
@@ -66,10 +69,9 @@ class LocalQP private constructor(
         return when {
             model.get(GRB.IntAttr.SolCount) > 0 -> u.readSpeedControl()
             else -> {
-                println(
-                    "Local QP: no solution found (status ${model.get(GRB.IntAttr.Status)}), " +
-                        "returning previous control.",
-                )
+                val status = model.get(GRB.IntAttr.Status)
+                logger.warn("Local QP: no solution found (status {}), returning previous control.", status)
+                onNoSolution.onNoSolution(status)
                 device.control
             }
         }
@@ -96,6 +98,8 @@ class LocalQP private constructor(
      * Factory methods for creating a fully installed local QP model.
      */
     companion object {
+        private val logger: Logger = LoggerFactory.getLogger(LocalQP::class.java)
+
         /**
          * Builds a local QP model with all requested control functions already installed.
          *
@@ -103,9 +107,16 @@ class LocalQP private constructor(
          * @param device device used to size the control vector and bounds.
          * @param localCLFs local CLF constraints to install.
          * @param localCBFs local CBF constraints to install.
+         * @param onNoSolution callback notified whenever a solve produces no solution.
          * @return the reusable local QP wrapper.
          */
-        fun create(model: GRBModel, device: Device, localCLFs: List<CLF>, localCBFs: List<CBF>): LocalQP {
+        fun create(
+            model: GRBModel,
+            device: Device,
+            localCLFs: List<CLF>,
+            localCBFs: List<CBF>,
+            onNoSolution: QpNoSolutionListener = QpNoSolutionListener.IGNORE,
+        ): LocalQP {
             val u = model.addVecVar(device.position.dimension, -device.maxSpeed, device.maxSpeed, "u")
             val slack = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "slack_localQP")
             val installed = mutableListOf<InstalledControlConstraint>()
@@ -119,6 +130,7 @@ class LocalQP private constructor(
                 localCLFs = localCLFs,
                 localCBFs = localCBFs,
                 constraints = installed,
+                onNoSolution = onNoSolution,
             )
         }
     }
