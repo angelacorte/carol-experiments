@@ -1,3 +1,29 @@
+## [3.0.4](https://github.com/angelacorte/carol-experiments/compare/3.0.3...3.0.4) (2026-09-07)
+
+### Dependency updates
+
+* **core-deps:** update dependency org.jetbrains.kotlin.jvm to v2.4.20 ([#192](https://github.com/angelacorte/carol-experiments/issues/192)) ([bd67b05](https://github.com/angelacorte/carol-experiments/commit/bd67b05ef60865e38497a83769d231be47296a16))
+* **deps:** update dependency org.slf4j:slf4j-api to v2.0.19 ([#191](https://github.com/angelacorte/carol-experiments/issues/191)) ([7f66837](https://github.com/angelacorte/carol-experiments/commit/7f66837ad41a851564f9e347e0af4ef3fd99d129))
+* **deps:** update gradle to v9.7.1 ([959a02e](https://github.com/angelacorte/carol-experiments/commit/959a02e96301d88d94c2602e1114b6c85b3cc95a))
+* **deps:** update junit-framework monorepo to v6.1.3 ([#186](https://github.com/angelacorte/carol-experiments/issues/186)) ([6df4a53](https://github.com/angelacorte/carol-experiments/commit/6df4a533b6750799fe25db5cf47ba7d6ae94b65f))
+* **deps:** update node.js to 24.20 ([#190](https://github.com/angelacorte/carol-experiments/issues/190)) ([d77d76c](https://github.com/angelacorte/carol-experiments/commit/d77d76c8a8a771e11ad21fec22c1ed9bef5bec0a))
+* **deps:** update plugin kotlin-qa to v1.8.1 ([69d03a4](https://github.com/angelacorte/carol-experiments/commit/69d03a418b3a1ab17e9b0a645d0dde9aedb16b1e))
+* **deps:** update plugin kotlin-qa to v1.9.0 ([#189](https://github.com/angelacorte/carol-experiments/issues/189)) ([fb92f3a](https://github.com/angelacorte/carol-experiments/commit/fb92f3a0e6550c7111ace0b80a983e42962a8679))
+* **deps:** update plugin multijvmtesting to v4.5.6 ([#184](https://github.com/angelacorte/carol-experiments/issues/184)) ([cc4dd96](https://github.com/angelacorte/carol-experiments/commit/cc4dd9674cddaf99c54d7b0b069ec2749627446d))
+
+### Build and continuous integration
+
+* **deps:** update actions/setup-node action to v7 ([8e654ff](https://github.com/angelacorte/carol-experiments/commit/8e654ff1e833682a856709a103cd37bd2c2e97b2))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.44 ([#188](https://github.com/angelacorte/carol-experiments/issues/188)) ([20e8ba8](https://github.com/angelacorte/carol-experiments/commit/20e8ba8d69b80a5982d75eb4015e2b5bd1db8cda))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.3 [skip ci] ([16410ba](https://github.com/angelacorte/carol-experiments/commit/16410ba2a194904787b03db5f3c58a94ff4a29ee))
+
+### Refactoring
+
+* device module with typed accessors and new listeners ([#185](https://github.com/angelacorte/carol-experiments/issues/185)) ([55a63d0](https://github.com/angelacorte/carol-experiments/commit/55a63d0a7bcd3b58a57f0be0d4760e19ef580afc))
+
 ## [3.0.3](https://github.com/angelacorte/carol-experiments/compare/3.0.2...3.0.3) (2026-08-11)
 
 ### Dependency updates
