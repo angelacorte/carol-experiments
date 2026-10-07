@@ -1,3 +1,30 @@
+## [3.0.5](https://github.com/angelacorte/carol-experiments/compare/3.0.4...3.0.5) (2026-10-07)
+
+### Dependency updates
+
+* **core-deps:** update collektive ([#206](https://github.com/angelacorte/carol-experiments/issues/206)) ([e446a07](https://github.com/angelacorte/carol-experiments/commit/e446a075d8f4f03ecf64615744474a3aa4fc1eb7))
+* **deps:** update alpine docker tag to v3.24.2 ([#205](https://github.com/angelacorte/carol-experiments/issues/205)) ([6a5d8fa](https://github.com/angelacorte/carol-experiments/commit/6a5d8fa9b237c86caed08f8f61555d6a52ff1266))
+* **deps:** update dependency com.github.ben-manes.caffeine:caffeine to v3.3.0 ([#204](https://github.com/angelacorte/carol-experiments/issues/204)) ([f8cf864](https://github.com/angelacorte/carol-experiments/commit/f8cf864cca0de3061164f4ef9c8b8672bca27359))
+* **deps:** update dependency matplotlib to v3.11.2 ([#200](https://github.com/angelacorte/carol-experiments/issues/200)) ([ac6906c](https://github.com/angelacorte/carol-experiments/commit/ac6906c584bfe06de4832577b1a67164c6a496f7))
+* **deps:** update node.js to 24.21 ([#196](https://github.com/angelacorte/carol-experiments/issues/196)) ([38f7b3c](https://github.com/angelacorte/carol-experiments/commit/38f7b3c3a1199f6baab1a04032cc26125705fd35))
+* **deps:** update plugin com.gradle.develocity to v4.5.1 ([#194](https://github.com/angelacorte/carol-experiments/issues/194)) ([dc7c6a4](https://github.com/angelacorte/carol-experiments/commit/dc7c6a477fd4802f46f27abb3e4fc7f859561a9b))
+* **deps:** update plugin gitsemver to v7.0.24 ([#193](https://github.com/angelacorte/carol-experiments/issues/193)) ([352dd6d](https://github.com/angelacorte/carol-experiments/commit/352dd6d48d70a91695c22de00ea9bc7916d7ae41))
+* **deps:** update plugin kotlin-qa to v1.9.1 ([#197](https://github.com/angelacorte/carol-experiments/issues/197)) ([ace441a](https://github.com/angelacorte/carol-experiments/commit/ace441a979e797884356770ae78aa54c3ca9ddf2))
+* **deps:** update plugin kotlin-qa to v1.9.2 ([e2208bd](https://github.com/angelacorte/carol-experiments/commit/e2208bd8fec45c4b110ea38ba3969e523c28b44b))
+* **deps:** update plugin kotlin-qa to v1.9.3 ([#208](https://github.com/angelacorte/carol-experiments/issues/208)) ([5087c05](https://github.com/angelacorte/carol-experiments/commit/5087c0571744e0ff078a85f3bb62976525bda7ff))
+* **deps:** update plugin multijvmtesting to v4.5.7 ([#199](https://github.com/angelacorte/carol-experiments/issues/199)) ([dc68902](https://github.com/angelacorte/carol-experiments/commit/dc689026b5a7880808619a0941a9b9d2359b6296))
+
+### Build and continuous integration
+
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.45 ([#195](https://github.com/angelacorte/carol-experiments/issues/195)) ([e457160](https://github.com/angelacorte/carol-experiments/commit/e457160de833621f2f0ad2e9f8f4b2cb9c58e6f0))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.46 ([#201](https://github.com/angelacorte/carol-experiments/issues/201)) ([65287b6](https://github.com/angelacorte/carol-experiments/commit/65287b65d51204b557e9d5eec307ecc0e2d0d642))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.47 ([#203](https://github.com/angelacorte/carol-experiments/issues/203)) ([753e04a](https://github.com/angelacorte/carol-experiments/commit/753e04aea791d7169d5821d5992b62fd31a0c29a))
+* **deps:** update dependency ubuntu to v26 ([#202](https://github.com/angelacorte/carol-experiments/issues/202)) ([1f95585](https://github.com/angelacorte/carol-experiments/commit/1f95585c4f80cd792613f6f5e3f1c7dccad5df93))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.4 [skip ci] ([977239c](https://github.com/angelacorte/carol-experiments/commit/977239c8832f3a8dd834a0218abb4fb2a7b0a045))
+
 ## [3.0.4](https://github.com/angelacorte/carol-experiments/compare/3.0.3...3.0.4) (2026-09-07)
 
 ### Dependency updates
