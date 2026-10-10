@@ -1,3 +1,19 @@
+## [3.0.6](https://github.com/angelacorte/carol-experiments/compare/3.0.5...3.0.6) (2026-10-10)
+
+### Dependency updates
+
+* **core-deps:** update dependency org.jetbrains.kotlin.jvm to v2.4.21 ([#216](https://github.com/angelacorte/carol-experiments/issues/216)) ([7a45d3c](https://github.com/angelacorte/carol-experiments/commit/7a45d3c964e757d78ebdeb7eb3cb398ea1cc6557))
+* **deps:** update plugin gitsemver to v7.0.25 ([8fd0d9c](https://github.com/angelacorte/carol-experiments/commit/8fd0d9c6e8be48f8b270b9a393ed058f25f02976))
+* **deps:** update python docker tag to v3.14.8 ([27aa2d7](https://github.com/angelacorte/carol-experiments/commit/27aa2d759362c035a6f0fc19f5ae20e85ce54939))
+
+### Build and continuous integration
+
+* **deps:** update actions/setup-node action to v7.1.0 ([#215](https://github.com/angelacorte/carol-experiments/issues/215)) ([bede63f](https://github.com/angelacorte/carol-experiments/commit/bede63fd109440a622d5d3681065e2bd40ac713f))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.5 [skip ci] ([7eca781](https://github.com/angelacorte/carol-experiments/commit/7eca781f17dd701cd0a7930e0281dc2a75102947))
+
 ## [3.0.5](https://github.com/angelacorte/carol-experiments/compare/3.0.4...3.0.5) (2026-10-07)
 
 ### Dependency updates
