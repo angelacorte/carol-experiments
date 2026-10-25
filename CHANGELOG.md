@@ -1,3 +1,18 @@
+## [3.0.7](https://github.com/angelacorte/carol-experiments/compare/3.0.6...3.0.7) (2026-10-25)
+
+### Dependency updates
+
+* **core-deps:** update dependency it.unibo.collektive.collektive-plugin to v28.3.5 ([#225](https://github.com/angelacorte/carol-experiments/issues/225)) ([76789c5](https://github.com/angelacorte/carol-experiments/commit/76789c59465e72874b6c2d49a9c28f89badd450c))
+* **deps:** update dependency com.github.ben-manes.caffeine:caffeine to v3.3.1 ([59c6ecd](https://github.com/angelacorte/carol-experiments/commit/59c6ecd0c3368669c0ad7f19c580068e1da39a49))
+* **deps:** update gradle to v9.8.0 ([1c9ba0b](https://github.com/angelacorte/carol-experiments/commit/1c9ba0bbfc0437f841dff62c123d889254cc9957))
+* **deps:** update gradle to v9.8.2 ([0f917c7](https://github.com/angelacorte/carol-experiments/commit/0f917c7ec9136b9ab1ab5f95952ed27362675f0f))
+* **deps:** update node.js to 24.22 ([5bff4b5](https://github.com/angelacorte/carol-experiments/commit/5bff4b566bdae4e1e4520ad9c77949ebf8a78b49))
+* **deps:** update python docker tag to v3.14.9 ([618c5eb](https://github.com/angelacorte/carol-experiments/commit/618c5eb7b6b7e0f0d7bf3349ca79b0bc8d3540f7))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.6 [skip ci] ([5bcea17](https://github.com/angelacorte/carol-experiments/commit/5bcea17a6734d5c7e4fc895abf484454e0a41a1e))
+
 ## [3.0.6](https://github.com/angelacorte/carol-experiments/compare/3.0.5...3.0.6) (2026-10-10)
 
 ### Dependency updates
