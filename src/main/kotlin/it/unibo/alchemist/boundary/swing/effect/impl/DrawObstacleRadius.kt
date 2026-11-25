@@ -31,7 +31,7 @@ class DrawObstacleRadius : Effect {
     @Transient
     var lastUpdated = Time.NEGATIVE_INFINITY
 
-    override fun <T : Any?, P : Position2D<P>> apply(
+    override fun <T, P : Position2D<P>> apply(
         graphics: Graphics2D,
         node: Node<T>,
         environment: Environment<T, P>,
