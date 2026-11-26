@@ -32,16 +32,16 @@ class LocationSensorProperty<T : Any, P : Position<P>>(
         return Coordinate(position[0], position[1])
     }
 
-    override fun surroundings(): List<Coordinate> = environment.neighborhoodOf(node).current.map { node ->
+    override fun surroundings(): List<Coordinate> = environment.neighborhoodOf(node).current.neighbors.map { node ->
         environment.positionOf(node).current.let { Coordinate(it[0], it[1]) }
-    }.current
+    }
 
-    override fun targetsPosition(): List<Target> = environment.nodes.current
-        .filter { node ->
-            node.contains(SimpleMolecule("Target"))
-        }.map { target ->
-            (target.getConcentration(SimpleMolecule("Target")) as Number) to environment.getPosition(target)
-        }.map { (id, position) ->
-            Target(position.coordinates[0], position.coordinates[1], id)
-        }
+    override fun targetsPosition(): List<Target> = environment.nodes.current.filter { node ->
+        node.contains(SimpleMolecule("Target"))
+    }.map { target ->
+        (target[SimpleMolecule("Target")] as Number) to environment.positionOf(target)
+    }.map { (id, position) ->
+        val currentPosition = position.current
+        Target(currentPosition[0], currentPosition[1], id)
+    }
 }
