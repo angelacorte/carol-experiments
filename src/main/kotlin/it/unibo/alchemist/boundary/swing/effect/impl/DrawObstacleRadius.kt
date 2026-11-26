@@ -191,8 +191,7 @@ class DrawObstacleRadius : Effect {
 
     private fun readRadius(node: Node<*>): Double = node[safeRadius].getOrNull().toDouble()
 
-    private fun readCommunicationDistance(node: Node<*>): Double =
-        node[communicationDistance].getOrNull().toDouble()
+    private fun readCommunicationDistance(node: Node<*>): Double = node[communicationDistance].getOrNull().toDouble()
 
     /**
      * Shared molecules and rendering constants for the effect.
