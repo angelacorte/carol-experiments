@@ -20,9 +20,9 @@ object SimulationSolver {
             val layer: Layer<*, *> = requireNotNull(environment.layers[SimpleMolecule("QPSettings")])
             val origin: Position<*> = environment.makePosition(0, 0)
             layer as Layer<*, Position<*>>
-            val settings = layer.getValue(origin)
+            val settings = layer.currentValueAt(origin)
             require(settings is QpSettings)
-            SolverProperty(settings, environment.nodes.first())
+            SolverProperty(settings, environment.nodes.current.first())
         }
 
     /**
