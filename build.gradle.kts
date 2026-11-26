@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     application
+    `java-library`
     alias(libs.plugins.gitSemVer)
     alias(libs.plugins.collektive)
     alias(libs.plugins.kotlin.jvm)
@@ -22,7 +23,7 @@ sourceSets {
             implementation(libs.bundles.alchemist)
             implementation(libs.caffeine)
             implementation(libs.bundles.collektive)
-            implementation(libs.gurobi)
+            api(libs.gurobi)
             implementation(libs.slf4j)
         }
         resources {

@@ -1,6 +1,5 @@
 package it.unibo.collektive.alchemist.device.sensors.impl
 
-import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBModel
 import it.unibo.alchemist.boundary.OutputMonitor
@@ -20,7 +19,7 @@ import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.solver.gurobi.LocalQP
 import it.unibo.collektive.solver.gurobi.PairwiseQP
 import it.unibo.collektive.solver.gurobi.QpSettings
-import it.unibo.collektive.solver.gurobi.setLicense
+import it.unibo.collektive.solver.gurobi.defaultGurobiEnv
 import it.unibo.collektive.solver.gurobi.setupLogger
 
 /**
@@ -37,10 +36,17 @@ import it.unibo.collektive.solver.gurobi.setupLogger
  * the [LOCAL_QP_NO_SOLUTION_MOLECULE] and [PAIRWISE_QP_NO_SOLUTION_MOLECULE] molecules, so exports
  * can tell clean runs from degraded ones.
  *
+ * The Gurobi license is never bundled: by default the environment is created by [defaultGurobiEnv], which
+ * uses the license supplied by the user at runtime. Pass a custom [envFactory] to configure it differently.
+ *
  * @property settings numerical and logging configuration shared by every managed QP.
+ * @property envFactory creates the started [GRBEnv] owned by this solver.
  */
-class SolverProperty<T, P : Position<P>>(override val settings: QpSettings, override val node: Node<T>) :
-    Solver,
+class SolverProperty<T, P : Position<P>> @JvmOverloads constructor(
+    override val settings: QpSettings,
+    override val node: Node<T>,
+    private val envFactory: (QpSettings) -> GRBEnv = { defaultGurobiEnv(it.logEnabled) },
+) : Solver,
     Capability<T> {
 
     private lateinit var local: LocalQP
@@ -51,12 +57,7 @@ class SolverProperty<T, P : Position<P>>(override val settings: QpSettings, over
 
     private var pairwiseNoSolutionCount: Long = 0
 
-    private val env: GRBEnv = setLicense().let {
-        GRBEnv(true).also { env ->
-            env.set(GRB.IntParam.OutputFlag, if (settings.logEnabled) 1 else 0)
-            env.start()
-        }
-    }
+    private val env: GRBEnv = envFactory(settings)
 
     init {
         recordCount(LOCAL_QP_NO_SOLUTION_MOLECULE, 0)
@@ -103,7 +104,7 @@ class SolverProperty<T, P : Position<P>>(override val settings: QpSettings, over
         deltaTime: Double,
     ): SuggestedControl = pairwise.updateAndSolve(device, otherDevice, duals, settings, deltaTime)
 
-    override fun cloneOnNewNode(node: Node<T>): Capability<T> = SolverProperty(settings, node)
+    override fun cloneOnNewNode(node: Node<T>): Capability<T> = SolverProperty(settings, node, envFactory)
 
     private fun recordCount(molecule: SimpleMolecule, count: Long) {
         @Suppress("UNCHECKED_CAST")

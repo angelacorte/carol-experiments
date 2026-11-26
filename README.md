@@ -89,22 +89,31 @@ More details, including the extension rules and available expression operators, 
 
 - JDK 17+ (project compiles on JVM 17).
 - Gurobi Optimizer installed.
-- A valid `gurobi.lic` license file.
+- A valid Gurobi license of your own (see below).
 
-### Gurobi license resolution
+### Gurobi license
 
-The runtime searches for license in this order:
+No Gurobi license is bundled with this project or its published artifacts: every user must provide their own
+at runtime. When a solver starts, the license is looked up as follows:
 
-1. `GRB_LICENSE_FILE` environment variable.
-2. `GRB_LICENSE_FILE` JVM system property.
-3. `~/Library/gurobi/gurobi.lic` (macOS default fallback).
+1. If `GRB_WLSACCESSID`, `GRB_WLSSECRET` and `GRB_LICENSEID` are all set, they are used as
+   [Web License Service](https://www.gurobi.com/features/web-license-service/) credentials.
+2. Otherwise Gurobi resolves the license itself: first the `GRB_LICENSE_FILE` environment variable,
+   then its [default locations](https://support.gurobi.com/hc/en-us/articles/360013417211)
+   (e.g. `~/gurobi.lic`, `/opt/gurobi/gurobi.lic` on Linux, `/Library/gurobi/gurobi.lic` on macOS).
 
-If your license is not set globally, pass it explicitly to Gradle using an env variable.
+`GRB_LICENSE_FILE` must be an environment variable: a JVM system property (`-DGRB_LICENSE_FILE=...`) is not
+seen by Gurobi's native library.
+If your license is not in a default location, pass it explicitly to Gradle:
 
 ```bash
 GRB_LICENSE_FILE="/absolute/path/to/gurobi.lic" ./gradlew runNoObstacleGraphic
 GRB_LICENSE_FILE="/absolute/path/to/gurobi.lic" ./gradlew runAllBatch
 ```
+
+When using the library programmatically, `SolverProperty` also accepts an `envFactory: (QpSettings) -> GRBEnv`
+to fully control how the Gurobi environment is created (e.g. a compute server or custom parameters).
+The default is `defaultGurobiEnv(settings.logEnabled)`.
 
 ## 🛠️ Configuration and Usage
 
