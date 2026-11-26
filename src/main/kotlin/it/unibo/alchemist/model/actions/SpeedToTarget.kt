@@ -2,9 +2,8 @@ package it.unibo.alchemist.model.actions
 
 import it.unibo.alchemist.model.Action
 import it.unibo.alchemist.model.Environment
-import it.unibo.alchemist.model.Node
+import it.unibo.alchemist.model.NodeReaction
 import it.unibo.alchemist.model.Position
-import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.movestrategies.routing.StraightLine
 import it.unibo.alchemist.model.movestrategies.target.SpeedFromMolecule
 import it.unibo.alchemist.model.movestrategies.target.TakeTargetFromMolecule
@@ -20,16 +19,16 @@ import it.unibo.alchemist.model.positions.Euclidean2DPosition
  * @param T the type of the concentrations in the environment
  * @param P the type of position used in the environment
  * @property environment the environment in which the node moves
- * @property node the node to move
- * @property reaction the reaction associated with the node
+ * @param reaction the node reaction owning this action; the moved node is its host
  */
-class SpeedToTarget<T, P : Position<P>>(environment: Environment<T, Euclidean2DPosition>, node: Node<T>) :
+class SpeedToTarget<T, P : Position<P>>(environment: Environment<T, Euclidean2DPosition>, reaction: NodeReaction<T>) :
     EuclideanConfigurableMoveNode<T, Euclidean2DPosition>(
         environment = environment,
-        node = node,
+        reaction = reaction,
         routingStrategy = StraightLine(),
-        targetSelectionStrategy = TakeTargetFromMolecule(environment, node),
-        speedSelectionStrategy = SpeedFromMolecule(node, environment),
+        targetSelectionStrategy = TakeTargetFromMolecule(environment, reaction.host),
+        speedSelectionStrategy = SpeedFromMolecule(reaction.host, environment),
     ) {
-    override fun cloneAction(node: Node<T>, reaction: Reaction<T>): Action<T> = SpeedToTarget(environment, node)
+    override fun cloneOnNodeReaction(newReaction: NodeReaction<T>): Action<T> =
+        SpeedToTarget<T, P>(environment, newReaction)
 }

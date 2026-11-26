@@ -41,7 +41,7 @@ tasks.withType<Test>().configureEach {
 }
 
 multiJvm {
-    jvmVersionForCompilation.set(17)
+    jvmVersionForCompilation.set(21)
 }
 
 // Heap size estimation for batches

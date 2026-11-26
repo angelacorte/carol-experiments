@@ -31,29 +31,29 @@ class DrawObstacleRadius : Effect {
     @Transient
     var lastUpdated = Time.NEGATIVE_INFINITY
 
-    override fun <T : Any?, P : Position2D<P>> apply(
+    override fun <T, P : Position2D<P>> apply(
         graphics: Graphics2D,
         node: Node<T>,
         environment: Environment<T, P>,
         wormhole: Wormhole2D<P>,
     ) {
-        if (environment.simulation.time != lastUpdated) {
-            lastUpdated = environment.simulation.time
+        if (environment.simulation.currentTime != lastUpdated) {
+            lastUpdated = environment.simulation.currentTime
         }
         runCatching { renderNode(graphics, node, environment, wormhole) }
     }
 
-    private fun <T : Any?, P : Position2D<P>> renderNode(
+    private fun <T, P : Position2D<P>> renderNode(
         graphics: Graphics2D,
         node: Node<T>,
         environment: Environment<T, P>,
         wormhole: Wormhole2D<P>,
     ) {
-        val nodePosition = environment.getPosition(node)
+        val nodePosition = environment.positionOf(node).current
         val viewPoint = wormhole.getViewPoint(nodePosition)
         val isRobot = node.contains(robot)
         val isObstacle = node.contains(obstacle)
-        val margin = node.getConcentration(safeMargin).toDouble()
+        val margin = node[safeMargin].getOrNull().toDouble()
         val radius = readRadius(node)
         val communicationDistance = readCommunicationDistance(node)
         val baseDrawSize = drawSize(isRobot, isObstacle, margin, radius)
@@ -189,11 +189,9 @@ class DrawObstacleRadius : Effect {
         return boundingBox.any { wormhole.isInsideView(it) }
     }
 
-    private fun readRadius(node: Node<*>): Double =
-        (if (node.contains(safeRadius)) node.getConcentration(safeRadius) else 0.0) as Double
+    private fun readRadius(node: Node<*>): Double = node[safeRadius].getOrNull().toDouble()
 
-    private fun readCommunicationDistance(node: Node<*>): Double =
-        (if (node.contains(communicationDistance)) node.getConcentration(communicationDistance) else 0.0).toDouble()
+    private fun readCommunicationDistance(node: Node<*>): Double = node[communicationDistance].getOrNull().toDouble()
 
     /**
      * Shared molecules and rendering constants for the effect.

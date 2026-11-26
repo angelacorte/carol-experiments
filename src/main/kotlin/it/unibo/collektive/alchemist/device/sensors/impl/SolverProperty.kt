@@ -4,9 +4,8 @@ import com.gurobi.gurobi.GRB
 import com.gurobi.gurobi.GRBEnv
 import com.gurobi.gurobi.GRBModel
 import it.unibo.alchemist.boundary.OutputMonitor
-import it.unibo.alchemist.model.Environment
+import it.unibo.alchemist.model.Capability
 import it.unibo.alchemist.model.Node
-import it.unibo.alchemist.model.NodeProperty
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.Time
 import it.unibo.alchemist.model.molecules.SimpleMolecule
@@ -42,7 +41,7 @@ import it.unibo.collektive.solver.gurobi.setupLogger
  */
 class SolverProperty<T, P : Position<P>>(override val settings: QpSettings, override val node: Node<T>) :
     Solver,
-    NodeProperty<T> {
+    Capability<T> {
 
     private lateinit var local: LocalQP
 
@@ -104,11 +103,11 @@ class SolverProperty<T, P : Position<P>>(override val settings: QpSettings, over
         deltaTime: Double,
     ): SuggestedControl = pairwise.updateAndSolve(device, otherDevice, duals, settings, deltaTime)
 
-    override fun cloneOnNewNode(node: Node<T>): NodeProperty<T> = SolverProperty(settings, node)
+    override fun cloneOnNewNode(node: Node<T>): Capability<T> = SolverProperty(settings, node)
 
     private fun recordCount(molecule: SimpleMolecule, count: Long) {
         @Suppress("UNCHECKED_CAST")
-        node.setConcentration(molecule, count as T)
+        node[molecule] = count as T
     }
 
 //    private fun disposeAll() {

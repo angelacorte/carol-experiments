@@ -1,8 +1,8 @@
 package it.unibo.collektive.alchemist.device.sensors.impl
 
+import it.unibo.alchemist.model.Capability
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
-import it.unibo.alchemist.model.NodeProperty
 import it.unibo.alchemist.model.Position
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
@@ -23,25 +23,25 @@ class LocationSensorProperty<T : Any, P : Position<P>>(
     private val environment: Environment<T, P>,
     override val node: Node<T>,
 ) : LocationSensor,
-    NodeProperty<T> {
+    Capability<T> {
 
-    override fun cloneOnNewNode(node: Node<T>): NodeProperty<T> = LocationSensorProperty(environment, node)
+    override fun cloneOnNewNode(node: Node<T>): Capability<T> = LocationSensorProperty(environment, node)
 
     override fun coordinates(): Coordinate {
-        val position = environment.getPosition(node).coordinates
+        val position = environment.positionOf(node).current
         return Coordinate(position[0], position[1])
     }
 
-    override fun surroundings(): List<Coordinate> = environment.getNeighborhood(node).map { node ->
-        environment.getPosition(node).coordinates.let { Coordinate(it[0], it[1]) }
+    override fun surroundings(): List<Coordinate> = environment.neighborhoodOf(node).current.neighbors.map { node ->
+        environment.positionOf(node).current.let { Coordinate(it[0], it[1]) }
     }
 
-    override fun targetsPosition(): List<Target> = environment.nodes
-        .filter { node ->
-            node.contains(SimpleMolecule("Target"))
-        }.map { target ->
-            (target.getConcentration(SimpleMolecule("Target")) as Number) to environment.getPosition(target)
-        }.map { (id, position) ->
-            Target(position.coordinates[0], position.coordinates[1], id)
-        }
+    override fun targetsPosition(): List<Target> = environment.nodes.current.filter { node ->
+        node.contains(SimpleMolecule("Target"))
+    }.map { target ->
+        (target[SimpleMolecule("Target")].getOrNull() as Number) to environment.positionOf(target)
+    }.map { (id, position) ->
+        val currentPosition = position.current
+        Target(currentPosition[0], currentPosition[1], id)
+    }
 }

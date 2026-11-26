@@ -21,7 +21,7 @@ import it.unibo.collektive.model.Vector2D
 context(device: CollektiveDevice<Euclidean2DPosition>)
 fun moveNodeToPosition(newPosition: Vector2D) {
     val envPos: Position<Euclidean2DPosition> = device.environment.makePosition(newPosition.x, newPosition.y)
-    device.environment.moveNodeToPosition(device.node, envPos as Euclidean2DPosition)
+    device.environment.moveNodeTo(device.node, envPos as Euclidean2DPosition)
 }
 
 /**
@@ -30,9 +30,9 @@ fun moveNodeToPosition(newPosition: Vector2D) {
 context(device: CollektiveDevice<Euclidean2DPosition>)
 fun moveNodeToPosition(nodeID: Int, newPosition: Vector2D) {
     val envPos: Position<Euclidean2DPosition> = device.environment.makePosition(newPosition.x, newPosition.y)
-    val node = device.environment.nodes.find { it.id == nodeID }
+    val node = device.environment.nodes.current.find { it.id == nodeID }
     if (node != null) {
-        device.environment.moveNodeToPosition(node, envPos as Euclidean2DPosition)
+        device.environment.moveNodeTo(node, envPos as Euclidean2DPosition)
     } else {
         error("Could not find a node with ID $nodeID")
     }
@@ -61,18 +61,19 @@ fun getRobot(): Device = position.coordinates().let {
  * current position, radius, and margin every time it is invoked.
  */
 context(device: CollektiveDevice<*>)
-fun getObstacles(): List<() -> Obstacle> = device.environment.nodes.filter { it.contains(SimpleMolecule("Obstacle")) }
-    .map { obstacle ->
-        {
-            val obstaclePos = device.environment.getPosition(obstacle).coordinates
-            val radius = obstacle.requiredDouble("SafeRadius")
-            val margin = obstacle.requiredDouble("SafeMargin")
-            Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
+fun getObstacles(): List<() -> Obstacle> =
+    device.environment.nodes.current.filter { it.contains(SimpleMolecule("Obstacle")) }
+        .map { obstacle ->
+            {
+                val obstaclePos = device.environment.currentPositionOf(obstacle).coordinates
+                val radius = obstacle.requiredDouble("SafeRadius")
+                val margin = obstacle.requiredDouble("SafeMargin")
+                Obstacle(obstaclePos[0], obstaclePos[1], radius, margin)
+            }
         }
-    }
 
 private fun Node<*>.requiredDouble(molecule: String): Double {
-    val concentration = getConcentration(SimpleMolecule(molecule))
+    val concentration = this[SimpleMolecule(molecule)].getOrNull()
     require(concentration is Number) {
         "Node $id should carry a numeric '$molecule' molecule, but its concentration is '$concentration'"
     }
