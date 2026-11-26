@@ -12,3 +12,6 @@ timeprocessed
 /node_modules/
 /admm-plots/
 /logging/
+
+# Gurobi licenses are user-provided and must never be committed
+*.lic
