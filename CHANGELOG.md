@@ -1,3 +1,69 @@
+## [3.0.8](https://github.com/angelacorte/carol-experiments/compare/3.0.7...3.0.8) (2026-11-26)
+
+### Dependency updates
+
+* **core-deps:** update collektive to v29 ([#260](https://github.com/angelacorte/carol-experiments/issues/260)) ([50a2b36](https://github.com/angelacorte/carol-experiments/commit/50a2b36e32ed3eb30aaf77d4373cb467a7e7c543))
+* **core-deps:** update collektive to v30 ([#263](https://github.com/angelacorte/carol-experiments/issues/263)) ([f824715](https://github.com/angelacorte/carol-experiments/commit/f824715b98334a695ee042a785fe61ac3163191f))
+* **core-deps:** update dependency it.unibo.collektive.collektive-plugin to v28.3.8 ([#252](https://github.com/angelacorte/carol-experiments/issues/252)) ([282f1a8](https://github.com/angelacorte/carol-experiments/commit/282f1a821ad95fcf15e45323140cf784e8cb4824))
+* **core-deps:** update dependency it.unibo.collektive.collektive-plugin to v28.3.9 ([#256](https://github.com/angelacorte/carol-experiments/issues/256)) ([bcc4315](https://github.com/angelacorte/carol-experiments/commit/bcc43152acbcbe098440c20be9e5cfef15e0e6a6))
+* **deps:** update alchemist to v49 ([#232](https://github.com/angelacorte/carol-experiments/issues/232)) ([adc762d](https://github.com/angelacorte/carol-experiments/commit/adc762dfdb0e87c5c3a8e0cc65f6d9b62adfb5fe))
+* **deps:** update alchemist to v49.1.3 ([#237](https://github.com/angelacorte/carol-experiments/issues/237)) ([d3fd3c3](https://github.com/angelacorte/carol-experiments/commit/d3fd3c3a67f9c21d86c77f9f53f02c4e059b311e))
+* **deps:** update alchemist to v50 ([#241](https://github.com/angelacorte/carol-experiments/issues/241)) ([d6ceae3](https://github.com/angelacorte/carol-experiments/commit/d6ceae39d794211def12d48b00de8d600a8380d6))
+* **deps:** update alchemist to v50.0.1 ([#243](https://github.com/angelacorte/carol-experiments/issues/243)) ([bba504d](https://github.com/angelacorte/carol-experiments/commit/bba504d154440e880e229b22d31bbb1b1ac8b331))
+* **deps:** update alchemist to v50.0.2 ([#257](https://github.com/angelacorte/carol-experiments/issues/257)) ([efcb9e5](https://github.com/angelacorte/carol-experiments/commit/efcb9e5865518f90934503f5781031b36f27bf04))
+* **deps:** update alchemist to v50.0.3 ([#258](https://github.com/angelacorte/carol-experiments/issues/258)) ([d68d4a7](https://github.com/angelacorte/carol-experiments/commit/d68d4a7d75e99d724268952d18889bdd2063c0fa))
+* **deps:** update alchemist to v50.0.4 ([#261](https://github.com/angelacorte/carol-experiments/issues/261)) ([0ea0a67](https://github.com/angelacorte/carol-experiments/commit/0ea0a676584eb84de425da52198e88c9531cb855))
+* **deps:** update alchemist to v50.0.5 ([#265](https://github.com/angelacorte/carol-experiments/issues/265)) ([788e6d7](https://github.com/angelacorte/carol-experiments/commit/788e6d7cc4abae65f8135fa8001757afe7fed3f6))
+* **deps:** update alchemist to v50.0.6 ([#266](https://github.com/angelacorte/carol-experiments/issues/266)) ([2e01750](https://github.com/angelacorte/carol-experiments/commit/2e01750929cc1b8cb4105308d18de1ac489adaf7))
+* **deps:** update alchemist to v50.0.7 ([#268](https://github.com/angelacorte/carol-experiments/issues/268)) ([6239f8b](https://github.com/angelacorte/carol-experiments/commit/6239f8be1a9cb6c735449ed15ad3eb2e782c2780))
+* **deps:** update alchemist to v50.0.8 ([#269](https://github.com/angelacorte/carol-experiments/issues/269)) ([888bbb9](https://github.com/angelacorte/carol-experiments/commit/888bbb991b2d93be0af6e4fc1c46ffa621b8536f))
+* **deps:** update alpine docker tag to v3.24.3 ([#230](https://github.com/angelacorte/carol-experiments/issues/230)) ([495093c](https://github.com/angelacorte/carol-experiments/commit/495093c5f95e5dcf3c667b18c4a5ed964f948814))
+* **deps:** update alpine docker tag to v3.24.4 ([#255](https://github.com/angelacorte/carol-experiments/issues/255)) ([59d83b3](https://github.com/angelacorte/carol-experiments/commit/59d83b35d4ef74d0d69a49d259219b1ff9c27b95))
+* **deps:** update dependency com.gurobi:gurobi to v14 ([#254](https://github.com/angelacorte/carol-experiments/issues/254)) ([f438b49](https://github.com/angelacorte/carol-experiments/commit/f438b49c99ce5db874fbf15bf32550f115129726))
+* **deps:** update dependency it.unibo.alchemist:alchemist to v43.1.40 ([#220](https://github.com/angelacorte/carol-experiments/issues/220)) ([d4a06e8](https://github.com/angelacorte/carol-experiments/commit/d4a06e866fd504f15ff7a7a16d4a8b286c0c9b88))
+* **deps:** update dependency org.slf4j:slf4j-api to v2.0.20 ([#207](https://github.com/angelacorte/carol-experiments/issues/207)) ([b9e67f0](https://github.com/angelacorte/carol-experiments/commit/b9e67f07db79e451e84a83572c75da9a4b7f57c8))
+* **deps:** update dependency semantic-release-preconfigured-conventional-commits to v1.1.158 ([#240](https://github.com/angelacorte/carol-experiments/issues/240)) ([f467e13](https://github.com/angelacorte/carol-experiments/commit/f467e133ffe5eb82d71e3fd5c1064e1ea9d61711))
+* **deps:** update dependency semantic-release-preconfigured-conventional-commits to v1.1.159 ([#262](https://github.com/angelacorte/carol-experiments/issues/262)) ([9518d04](https://github.com/angelacorte/carol-experiments/commit/9518d04a8c21e63f785c6f3d31084dfff7c9fd1f))
+* **deps:** update dependency semantic-release-preconfigured-conventional-commits to v1.1.160 ([#267](https://github.com/angelacorte/carol-experiments/issues/267)) ([2493be9](https://github.com/angelacorte/carol-experiments/commit/2493be985a04b4244cd1ac8c881c9ea324dee4e6))
+* **deps:** update dependency xarray to v2026.9.0 ([#210](https://github.com/angelacorte/carol-experiments/issues/210)) ([70ae4cd](https://github.com/angelacorte/carol-experiments/commit/70ae4cd3d1e450235c669027a774aacc9cc4f06a))
+* **deps:** update eclipse-temurin docker tag to v26 ([#246](https://github.com/angelacorte/carol-experiments/issues/246)) ([341af07](https://github.com/angelacorte/carol-experiments/commit/341af0745b9950fe419459718c8172225257a55b))
+* **deps:** update eclipse-temurin docker tag to v27 ([#247](https://github.com/angelacorte/carol-experiments/issues/247)) ([c746191](https://github.com/angelacorte/carol-experiments/commit/c7461911e871fc4f8dd5c22780fcfcb88955f373))
+* **deps:** update gradle to v9.9.0 ([#242](https://github.com/angelacorte/carol-experiments/issues/242)) ([50fca10](https://github.com/angelacorte/carol-experiments/commit/50fca10b8264806a650eaa4dd55c2c07746eae44))
+* **deps:** update gradle to v9.9.1 ([#253](https://github.com/angelacorte/carol-experiments/issues/253)) ([708f7c7](https://github.com/angelacorte/carol-experiments/commit/708f7c76ea081efea0815b9f1803baf314c20f15))
+* **deps:** update gradle to v9.9.2 ([#264](https://github.com/angelacorte/carol-experiments/issues/264)) ([af50eff](https://github.com/angelacorte/carol-experiments/commit/af50effba0187890e2ea39713d945cc4ce50db1f))
+* **deps:** update node.js to v26 ([#233](https://github.com/angelacorte/carol-experiments/issues/233)) ([7240735](https://github.com/angelacorte/carol-experiments/commit/724073507086bbf907ae8ee08c035a8a73d5a392))
+* **deps:** update plugin com.gradle.develocity to v4.6.0 ([#212](https://github.com/angelacorte/carol-experiments/issues/212)) ([862812c](https://github.com/angelacorte/carol-experiments/commit/862812c7c2697f3e07ec47d66d613d934016324c))
+* **deps:** update plugin com.gradle.develocity to v4.6.1 ([#236](https://github.com/angelacorte/carol-experiments/issues/236)) ([f125dce](https://github.com/angelacorte/carol-experiments/commit/f125dce20683e7b9e3f60c1853987d0792180802))
+* **deps:** update plugin gitsemver to v7.2.0 ([#223](https://github.com/angelacorte/carol-experiments/issues/223)) ([3e40fa4](https://github.com/angelacorte/carol-experiments/commit/3e40fa47a19b7c0f244cc9657c56f8a3c59ba9c1))
+* **deps:** update plugin kotlin-qa to v1.10.2 ([#244](https://github.com/angelacorte/carol-experiments/issues/244)) ([dbf0cd8](https://github.com/angelacorte/carol-experiments/commit/dbf0cd8b7ac844a1b0e1ee129d6b3bbef529de27))
+* **deps:** update python docker tag to v3.14.10 ([#234](https://github.com/angelacorte/carol-experiments/issues/234)) ([ec54d29](https://github.com/angelacorte/carol-experiments/commit/ec54d2915e2577cbc3ffb737a322344e0d146f18))
+* **deps:** update python docker tag to v3.15.2 ([#245](https://github.com/angelacorte/carol-experiments/issues/245)) ([58b1cb7](https://github.com/angelacorte/carol-experiments/commit/58b1cb78d487b6efec7b098a6fa8fb2ad4df5220))
+
+### Bug Fixes
+
+* adapt to latest Alchemist API (v50) ([0dc511b](https://github.com/angelacorte/carol-experiments/commit/0dc511b11dae1899851fad6e49bb845b27d34590))
+* **build:** use at least java 21 as per Alchemist dependency ([3751944](https://github.com/angelacorte/carol-experiments/commit/3751944e663fa2fbbcdcd5f7cc217352f2800c28))
+* first pass on adapting to new alchemist version ([fbe091f](https://github.com/angelacorte/carol-experiments/commit/fbe091fad69a17ecfed2fc517fecbe14e72417fe))
+
+### Build and continuous integration
+
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.48 ([#209](https://github.com/angelacorte/carol-experiments/issues/209)) ([ce72347](https://github.com/angelacorte/carol-experiments/commit/ce72347c94117e60615447a261a552a75d946a39))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.50 ([#235](https://github.com/angelacorte/carol-experiments/issues/235)) ([a6345cd](https://github.com/angelacorte/carol-experiments/commit/a6345cd18643cc308414fcbdc973772545e458f1))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.51 ([#239](https://github.com/angelacorte/carol-experiments/issues/239)) ([287d154](https://github.com/angelacorte/carol-experiments/commit/287d15495e8ee647943813c626b8bd0758f0d6bd))
+* **deps:** update danysk/build-check-deploy-gradle-action action to v4.0.52 ([#259](https://github.com/angelacorte/carol-experiments/issues/259)) ([2e5ba67](https://github.com/angelacorte/carol-experiments/commit/2e5ba67d1f82f15133685b72b25d60e434a357a4))
+* **deps:** update dependency macos github actions runner to v26 ([#249](https://github.com/angelacorte/carol-experiments/issues/249)) ([a741b23](https://github.com/angelacorte/carol-experiments/commit/a741b2327597e3cf14ba50ec54b43a3c97c04b7d))
+* **deps:** update dependency ubuntu github actions runner to v26 ([#250](https://github.com/angelacorte/carol-experiments/issues/250)) ([c418d8f](https://github.com/angelacorte/carol-experiments/commit/c418d8f9f32eb49803b22e5d60d99b833f681102))
+* **deps:** update dependency windows github actions runner to v2025 ([#251](https://github.com/angelacorte/carol-experiments/issues/251)) ([cc2fea3](https://github.com/angelacorte/carol-experiments/commit/cc2fea32dea05a0bf6c5c845e880d236944824a8))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.7 [skip ci] ([a34cf21](https://github.com/angelacorte/carol-experiments/commit/a34cf21f6058b2125593cdc828be2a42d1b86b81))
+* updload recent updates for angela ([4f129c8](https://github.com/angelacorte/carol-experiments/commit/4f129c846140271f23cff2ca6a34fdb28629859f))
+
+### Style improvements
+
+* adapt to ktlint ([d4203f0](https://github.com/angelacorte/carol-experiments/commit/d4203f03c9109cbfb4e1c6c7896e76fdfa2d7e3c))
+
 ## [3.0.7](https://github.com/angelacorte/carol-experiments/compare/3.0.6...3.0.7) (2026-10-25)
 
 ### Dependency updates
