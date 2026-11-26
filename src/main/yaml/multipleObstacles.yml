@@ -46,7 +46,7 @@ network-model:
 
 _pool: &program
   - time-distribution: *timeDistribution
-    type: Event
+    type: GenericReaction
     actions:
       - type: RunCollektiveProgram
         parameters: [ it.unibo.collektive.entrypoints.MultipleObstaclesKt.multipleObstaclesEntrypoint ]
@@ -99,7 +99,7 @@ deployments:
         concentration: *controlPeriodMS
     programs:
       - *program
-    properties:
+    capabilities:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
@@ -124,7 +124,7 @@ deployments:
         concentration: *controlPeriodMS
     programs:
       - *program
-    properties:
+    capabilities:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
@@ -149,7 +149,7 @@ deployments:
         concentration: *controlPeriodMS
     programs:
       - *program
-    properties:
+    capabilities:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty
@@ -174,7 +174,7 @@ deployments:
         concentration: *controlPeriodMS
     programs:
       - *program
-    properties:
+    capabilities:
       - type: it.unibo.collektive.alchemist.device.sensors.impl.LocationSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.TimeSensorProperty
       - type: it.unibo.collektive.alchemist.device.sensors.impl.SolverProperty

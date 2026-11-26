@@ -39,7 +39,7 @@ class LocationSensorProperty<T : Any, P : Position<P>>(
     override fun targetsPosition(): List<Target> = environment.nodes.current.filter { node ->
         node.contains(SimpleMolecule("Target"))
     }.map { target ->
-        (target[SimpleMolecule("Target")] as Number) to environment.positionOf(target)
+        (target[SimpleMolecule("Target")].getOrNull() as Number) to environment.positionOf(target)
     }.map { (id, position) ->
         val currentPosition = position.current
         Target(currentPosition[0], currentPosition[1], id)

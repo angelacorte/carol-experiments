@@ -3,7 +3,6 @@ package it.unibo.alchemist.model.movestrategies.target
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position
-import it.unibo.alchemist.model.Reaction
 import it.unibo.alchemist.model.Time
 import it.unibo.alchemist.model.molecules.SimpleMolecule
 import it.unibo.alchemist.model.movestrategies.SpeedSelectionStrategy
@@ -32,9 +31,9 @@ class SpeedFromMolecule<T, P : Position<P>>(private val node: Node<T>, private v
     var previousTime: Time = Time.ZERO
 
     override fun getNodeMovementLength(target: P?): Double {
-        val speed = node.getConcentration(SimpleMolecule("Velocity")) as? SpeedControl2D ?: return 0.0
+        val speed = node[SimpleMolecule("Velocity")].getOrNull() as? SpeedControl2D ?: return 0.0
         val speedMagnitude = hypot(speed.x, speed.y)
-        val current = environment.simulation.time
+        val current = environment.simulation.currentTime
         val deltaTime = (current - previousTime).toDouble()
         previousTime = current
 //        val deltaTime = node.ge/tConcentration(SimpleMolecule("DeltaTime")) as? Double

@@ -37,7 +37,7 @@ class DrawObstacleRadius : Effect {
         environment: Environment<T, P>,
         wormhole: Wormhole2D<P>,
     ) {
-        if (environment.simulation.time != lastUpdated) {
+        if (environment.simulation.currentTime != lastUpdated) {
             lastUpdated = environment.simulation.currentTime
         }
         runCatching { renderNode(graphics, node, environment, wormhole) }
@@ -53,7 +53,7 @@ class DrawObstacleRadius : Effect {
         val viewPoint = wormhole.getViewPoint(nodePosition)
         val isRobot = node.contains(robot)
         val isObstacle = node.contains(obstacle)
-        val margin = node[safeMargin].toDouble()
+        val margin = node[safeMargin].getOrNull().toDouble()
         val radius = readRadius(node)
         val communicationDistance = readCommunicationDistance(node)
         val baseDrawSize = drawSize(isRobot, isObstacle, margin, radius)
@@ -189,11 +189,10 @@ class DrawObstacleRadius : Effect {
         return boundingBox.any { wormhole.isInsideView(it) }
     }
 
-    private fun readRadius(node: Node<*>): Double =
-        (if (node.contains(safeRadius)) node[safeRadius] else 0.0) as Double
+    private fun readRadius(node: Node<*>): Double = node[safeRadius].getOrNull().toDouble()
 
     private fun readCommunicationDistance(node: Node<*>): Double =
-        (if (node.contains(communicationDistance)) node.getConcentration(communicationDistance) else 0.0).toDouble()
+        node[communicationDistance].getOrNull().toDouble()
 
     /**
      * Shared molecules and rendering constants for the effect.
