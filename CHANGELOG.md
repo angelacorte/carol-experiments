@@ -1,3 +1,17 @@
+## [3.0.9](https://github.com/angelacorte/carol-experiments/compare/3.0.8...3.0.9) (2026-11-26)
+
+### Dependency updates
+
+* **deps:** update plugin multijvmtesting to v4.5.8 ([#214](https://github.com/angelacorte/carol-experiments/issues/214)) ([703d1de](https://github.com/angelacorte/carol-experiments/commit/703d1de45f578f3db122cd25768dda9126cad94c))
+
+### Bug Fixes
+
+* improve gurobi license management ([#270](https://github.com/angelacorte/carol-experiments/issues/270)) ([8e37fda](https://github.com/angelacorte/carol-experiments/commit/8e37fda5dcc94d91a3c8563903645c39cc9424a3))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.8 [skip ci] ([beb97d4](https://github.com/angelacorte/carol-experiments/commit/beb97d498b9cdd65473ca93151ada23722518c10))
+
 ## [3.0.8](https://github.com/angelacorte/carol-experiments/compare/3.0.7...3.0.8) (2026-11-26)
 
 ### Dependency updates
