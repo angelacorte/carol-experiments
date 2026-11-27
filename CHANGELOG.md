@@ -1,3 +1,14 @@
+## [3.0.10](https://github.com/angelacorte/carol-experiments/compare/3.0.9...3.0.10) (2026-11-27)
+
+### Dependency updates
+
+* **core-deps:** update dependency it.unibo.collektive.collektive-plugin to v30.0.1 ([#273](https://github.com/angelacorte/carol-experiments/issues/273)) ([5e492aa](https://github.com/angelacorte/carol-experiments/commit/5e492aa2e1c11f102a053b6f437af5ec86119891))
+* **deps:** update plugin multijvmtesting to v4.5.11 ([#271](https://github.com/angelacorte/carol-experiments/issues/271)) ([9681430](https://github.com/angelacorte/carol-experiments/commit/96814304eac1a23bfc1a60792d8c69116d53847a))
+
+### General maintenance
+
+* **release:** update gradle.properties .env versions to 3.0.9 [skip ci] ([38ac191](https://github.com/angelacorte/carol-experiments/commit/38ac1911d1e3fbc3412363d76fd11fce406b25e7))
+
 ## [3.0.9](https://github.com/angelacorte/carol-experiments/compare/3.0.8...3.0.9) (2026-11-26)
 
 ### Dependency updates
