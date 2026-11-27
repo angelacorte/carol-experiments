@@ -34,7 +34,7 @@ fun defaultGurobiEnv(logEnabled: Boolean): GRBEnv {
             "Could not start Gurobi (error ${e.errorCode}): ${e.message}. No Gurobi license is bundled with " +
                 "this library; provide your own by setting the GRB_LICENSE_FILE environment variable, placing " +
                 "gurobi.lic in a Gurobi default location, setting GRB_WLSACCESSID, GRB_WLSSECRET and " +
-                "GRB_LICENSEID, or passing a custom envFactory to SolverProperty.",
+                "GRB_LICENSEID, or passing your own GRBEnv to GurobiSolver.",
             e,
         )
     }

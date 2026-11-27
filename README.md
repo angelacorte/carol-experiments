@@ -120,9 +120,11 @@ GRB_LICENSE_FILE="/absolute/path/to/gurobi.lic" ./gradlew runNoObstacleGraphic
 GRB_LICENSE_FILE="/absolute/path/to/gurobi.lic" ./gradlew runAllBatch
 ```
 
-When using the library programmatically, `SolverProperty` also accepts an `envFactory: (QpSettings) -> GRBEnv`
-to fully control how the Gurobi environment is created (e.g. a compute server or custom parameters).
-The default is `defaultGurobiEnv(settings.logEnabled)`.
+When using the library programmatically, `GurobiSolver` (the default `Solver` implementation in `core`) takes
+the `GRBEnv` to use, so you fully control how the Gurobi environment is created (e.g. a compute server or custom
+parameters) and can share one environment among the solvers of many devices; `defaultGurobiEnv(logEnabled)`
+creates one with the license supplied at runtime. In the simulations, `SolverProperty` accepts an
+`envFactory: (QpSettings) -> GRBEnv` for the same purpose (default: `defaultGurobiEnv(settings.logEnabled)`).
 
 ## 🛠️ Configuration and Usage
 
