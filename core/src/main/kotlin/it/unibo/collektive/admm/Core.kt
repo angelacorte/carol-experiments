@@ -1,16 +1,13 @@
 package it.unibo.collektive.admm
 
-import it.unibo.alchemist.collektive.device.CollektiveDevice
-import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.aggregate.api.Aggregate
 import it.unibo.collektive.aggregate.api.exchanging
 import it.unibo.collektive.aggregate.api.sharing
 import it.unibo.collektive.aggregate.toMap
-import it.unibo.collektive.alchemist.device.applyControl
-import it.unibo.collektive.alchemist.device.sensors.LocationSensor
-import it.unibo.collektive.alchemist.device.sensors.TimeSensor
 import it.unibo.collektive.control.cbf.CBF
 import it.unibo.collektive.control.clf.CLF
+import it.unibo.collektive.device.Actuator
+import it.unibo.collektive.device.TimeSensor
 import it.unibo.collektive.mathutils.minus
 import it.unibo.collektive.mathutils.norm
 import it.unibo.collektive.mathutils.plus
@@ -28,12 +25,14 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 /**
- * Aggregate entrypoint: runs the distributed ADMM control loop and applies the resulting velocity.
+ * Aggregate entrypoint: runs the distributed ADMM control loop and, once every [controlPeriod] milliseconds,
+ * applies the resulting velocity through the [actuator].
+ *
+ * @return the time left before the next control application.
  */
 @OptIn(ExperimentalTime::class)
 context(
-    collektiveDevice: CollektiveDevice<Euclidean2DPosition>,
-    locationSensor: LocationSensor,
+    actuator: Actuator,
     solver: Solver,
     timeSensor: TimeSensor,
 )
@@ -44,20 +43,19 @@ fun Aggregate<Int>.admmEntrypoint(
     localCLF: List<CLF>,
     localCBF: List<CBF>,
     pairwiseCBF: List<CBF>,
-) {
-    val timeLeft = sharedTimeLeftTo(timeSensor.getTimeAsInstant(), controlPeriod.milliseconds).also {
-        collektiveDevice["TimeLeft"] = it
-    }
+): Duration {
+    val timeLeft = sharedTimeLeftTo(timeSensor.getTimeAsInstant(), controlPeriod.milliseconds)
     val controlPeriodSeconds = Duration.convert(controlPeriod, DurationUnit.MILLISECONDS, DurationUnit.SECONDS)
     // device snapshots
     evolve(device) { previous ->
         solver.setupLocalModel(previous, localCLF, localCBF)
         val control = admm(previous, uNominal, controlPeriodSeconds, pairwiseCBF)
         when {
-            timeLeft <= ZERO -> applyControl(control, controlPeriodSeconds)
+            timeLeft <= ZERO -> actuator.applyControl(control, controlPeriodSeconds)
             else -> previous
         }
     }
+    return timeLeft
 }
 
 context(solver: Solver)

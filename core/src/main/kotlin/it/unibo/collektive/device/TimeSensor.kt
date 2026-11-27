@@ -1,4 +1,4 @@
-package it.unibo.collektive.alchemist.device.sensors
+package it.unibo.collektive.device
 
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
