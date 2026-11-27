@@ -5,6 +5,7 @@ plugins {
     `java-library`
     alias(libs.plugins.gitSemVer)
     alias(libs.plugins.collektive)
+    alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.qa)
     alias(libs.plugins.multiJvmTesting)
@@ -14,7 +15,6 @@ plugins {
 group = "io.github.angelacorte"
 
 dependencies {
-    // Collektive and Gurobi types appear in the public API
     api(libs.collektive)
     api(libs.collektive.stdlib)
     api(libs.gurobi)
