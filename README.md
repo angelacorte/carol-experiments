@@ -27,7 +27,7 @@ By leveraging the **Alternating Direction Method of Multipliers (ADMM)**, CAROL 
 
 ## Current experiments
 
-Scenarios are under `src/main/yaml/` and have matching effects in `effects/`.
+Scenarios are under `simulation/src/main/yaml/` and have matching effects in `effects/`.
 
 | Experiment | Brief description | YAML | Entrypoint | Active CBFs |
 | --- | --- | --- | --- | --- |
@@ -38,26 +38,34 @@ Scenarios are under `src/main/yaml/` and have matching effects in `effects/`.
 
 ## 🏗️ Project Structure
 
+The build has two Gradle modules:
+
+* `core`: the reusable library (ADMM, CLF/CBF DSL, Gurobi solver). It does not depend on Alchemist
+  and is the module meant to be published.
+* `simulation`: Alchemist integration, scenarios and run tasks. It depends on `core` and is not published.
+
 ```text
-src/main/
+core/src/main/kotlin/it/unibo/collektive/
+├── admm/                                   ADMM state/core/objectives
+├── control/                                CLF/CBF definitions and nominal control
+│   └── dsl/                                Formula DSL for reusable CLF/CBF constraints
+├── solver/gurobi/                          Gurobi integration, constraints, license setup
+├── mathutils/                              Vector and numeric utilities
+└── model/                                  Domain models (Device, Target, Obstacle, ...)
+
+simulation/src/main/
 ├── yaml/                                   Alchemist simulation scenarios
 └── kotlin/it/unibo/
     ├── alchemist/                          Custom Alchemist actions/effects
     └── collektive/
         ├── entrypoints/                    Scenario entrypoints (NoObstacle, FollowLeader, ...)
-        ├── admm/                           ADMM state/core/objectives
-        ├── control/                        CLF/CBF definitions and nominal control
-        │   └── dsl/                        Formula DSL for reusable CLF/CBF constraints
-        ├── alchemist/device/               Sensors + environment bridge + QP settings
-        ├── solver/gurobi/                  Gurobi integration, constraints, license setup
-        ├── mathutils/                      Vector and numeric utilities
-        └── model/                          Domain models (Device, Target, Obstacle, ...)
+        └── alchemist/                      ADMM entrypoint, sensors, environment bridge, SolverProperty
 ```
 
 ## CLF/CBF formula DSL
 
-Control functions are defined in `src/main/kotlin/it/unibo/collektive/control/`.
-The reusable formula machinery lives in `src/main/kotlin/it/unibo/collektive/control/dsl/`.
+Control functions are defined in `core/src/main/kotlin/it/unibo/collektive/control/`.
+The reusable formula machinery lives in `core/src/main/kotlin/it/unibo/collektive/control/dsl/`.
 
 The DSL keeps the important solver invariant explicit: formulas are built once when the reusable
 Gurobi model is installed, while robot positions, neighbor state, time step, safety margins, speed
@@ -83,7 +91,7 @@ To add a new control function:
   or obstacles.
 
 More details, including the extension rules and available expression operators, are documented in
-`src/main/kotlin/it/unibo/collektive/control/dsl/README.md`.
+`core/src/main/kotlin/it/unibo/collektive/control/dsl/README.md`.
 
 ## 🚀 Prerequisites
 
@@ -140,7 +148,7 @@ Run one scenario (examples):
 ./gradlew runFollowTargetGraphic
 ```
 
-Gradle auto-generates `run<Name>Graphic` tasks from every `.yml` file in `src/main/yaml/`.
+Gradle auto-generates `run<Name>Graphic` tasks from every `.yml` file in `simulation/src/main/yaml/`.
 
 ## 🧪 Mathematical Details
 

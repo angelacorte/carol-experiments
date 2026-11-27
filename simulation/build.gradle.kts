@@ -4,27 +4,20 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     application
-    `java-library`
     alias(libs.plugins.gitSemVer)
     alias(libs.plugins.collektive)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.qa)
     alias(libs.plugins.multiJvmTesting)
-    alias(libs.plugins.taskTree)
-}
-
-repositories {
-    mavenCentral()
 }
 
 sourceSets {
     main {
         dependencies {
+            implementation(project(":core"))
             implementation(libs.bundles.alchemist)
             implementation(libs.caffeine)
             implementation(libs.bundles.collektive)
-            api(libs.gurobi)
-            implementation(libs.slf4j)
         }
         resources {
             srcDir("src/main/yaml")
@@ -97,7 +90,7 @@ fun String.capitalizeString(): String = this.replaceFirstChar {
 /*
  * Scan the folder with the simulation files, and create a task for each one of them.
  */
-File(rootProject.rootDir.path + "/src/main/yaml")
+file("src/main/yaml")
     .listFiles()
     ?.filter { it.extension == "yml" }
     ?.sortedBy { it.nameWithoutExtension }
@@ -106,6 +99,8 @@ File(rootProject.rootDir.path + "/src/main/yaml")
             description = "Launches graphic simulation ${it.nameWithoutExtension}"
             mainClass.set("it.unibo.alchemist.Alchemist")
             classpath = sourceSets["main"].runtimeClasspath
+            // effects/, data/ and the analysis scripts live at the repository root
+            workingDir = rootDir
             args("run", it.absolutePath)
             if (System.getenv("CI") == "true") {
                 args("--override", "terminate: { type: AfterTime, parameters: [2] } ")
@@ -130,7 +125,7 @@ File(rootProject.rootDir.path + "/src/main/yaml")
             group = alchemistGroupBatch
             description = "Launches batch experiments for $capitalizedName"
             maxHeapSize = "${minOf(heap.toInt(), Runtime.getRuntime().availableProcessors() * taskSize)}m"
-            File("data").mkdirs()
+            rootProject.file("data").mkdirs()
             args(
                 "--verbosity",
                 "error",
