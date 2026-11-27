@@ -3,12 +3,12 @@ package it.unibo.collektive.entrypoints
 import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.aggregate.api.Aggregate
-import it.unibo.collektive.alchemist.simulationAdmmEntrypoint
 import it.unibo.collektive.alchemist.device.controlPeriodMillis
 import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 import it.unibo.collektive.alchemist.device.targetId
+import it.unibo.collektive.alchemist.simulationAdmmEntrypoint
 import it.unibo.collektive.control.GoToTargetNominal
 import it.unibo.collektive.control.cbf.CollisionAvoidanceCBF
 import it.unibo.collektive.control.cbf.MaxSpeedCBF

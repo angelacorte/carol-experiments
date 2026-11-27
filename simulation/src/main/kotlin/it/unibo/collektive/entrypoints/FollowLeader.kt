@@ -5,7 +5,6 @@ package it.unibo.collektive.entrypoints
 import it.unibo.alchemist.collektive.device.CollektiveDevice
 import it.unibo.alchemist.model.positions.Euclidean2DPosition
 import it.unibo.collektive.aggregate.api.Aggregate
-import it.unibo.collektive.alchemist.simulationAdmmEntrypoint
 import it.unibo.collektive.alchemist.device.communicationDistance
 import it.unibo.collektive.alchemist.device.controlPeriodMillis
 import it.unibo.collektive.alchemist.device.getObstacles
@@ -13,6 +12,7 @@ import it.unibo.collektive.alchemist.device.getRobot
 import it.unibo.collektive.alchemist.device.getTarget
 import it.unibo.collektive.alchemist.device.sensors.LocationSensor
 import it.unibo.collektive.alchemist.device.targetId
+import it.unibo.collektive.alchemist.simulationAdmmEntrypoint
 import it.unibo.collektive.control.GoToTargetNominal
 import it.unibo.collektive.control.cbf.CollisionAvoidanceCBF
 import it.unibo.collektive.control.cbf.CommunicationRangeCBF
@@ -25,7 +25,6 @@ import it.unibo.collektive.model.Target
 import it.unibo.collektive.solver.Solver
 import it.unibo.collektive.stdlib.consensus.boundedElection
 import it.unibo.collektive.stdlib.spreading.hopGradientCast
-import kotlin.collections.plus
 
 /**
  * Entrypoint for simulation where the leader goes towards a target and other nodes have as target the leader.
