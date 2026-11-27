@@ -19,8 +19,9 @@ import kotlin.math.nextUp
 /**
  * Swing effect that renders robot safe margins and obstacle safety radii on the 2D view.
  *
- * It reads concentrations for `Robot`, `Obstacle`, `SafeMargin`, and `SafeRadius` molecules and
- * draws concentric circles to visualize footprint and avoidance regions.
+ * It reads concentrations for `Robot`, `Obstacle`, `SafeMargin`, `SafeRadius`, and `isLeader` molecules and
+ * draws concentric circles to visualize footprint, avoidance regions, and the leader, all in environment units
+ * so that they follow the zoom.
  */
 class DrawObstacleRadius : Effect {
     override fun getColorSummary(): Color = Color.BLACK
@@ -72,6 +73,7 @@ class DrawObstacleRadius : Effect {
                 communicationDistance,
             )
         }
+        if (isRobot && node[leader].getOrNull() == true) drawLeader(graphics, viewPoint, baseSizeInScreen)
         if (isRobot) drawRobot(graphics, viewPoint, baseSizeInScreen)
         if (isObstacle) {
             drawObstacle(
@@ -84,6 +86,16 @@ class DrawObstacleRadius : Effect {
                 baseSizeInScreen,
             )
         }
+    }
+
+    private fun drawLeader(graphics: Graphics2D, viewPoint: Point, sizeInScreenCoordinates: Point) {
+        graphics.color = Color(255, 115, 0, 128)
+        graphics.fillOval(
+            viewPoint.x - sizeInScreenCoordinates.x,
+            viewPoint.y - sizeInScreenCoordinates.y,
+            2 * sizeInScreenCoordinates.x,
+            2 * sizeInScreenCoordinates.y,
+        )
     }
 
     private fun drawRobot(graphics: Graphics2D, viewPoint: Point, sizeInScreenCoordinates: Point) {
@@ -204,6 +216,9 @@ class DrawObstacleRadius : Effect {
 
         /** Safe margin molecule key used to size the footprint. */
         val safeMargin = SimpleMolecule("SafeMargin")
+
+        /** Molecule flagging the current leader. */
+        val leader = SimpleMolecule("isLeader")
 
         /** Obstacle molecule key. */
         val obstacle = SimpleMolecule("Obstacle")
