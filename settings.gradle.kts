@@ -12,3 +12,5 @@ develocity {
 }
 
 rootProject.name = "carol-experiments"
+
+include("core", "simulation")

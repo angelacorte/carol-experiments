@@ -5,6 +5,9 @@ echo PROJECT_NAME=$(grep -Po 'rootProject\\s*\\.\\s*name\\s*=\\s*"\\K[\\w-]+(?="
 `
 // docker compose build
 // docker compose push
+// Maven Central publication of :core, disabled for now. To enable, put this line back as the first line of publishCmd
+// (it must run first, while HEAD is still the release tag, so gitSemVer yields a clean version):
+// ./gradlew :core:publishAllPublicationsToProjectLocalRepository :core:zipMavenCentralPortalPublication :core:releaseMavenCentralPortalPublication || exit 1
 var publishCmd = `
 git add gradle.properties .env
 git commit -m "chore(release): update gradle.properties .env versions to \${nextRelease.version} [skip ci]"

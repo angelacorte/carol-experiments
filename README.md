@@ -27,37 +27,46 @@ By leveraging the **Alternating Direction Method of Multipliers (ADMM)**, CAROL 
 
 ## Current experiments
 
-Scenarios are under `src/main/yaml/` and have matching effects in `effects/`.
+Scenarios are written with the Alchemist Kotlin DSL in
+`simulation/src/main/kotlin/it/unibo/collektive/alchemist/scenarios/Scenarios.kt` and have matching effects in `effects/`.
 
-| Experiment | Brief description | YAML | Entrypoint | Active CBFs |
+| Experiment | Brief description | Scenario | Entrypoint | Active CBFs |
 | --- | --- | --- | --- | --- |
-| No obstacle, split targets | Two robot groups track two different targets in free space; focuses on coordination and collision/speed safety without obstacle constraints. | `noObstacle.yml` | `NoObstacleKt.noObstacleEntrypoint` | `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
-| Common moving target | All robots track one moving target while avoiding a static obstacle and preserving connectivity when possible. | `followTarget.yml` | `CommonTargetKt.commonTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
-| Leader-follower | A distributedly elected leader follows the target; neighbors follow the leader while respecting obstacle, collision, and range constraints. | `followLeader.yml` | `FollowLeaderKt.followLeaderEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
-| Different targets | Robots are assigned different `TargetID` values and split toward separate goals with obstacle and pairwise safety constraints. | `differentTargets.yml` | `MultipleTargetsKt.multipleTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
+| No obstacle, split targets | Two robot groups track two different targets in free space; focuses on coordination and collision/speed safety without obstacle constraints. | `noObstacle` | `NoObstacleKt.noObstacleEntrypoint` | `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
+| Common moving target | All robots track one moving target while avoiding a static obstacle and preserving connectivity when possible. | `followTarget` | `CommonTargetKt.commonTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
+| Leader-follower | A distributedly elected leader follows the target; neighbors follow the leader while respecting obstacle, collision, and range constraints. | `followLeader` | `FollowLeaderKt.followLeaderEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
+| Different targets | Robots are assigned different `TargetID` values and split toward separate goals with obstacle and pairwise safety constraints. | `differentTargets` | `MultipleTargetsKt.multipleTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
 
 ## 🏗️ Project Structure
 
+The build has two Gradle modules:
+
+* `core`: the reusable library (ADMM, CLF/CBF DSL, Gurobi solver). It does not depend on Alchemist
+  and is the module meant to be published.
+* `simulation`: Alchemist integration, scenarios and run tasks. It depends on `core` and is not published.
+
 ```text
-src/main/
-├── yaml/                                   Alchemist simulation scenarios
-└── kotlin/it/unibo/
-    ├── alchemist/                          Custom Alchemist actions/effects
-    └── collektive/
-        ├── entrypoints/                    Scenario entrypoints (NoObstacle, FollowLeader, ...)
-        ├── admm/                           ADMM state/core/objectives
-        ├── control/                        CLF/CBF definitions and nominal control
-        │   └── dsl/                        Formula DSL for reusable CLF/CBF constraints
-        ├── alchemist/device/               Sensors + environment bridge + QP settings
-        ├── solver/gurobi/                  Gurobi integration, constraints, license setup
-        ├── mathutils/                      Vector and numeric utilities
-        └── model/                          Domain models (Device, Target, Obstacle, ...)
+core/src/main/kotlin/it/unibo/collektive/
+├── admm/                                   ADMM entrypoint, state and core loop
+├── device/                                 TimeSensor and Actuator interfaces to plug in a runtime
+├── control/                                CLF/CBF definitions and nominal control
+│   └── dsl/                                Formula DSL for reusable CLF/CBF constraints
+├── solver/gurobi/                          Gurobi integration, constraints, license setup
+├── mathutils/                              Vector and numeric utilities
+└── model/                                  Domain models (Device, Target, Obstacle, ...)
+
+simulation/src/main/kotlin/it/unibo/
+├── alchemist/                              Custom Alchemist actions/effects
+└── collektive/
+    ├── entrypoints/                        Scenario entrypoints (NoObstacle, FollowLeader, ...)
+    └── alchemist/                          Alchemist actuator/sensors, environment bridge, SolverProperty
+        └── scenarios/                      Simulation scenarios (Alchemist Kotlin DSL) and their launcher
 ```
 
 ## CLF/CBF formula DSL
 
-Control functions are defined in `src/main/kotlin/it/unibo/collektive/control/`.
-The reusable formula machinery lives in `src/main/kotlin/it/unibo/collektive/control/dsl/`.
+Control functions are defined in `core/src/main/kotlin/it/unibo/collektive/control/`.
+The reusable formula machinery lives in `core/src/main/kotlin/it/unibo/collektive/control/dsl/`.
 
 The DSL keeps the important solver invariant explicit: formulas are built once when the reusable
 Gurobi model is installed, while robot positions, neighbor state, time step, safety margins, speed
@@ -83,7 +92,7 @@ To add a new control function:
   or obstacles.
 
 More details, including the extension rules and available expression operators, are documented in
-`src/main/kotlin/it/unibo/collektive/control/dsl/README.md`.
+`core/src/main/kotlin/it/unibo/collektive/control/dsl/README.md`.
 
 ## 🚀 Prerequisites
 
@@ -111,9 +120,11 @@ GRB_LICENSE_FILE="/absolute/path/to/gurobi.lic" ./gradlew runNoObstacleGraphic
 GRB_LICENSE_FILE="/absolute/path/to/gurobi.lic" ./gradlew runAllBatch
 ```
 
-When using the library programmatically, `SolverProperty` also accepts an `envFactory: (QpSettings) -> GRBEnv`
-to fully control how the Gurobi environment is created (e.g. a compute server or custom parameters).
-The default is `defaultGurobiEnv(settings.logEnabled)`.
+When using the library programmatically, `GurobiSolver` (the default `Solver` implementation in `core`) takes
+the `GRBEnv` to use, so you fully control how the Gurobi environment is created (e.g. a compute server or custom
+parameters) and can share one environment among the solvers of many devices; `defaultGurobiEnv(logEnabled)`
+creates one with the license supplied at runtime. In the simulations, `SolverProperty` accepts an
+`envFactory: (QpSettings) -> GRBEnv` for the same purpose (default: `defaultGurobiEnv(settings.logEnabled)`).
 
 ## 🛠️ Configuration and Usage
 
@@ -140,7 +151,8 @@ Run one scenario (examples):
 ./gradlew runFollowTargetGraphic
 ```
 
-Gradle auto-generates `run<Name>Graphic` tasks from every `.yml` file in `src/main/yaml/`.
+Gradle generates `run<Name>Graphic` and `run<Name>Batch` tasks for every scenario listed in `simulation/build.gradle.kts`;
+when adding a scenario, add it both to `Scenarios.kt` and to that list.
 
 ## 🧪 Mathematical Details
 
