@@ -19,9 +19,6 @@ sourceSets {
             implementation(libs.caffeine)
             implementation(libs.bundles.collektive)
         }
-        resources {
-            srcDir("src/main/yaml")
-        }
     }
 }
 
@@ -88,51 +85,36 @@ fun String.capitalizeString(): String = this.replaceFirstChar {
 }
 
 /*
- * Scan the folder with the simulation files, and create a task for each one of them.
+ * One graphic and one batch task per scenario defined in it.unibo.collektive.alchemist.scenarios.Scenarios.kt.
  */
-file("src/main/yaml")
-    .listFiles()
-    ?.filter { it.extension == "yml" }
-    ?.sortedBy { it.nameWithoutExtension }
-    ?.forEach {
-        fun basetask(name: String, additionalConfiguration: JavaExec.() -> Unit = {}) = tasks.register<JavaExec>(name) {
-            description = "Launches graphic simulation ${it.nameWithoutExtension}"
-            mainClass.set("it.unibo.alchemist.Alchemist")
-            classpath = sourceSets["main"].runtimeClasspath
-            // effects/, data/ and the analysis scripts live at the repository root
-            workingDir = rootDir
-            args("run", it.absolutePath)
-            if (System.getenv("CI") == "true") {
-                args("--override", "terminate: { type: AfterTime, parameters: [2] } ")
-            } else {
-                this.additionalConfiguration()
-            }
+listOf("differentTargets", "followLeader", "followTarget", "multipleObstacles", "noObstacle").forEach { scenario ->
+    fun basetask(name: String, additionalConfiguration: JavaExec.() -> Unit = {}) = tasks.register<JavaExec>(name) {
+        mainClass.set("it.unibo.collektive.alchemist.scenarios.ScenarioKt")
+        classpath = sourceSets["main"].runtimeClasspath
+        // effects/, data/ and the analysis scripts live at the repository root
+        workingDir = rootDir
+        args(scenario)
+        if (System.getenv("CI") == "true") {
+            args("endTime=2")
+        } else {
+            this.additionalConfiguration()
         }
-        val capitalizedName = it.nameWithoutExtension.capitalizeString()
-        val graphic by basetask("run${capitalizedName}Graphic") {
-            group = alchemistGroupGraphic
-            args(
-                "--override",
-                "monitors: { type: SwingGUI, parameters: { graphics: effects/${it.nameWithoutExtension}.json } }",
-                "--override",
-                "launcher: { parameters: { batch: [], autoStart: false } }",
-                "--verbosity",
-                "error",
-            )
-        }
-        runAllGraphic.dependsOn(graphic)
-        val batch by basetask("run${capitalizedName}Batch") {
-            group = alchemistGroupBatch
-            description = "Launches batch experiments for $capitalizedName"
-            maxHeapSize = "${minOf(heap.toInt(), Runtime.getRuntime().availableProcessors() * taskSize)}m"
-            rootProject.file("data").mkdirs()
-            args(
-                "--verbosity",
-                "error",
-            )
-        }
-        runAllBatch.dependsOn(batch)
     }
+    val capitalizedName = scenario.capitalizeString()
+    val graphic by basetask("run${capitalizedName}Graphic") {
+        group = alchemistGroupGraphic
+        description = "Launches graphic simulation $scenario"
+        args("graphic")
+    }
+    runAllGraphic.dependsOn(graphic)
+    val batch by basetask("run${capitalizedName}Batch") {
+        group = alchemistGroupBatch
+        description = "Launches batch experiments for $capitalizedName"
+        maxHeapSize = "${minOf(heap.toInt(), Runtime.getRuntime().availableProcessors() * taskSize)}m"
+        rootProject.file("data").mkdirs()
+    }
+    runAllBatch.dependsOn(batch)
+}
 
 tasks.withType<KotlinCompilationTask<*>>().all {
     compilerOptions {

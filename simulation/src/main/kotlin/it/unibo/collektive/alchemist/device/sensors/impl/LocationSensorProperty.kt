@@ -19,7 +19,7 @@ import it.unibo.collektive.model.Target
  * @property random an instance of a random number generator for simulating measurement noise
  * @property stdDev the standard deviation for Gaussian noise added to target positions
  */
-class LocationSensorProperty<T : Any, P : Position<P>>(
+class LocationSensorProperty<T, P : Position<P>>(
     private val environment: Environment<T, P>,
     override val node: Node<T>,
 ) : LocationSensor,

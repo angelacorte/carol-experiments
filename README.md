@@ -27,14 +27,15 @@ By leveraging the **Alternating Direction Method of Multipliers (ADMM)**, CAROL 
 
 ## Current experiments
 
-Scenarios are under `simulation/src/main/yaml/` and have matching effects in `effects/`.
+Scenarios are written with the Alchemist Kotlin DSL in
+`simulation/src/main/kotlin/it/unibo/collektive/alchemist/scenarios/Scenarios.kt` and have matching effects in `effects/`.
 
-| Experiment | Brief description | YAML | Entrypoint | Active CBFs |
+| Experiment | Brief description | Scenario | Entrypoint | Active CBFs |
 | --- | --- | --- | --- | --- |
-| No obstacle, split targets | Two robot groups track two different targets in free space; focuses on coordination and collision/speed safety without obstacle constraints. | `noObstacle.yml` | `NoObstacleKt.noObstacleEntrypoint` | `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
-| Common moving target | All robots track one moving target while avoiding a static obstacle and preserving connectivity when possible. | `followTarget.yml` | `CommonTargetKt.commonTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
-| Leader-follower | A distributedly elected leader follows the target; neighbors follow the leader while respecting obstacle, collision, and range constraints. | `followLeader.yml` | `FollowLeaderKt.followLeaderEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
-| Different targets | Robots are assigned different `TargetID` values and split toward separate goals with obstacle and pairwise safety constraints. | `differentTargets.yml` | `MultipleTargetsKt.multipleTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
+| No obstacle, split targets | Two robot groups track two different targets in free space; focuses on coordination and collision/speed safety without obstacle constraints. | `noObstacle` | `NoObstacleKt.noObstacleEntrypoint` | `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
+| Common moving target | All robots track one moving target while avoiding a static obstacle and preserving connectivity when possible. | `followTarget` | `CommonTargetKt.commonTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
+| Leader-follower | A distributedly elected leader follows the target; neighbors follow the leader while respecting obstacle, collision, and range constraints. | `followLeader` | `FollowLeaderKt.followLeaderEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF`, `CommunicationRangeCBF` |
+| Different targets | Robots are assigned different `TargetID` values and split toward separate goals with obstacle and pairwise safety constraints. | `differentTargets` | `MultipleTargetsKt.multipleTargetEntrypoint` | `ObstacleAvoidanceCBF`, `MaxSpeedCBF`, `CollisionAvoidanceCBF` |
 
 ## 🏗️ Project Structure
 
@@ -54,13 +55,12 @@ core/src/main/kotlin/it/unibo/collektive/
 ├── mathutils/                              Vector and numeric utilities
 └── model/                                  Domain models (Device, Target, Obstacle, ...)
 
-simulation/src/main/
-├── yaml/                                   Alchemist simulation scenarios
-└── kotlin/it/unibo/
-    ├── alchemist/                          Custom Alchemist actions/effects
-    └── collektive/
-        ├── entrypoints/                    Scenario entrypoints (NoObstacle, FollowLeader, ...)
-        └── alchemist/                      Alchemist actuator/sensors, environment bridge, SolverProperty
+simulation/src/main/kotlin/it/unibo/
+├── alchemist/                              Custom Alchemist actions/effects
+└── collektive/
+    ├── entrypoints/                        Scenario entrypoints (NoObstacle, FollowLeader, ...)
+    └── alchemist/                          Alchemist actuator/sensors, environment bridge, SolverProperty
+        └── scenarios/                      Simulation scenarios (Alchemist Kotlin DSL) and their launcher
 ```
 
 ## CLF/CBF formula DSL
@@ -151,7 +151,8 @@ Run one scenario (examples):
 ./gradlew runFollowTargetGraphic
 ```
 
-Gradle auto-generates `run<Name>Graphic` tasks from every `.yml` file in `simulation/src/main/yaml/`.
+Gradle generates `run<Name>Graphic` and `run<Name>Batch` tasks for every scenario listed in `simulation/build.gradle.kts`;
+when adding a scenario, add it both to `Scenarios.kt` and to that list.
 
 ## 🧪 Mathematical Details
 

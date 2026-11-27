@@ -6,7 +6,7 @@ import it.unibo.collektive.alchemist.device.sensors.EnvironmentVariables
  * Typed readers for the scenario molecules shared by every experiment.
  *
  * Reading molecules through these accessors (instead of raw `device["Name"] as Type` casts) makes a
- * YAML mistake fail immediately with a message naming the molecule, rather than silently running
+ * scenario mistake fail immediately with a message naming the molecule, rather than silently running
  * the simulation with a fallback value or crashing later with an anonymous ClassCastException.
  */
 
@@ -26,7 +26,7 @@ val EnvironmentVariables.communicationDistance: Double get() = requiredDouble("C
 val EnvironmentVariables.targetId: Number get() = requiredNumber("TargetID")
 
 /**
- * Reads the numeric concentration of [molecule] as a [Double], accepting any [Number] the YAML
+ * Reads the numeric concentration of [molecule] as a [Double], accepting any [Number] the scenario
  * loader produced (integers included).
  *
  * @throws IllegalStateException if the molecule is not defined for this node.
@@ -42,7 +42,7 @@ fun EnvironmentVariables.requiredDouble(molecule: String): Double = requiredNumb
  */
 fun EnvironmentVariables.requiredNumber(molecule: String): Number {
     check(isDefined(molecule)) {
-        "Molecule '$molecule' is not defined for this node: check the deployment contents in the scenario YAML"
+        "Molecule '$molecule' is not defined for this node: check the deployment contents in the scenario"
     }
     val concentration = get<Any>(molecule)
     require(concentration is Number) {

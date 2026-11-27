@@ -15,10 +15,8 @@ import kotlin.time.Instant
  * The [Instant] is built by offsetting from [Instant.DISTANT_PAST] by the simulation time expressed in seconds.
  * This keeps the mapping deterministic and independent of wall-clock time.
  */
-class TimeSensorProperty<T : Any, P : Position<P>>(
-    private val environment: Environment<T, P>,
-    override val node: Node<T>,
-) : TimeSensor,
+class TimeSensorProperty<T, P : Position<P>>(private val environment: Environment<T, P>, override val node: Node<T>) :
+    TimeSensor,
     Capability<T> {
     override fun cloneOnNewNode(node: Node<T>): Capability<T> = TimeSensorProperty(environment, node)
 
