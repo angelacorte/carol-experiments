@@ -46,7 +46,8 @@ The build has two Gradle modules:
 
 ```text
 core/src/main/kotlin/it/unibo/collektive/
-├── admm/                                   ADMM state/core/objectives
+├── admm/                                   ADMM entrypoint, state and core loop
+├── device/                                 TimeSensor and Actuator interfaces to plug in a runtime
 ├── control/                                CLF/CBF definitions and nominal control
 │   └── dsl/                                Formula DSL for reusable CLF/CBF constraints
 ├── solver/gurobi/                          Gurobi integration, constraints, license setup
@@ -59,7 +60,7 @@ simulation/src/main/
     ├── alchemist/                          Custom Alchemist actions/effects
     └── collektive/
         ├── entrypoints/                    Scenario entrypoints (NoObstacle, FollowLeader, ...)
-        └── alchemist/                      ADMM entrypoint, sensors, environment bridge, SolverProperty
+        └── alchemist/                      Alchemist actuator/sensors, environment bridge, SolverProperty
 ```
 
 ## CLF/CBF formula DSL

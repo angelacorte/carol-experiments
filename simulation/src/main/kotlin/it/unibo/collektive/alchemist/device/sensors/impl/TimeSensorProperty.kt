@@ -4,7 +4,7 @@ import it.unibo.alchemist.model.Capability
 import it.unibo.alchemist.model.Environment
 import it.unibo.alchemist.model.Node
 import it.unibo.alchemist.model.Position
-import it.unibo.collektive.alchemist.device.sensors.TimeSensor
+import it.unibo.collektive.device.TimeSensor
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
